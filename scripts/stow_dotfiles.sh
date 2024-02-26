@@ -6,19 +6,15 @@ export DOTFILES_DIR
 
 decrypt_and_place() {
     local src_file="$1"
-    echo "src_file: $src_file"
 
     # Compute the path relative to the DOTFILES_DIR, ensuring it's an absolute path
     local src_file_abs_path=$(readlink -f $src_file)
-    echo "src_file_abs_path: $src_file_abs_path"
 
     # Remove the DOTFILES_DIR part from the absolute path of the source file
     local relative_path="${src_file_abs_path#$DOTFILES_DIR/}"
-    echo "relative_path: $relative_path"
 
     # Construct the absolute destination path by removing the .gpg extension
     local dest_path="$HOME/${relative_path%.gpg}" # Correctly form the destination path
-    echo "dest_path: $dest_path"
 
     echo "Decrypting $src_file to $dest_path..."
 
