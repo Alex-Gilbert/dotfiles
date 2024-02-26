@@ -1,0 +1,78 @@
+(defcfg
+  input  (device-file "/dev/input/by-id/usb-Massdrop_Inc._ALT_Keyboard_1551771897-event-kbd")
+  output (uinput-sink "My Dvorak Keyboard")
+  fallthrough true
+  allow-cmd false
+)
+
+(defalias
+  sft (layer-toggle srpd)
+  num (layer-toggle numbers)
+  sym (layer-toggle symbols)
+
+  ma (tap-hold-next-release 200 a lmet)
+  ao (tap-hold-next-release 200 o lalt)
+  se (tap-hold-next-release 200 e @sft)
+  cu (tap-hold-next-release 200 u lctl)
+
+  ch (tap-hold-next-release 200 h rctl)
+  st (tap-hold-next-release 200 t @sft)
+  an (tap-hold-next-release 200 n lalt)
+  ms (tap-hold-next-release 200 s rmet)
+
+  mA (tap-hold-next-release 200 A S-lmet)
+  aO (tap-hold-next-release 200 O S-lalt)
+  cU (tap-hold-next-release 200 U S-lctl)
+
+  cH (tap-hold-next-release 200 H S-rctl)
+  aN (tap-hold-next-release 200 N S-lalt)
+  mS (tap-hold-next-release 200 S S-rmet)
+
+  ncap (tap-hold-next-release 200 esc @num)
+  sret (tap-hold-next-release 200 ret @sym)
+)
+
+(defsrc
+  esc   f1  f2  f3  f4  f5  f6  f7  f8  f9  f10 f11 f12 del
+  grv    1   2   3   4   5   6   7   8   9   0   -   =   bspc
+  tab    q   w   e   r   t       y   u   i   o   p   [   ]   \
+  caps   a   s   d   f   g       h   j   k   l   ;   '   ret
+  lsft   z   x   c   v   b       n   m   ,   .   /   rsft  up
+  lctl  lmet lalt           spc           ralt  rctl left down rght
+)
+
+(deflayer rpd
+  esc   f1  f2  f3  f4  f5  f6  f7  f8  f9  f10 f11 f12 del
+    $    &   *   [   {   \(   +   =   \)   }   ]   !   |   _
+  tab    ;   ,   .   p   y       f   g   c   r   l   /   @   \
+  @ncap    @ma   @ao   @se   @cu   i       d   @ch   @st   @an   @ms   -   @sret
+  bspc   '   q   j   k   x       b   m   w   v   z    bspc up
+  lctl  lmet lalt           spc           ralt  rctl left down rght
+)
+
+(deflayer srpd
+  esc   S-f1  S-f2  S-f3  S-f4  S-f5  S-f6  S-f7  S-f8  S-f9  S-f10 S-f11 S-f12 S-del
+    ~      1   2   3   4   5   6   7   8   9   0   %   `   S-bspc
+  S-tab    :   <   >   P   Y       F   G   C   R   L   ?   ^   #
+  S-esc    @mA   @aO   E   @cU   I       D   @cH   T   @aN   @mS   \_   S-ret
+  S-lsft   "   Q   J   K   X       B   M   W   V   Z   S-rsft  S-up
+  S-lctl  S-lmet S-lalt           spc           S-ralt  S-rctl S-left S-down S-rght
+)
+
+(deflayer numbers
+   _     _   _   _   _   _   _   _   _   _   _   _   _   _ 
+   _     _   _   _   _   _   _   _   _   _   _   _   _   _ 
+   _     _   _   _   _   _       /   7   8   9   -   _   _   _ 
+   _     _   _   _   _   _       *   4   5   6   +   =   _  
+   _    _    _   _   _   _       %   1   2   3   .   _    _  
+   _    _    _              0               _    _    _    _   _   
+)
+
+(deflayer symbols
+   _     _   _   _   _   _   _   _   _   _   _   _   _   _ 
+   _     _   _   _   _   _   _   _   _   _   _   _   _   _ 
+   _     /   !   {   }   $       _   _   _   _   _   _   _   _ 
+   _     =   &  \(  \)   ~       _   _   _   _   _   _   _  
+   _     \   |   [   ]   @       _   _   _   _   _   _    _  
+   _     _   _              \_               _    _    _    _   _   
+)
