@@ -1,0 +1,78 @@
+" Diable auto commenting
+autocmd BufEnter * set formatoptions-=cro
+
+" Set leader to space
+nnoremap <SPACE> <Nop>
+let mapleader = " "
+let maplocalleader = " "
+
+" better search
+nnoremap n nzzzv
+nnoremap N Nzzzv
+
+" Moving Lines
+nnoremap <A-j> :m .+1<CR>==
+nnoremap <A-k> :m .-2<CR>==
+inoremap <A-j> <Esc>:m .+1<CR>==gi
+inoremap <A-k> <Esc>:m .-2<CR>==gi
+vnoremap <A-j> :m '>+1<CR>gv=gv
+vnoremap <A-k> :m '<-2<CR>gv=gv
+
+" Plugins
+Plug 'tpope/vim-commentary'		    # [count]gc{motion}, o_gc, v_gc, gcc
+Plug 'tpope/vim-surround'		    # ys, cs, ds, S
+
+" CamelCaseMotion approximation (obsolete with proper CamelCaseMotoin plugin)
+" Missing inner word motions e.g. i<leader>w
+nmap <leader>w [w
+nmap <leader>b [b
+nmap <leader>e ]w
+nmap <leader>ge ]b
+
+" Split Windows
+nmap <leader>ss :clo<CR> 
+nmap <leader>sl :vsplit<CR> 
+nmap <leader>sj :split<CR> 
+
+" Window Navigation
+nmap <C-h> <C-w>h
+nmap <C-j> <C-w>j
+nmap <C-k> <C-w>k
+nmap <C-l> <C-w>l
+
+nmap <Tab> <action>(NextTab) 
+nmap <S-Tab> <action>(PreviousTab)
+
+" Project Navigation
+set NERDTree
+nmap <leader>ps <action>(SearchEverywhere)
+nmap <leader>pf <action>(GotoFile)
+nmap <leader>t :NERDTreeToggle<CR>
+nmap <leader>pr <action>(ReSharperNavigateTo)
+
+" Code Navigation
+nmap <leader>cp <action>(FileStructurePopup)
+nmap <leader>cu <action>(ShowUsages)
+nmap gd <action>(GotoDeclaration)
+nmap gi <action>(GotoImplementation)
+
+" Refactoring Actions
+nmap <leader>cf <action>(ReformatCode)
+nmap <leader>cr <action>(RenameElement)
+
+" Debugging Actions
+nmap <leader>db <action>(ToggleLineBreakpoint)
+nmap <leader>j <action>(StepInto)
+nmap <C-A-u> <action>(StepOver)
+nmap <leader>ds <action>(Stop)
+nmap <leader>dd <action>(Debug)
+
+" Pop up Menu
+nmap <C-n> <action>(PopupMenu-selectNext)
+nmap <C-p> <action>(PopupMenu-selectPrevious)
+
+nmap <leader>zo :so ~/.ideavimrc<CR>
+
+""" IdeaVim development stuff
+set ideastrictmode
+set rnu
