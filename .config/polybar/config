@@ -1,0 +1,55 @@
+[bar/example]
+width = 100%
+height = 24
+radius = 0
+fixed-center = true
+
+background = #222
+foreground = #fff
+
+border-size = 2
+border-color = #000
+
+padding-left = 0
+padding-right = 2
+
+module-margin-left = 2
+module-margin-right = 2
+
+font-0 = fixed:pixelsize=10;1
+font-1 = unifont:fontformat=truetype:size=8:antialias=false;0
+
+modules-left = bspwm
+modules-center = date
+modules-right = battery powermenu
+
+[module/bspwm]
+type = internal/bspwm
+format = <label-state> <label-mode>
+
+[module/date]
+type = internal/date
+interval = 5
+date = %Y-%m-%d
+time = %H:%M
+format = <label> 
+
+[module/battery]
+type = internal/battery
+battery = BAT0
+adapter = AC
+full-at = 98
+format-charging = <label-charging>
+format-discharging = <label-discharging>
+format-full = <label-full>
+
+[module/powermenu]
+type = custom/menu
+expand-right = false
+label-open =  
+label-close =  
+label-separator = |
+menu-0-0 = reboot
+menu-0-1 = systemctl reboot
+menu-1-0 = power off
+menu-1-1 = systemctl poweroff

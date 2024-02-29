@@ -1,0 +1,98 @@
+#
+# wm independent hotkeys
+#
+
+# terminal emulator
+super + t
+	kitty
+
+# browser
+super + b
+    firefox
+
+# rofi
+super + a
+	rofi -show drun
+
+super + Tab
+	rofi -show window
+
+# make sxhkd reload its configuration files:
+super + alt + Escape
+	pkill -USR1 -x sxhkd
+
+#
+# bspwm hotkeys
+#
+
+# quit/restart bspwm
+super + alt + {q,r}
+	bspc {quit,wm -r}
+
+# close and kill
+super + {_,ctrl + }q
+	bspc node -{c,k}
+
+#
+# state/flags
+#
+
+# set the window state
+super + {ctrl + t,ctrl + f,f}
+	bspc node -t {tiled,floating,fullscreen}
+
+# set the node flags
+super + ctrl + {m,x,y,z}
+	bspc node -g {marked,locked,sticky,private}
+
+#
+# focus/swap
+#
+
+# focus the node in the given direction
+super + {_,shift + }{h,j,k,l}
+	bspc node -{f,s} {west,south,north,east}
+
+# focus the node for the given path jump
+super + {p,b,comma,period}
+	bspc node -f @{parent,brother,first,second}
+
+# focus or send to the given desktop
+super + {_,ctrl + }{1-9,0}
+	bspc {desktop -f,node -d} '^{1-9,10}'
+
+#
+# preselect
+#
+
+# preselect the direction
+super + ctrl + {h,j,k,l}
+	bspc node -p {west,south,north,east}
+
+# cancel the preselection for the focused node
+super + ctrl + Escape
+	bspc node -p cancel
+
+#
+# move/resize
+#
+
+# expand a window by moving one of its side outward
+super + {parenleft,parenright}
+	bspc node -z {left -20 0,right 20 0}
+
+# contract a window by moving one of its side inward
+super + {bracketleft,bracketright}
+	bspc node -z {right -20 0,left 20 0}
+
+super + braceleft
+    bspc node -z top 0 -20
+    bspc node -z bottom 0 -20
+
+super + braceright
+    bspc node -z top 0 20
+    bspc node -z bottom 0 20
+
+# move a floating window
+super + {Left,Down,Up,Right}
+	bspc node -v {-20 0,0 20,0 -20,20 0}

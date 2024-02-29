@@ -19,7 +19,7 @@ local function lspzero_config()
 
     require('mason').setup()
     require('mason-lspconfig').setup({
-        ensure_installed = { 'rust_analyzer', 'csharp_ls', 'zls', 'lua_ls' },
+        ensure_installed = {'rust_analyzer', 'csharp_ls', 'zls', 'lua_ls' },
         handlers = require('alexg.lspconfigs'),
     })
 
