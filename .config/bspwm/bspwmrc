@@ -11,5 +11,12 @@ bspc config split_ratio          0.52
 bspc config borderless_monocle   true
 bspc config gapless_monocle      true
 
+# Start picom
+picom --config ~/.config/picom/picom.conf &
+
+# Sleep for a bit to let picom start
+sleep 1
+
+# Start other applications
 ~/.config/polybar/launch.sh
 feh --bg-scale ~/wallpaper.png
