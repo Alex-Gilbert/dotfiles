@@ -11,18 +11,19 @@ nnoremap n nzzzv
 nnoremap N Nzzzv
 
 " Moving Lines
-nnoremap <A-j> :m .+1<CR>==
-nnoremap <A-k> :m .-2<CR>==
-inoremap <A-j> <Esc>:m .+1<CR>==gi
-inoremap <A-k> <Esc>:m .-2<CR>==gi
-vnoremap <A-j> :m '>+1<CR>gv=gv
-vnoremap <A-k> :m '<-2<CR>gv=gv
+inoremap <Up> <Esc>:m .-2<CR>==gi
+nnoremap <Up> :m .-2<CR>==
+vnoremap <Up> :m '<-2<CR>gv=gv
+
+inoremap <Down> <Esc>:m .+1<CR>==gi
+nnoremap <Down> :m .+1<CR>==
+vnoremap <Down> :m '>+1<CR>gv=gv
 
 " Plugins
 Plug 'tpope/vim-commentary'		    # [count]gc{motion}, o_gc, v_gc, gcc
 Plug 'tpope/vim-surround'		    # ys, cs, ds, S
 
-" CamelCaseMotion approximation (obsolete with proper CamelCaseMotoin plugin)
+" CamelCaseMotion approximation ()
 " Missing inner word motions e.g. i<leader>w
 nmap <leader>w [w
 nmap <leader>b [b
@@ -66,6 +67,10 @@ nmap <leader>j <action>(StepInto)
 nmap <C-A-u> <action>(StepOver)
 nmap <leader>ds <action>(Stop)
 nmap <leader>dd <action>(Debug)
+
+" Github Copilot
+imap <C-l> <action>(copilot.applyInlays)
+imap <C-s> <action>(copilot.applyInlaysNextWord)
 
 " Pop up Menu
 nmap <C-n> <action>(PopupMenu-selectNext)
