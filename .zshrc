@@ -20,7 +20,6 @@ antigen bundle lein
 antigen bundle command-not-found
 
 # Syntax highlighting bundle.
-antigen bundle jeffreytse/zsh-vi-mode
 antigen bundle zsh-users/zsh-autosuggestions
 antigen bundle zsh-users/zsh-syntax-highlighting
 antigen bundle zsh-users/zsh-history-substring-search
@@ -32,14 +31,14 @@ antigen theme eastwood
 # Tell Antigen that you're done.
 antigen apply
 
-bindkey '^k' history-substring-search-up
-bindkey '^j' history-substring-search-down
+bindkey '^K' history-substring-search-up
+bindkey '^J' history-substring-search-down
 
-bindkey '^l' expand-or-complete-prefix
-bindkey '^s' expand-or-complete
+bindkey '^L' expand-or-complete-prefix
+bindkey '^S' expand-or-complete
 
-bindkey '^i' beginning-of-line
-bindkey '^a' end-of-line
+bindkey '^I' beginning-of-line
+bindkey '^A' end-of-line
 
 HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=1
 
