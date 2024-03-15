@@ -61,7 +61,7 @@ local mappings = {
 
     g = {
         name = "Git",
-        g = { "<cmd>Git<CR>", "Git" },
+        g = { "<cmd>Neogit<CR>", "Git" },
     },
 
     n = {
