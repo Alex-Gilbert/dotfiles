@@ -3,7 +3,7 @@
 # Define where Antigen will be installed
 # Define the path to your dotfiles directory
 DOTFILES_DIR=~/dotfiles
-ANTIGEN_PATH="$HOME/.antigen"
+ANTIGEN_PATH="$HOME"
 
 # Function to install Antigen
 install_antigen() {
