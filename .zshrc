@@ -58,4 +58,6 @@ alias n=nvim
 alias dcr="cd ~/dc-repos/"
 alias sky="cd ~/dc-repos/skyshark/"
 . "$HOME/.cargo/env"
+
 eval "$(zoxide init zsh --cmd cd)"
+eval $(keychain --eval --quiet ~/.ssh/id_rsa_work ~/.ssh/id_rsa_personal)
