@@ -61,3 +61,5 @@ alias sky="cd ~/dc-repos/skyshark/"
 
 eval "$(zoxide init zsh --cmd cd)"
 eval $(keychain --eval --quiet ~/.ssh/id_rsa_work ~/.ssh/id_rsa_personal)
+
+source /usr/share/nvm/init-nvm.sh

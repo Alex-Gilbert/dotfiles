@@ -8,7 +8,7 @@ super + t
 
 # browser
 super + b
-    firefox
+    chromium
 
 # rofi
 super + a
