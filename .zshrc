@@ -45,12 +45,15 @@ HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=1
 export PATH="$PATH:$HOME/.local/CPLEX_Studio221/cplex/bin/x86-64_linux/"
 export PATH="$PATH:$HOME/.local/zig-0.12.0/"
 export PATH="$PATH:$HOME/.local/pandoc-3.1.8/bin/"
+export PATH="$PATH:$HOME/.local/renderdoc_1.31/bin/"
 export PATH="$PATH:$HOME/dotfiles/scripts/"
+export PATH="$PATH:$HOME/dc-repos/artiv-deployment/"
 
 alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
 alias bat=batcat
+alias cu=cluster-utils.sh
 
 alias z=zellij
 
@@ -63,3 +66,7 @@ eval "$(zoxide init zsh --cmd cd)"
 eval $(keychain --eval --quiet ~/.ssh/id_rsa_work ~/.ssh/id_rsa_personal)
 
 source /usr/share/nvm/init-nvm.sh
+
+alias dive="docker run --rm -it \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    wagoodman/dive:latest"

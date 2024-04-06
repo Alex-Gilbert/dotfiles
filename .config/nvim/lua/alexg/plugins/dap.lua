@@ -73,6 +73,7 @@ local M = {
         dependencies = {
             { "rcarriga/nvim-dap-ui" },
             { "theHamsta/nvim-dap-virtual-text" },
+            { "nvim-neotest/nvim-nio" },
             { "nvim-telescope/telescope-dap.nvim" },
             { "jay-babu/mason-nvim-dap.nvim" },
             { "LiadOz/nvim-dap-repl-highlights",  opts = {} },
