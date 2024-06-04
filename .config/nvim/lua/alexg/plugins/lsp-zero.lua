@@ -13,13 +13,14 @@ local function lspzero_config()
         vim.keymap.set("n", "]d", function() vim.diagnostics.goto_next() end, opts)
 
         vim.keymap.set('n', 'gr', '<cmd>Telescope lsp_references<cr>', { buffer = true })
+
         -- lsp zero will preserve already existing keymaps
         lsp_zero.default_keymaps({ buffer = bufnr })
     end)
 
     require('mason').setup()
     require('mason-lspconfig').setup({
-        ensure_installed = {'rust_analyzer', 'zls', 'lua_ls' },
+        ensure_installed = { 'zls', 'lua_ls' },
         handlers = require('alexg.lspconfigs'),
     })
 

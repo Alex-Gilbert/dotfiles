@@ -31,9 +31,9 @@ nmap <leader>e ]w
 nmap <leader>ge ]b
 
 " Split Windows
-nmap <leader>ss :clo<CR> 
-nmap <leader>sl :vsplit<CR> 
-nmap <leader>sj :split<CR> 
+nmap <leader>ns :clo<CR> 
+nmap <leader>nl :vsplit<CR> 
+nmap <leader>nj :split<CR> 
 
 " Window Navigation
 nmap <C-h> <C-w>h
@@ -41,8 +41,6 @@ nmap <C-j> <C-w>j
 nmap <C-k> <C-w>k
 nmap <C-l> <C-w>l
 
-nmap <Tab> <action>(NextTab) 
-nmap <S-Tab> <action>(PreviousTab)
 
 " Project Navigation
 set NERDTree
@@ -68,6 +66,10 @@ nmap <C-A-u> <action>(StepOver)
 nmap <leader>ds <action>(Stop)
 nmap <leader>dd <action>(Debug)
 
+" Saving
+nmap <leader>w :w<CR>
+nmap <leader>W :wa<CR>
+
 " Github Copilot
 imap <C-l> <action>(copilot.applyInlays)
 imap <C-s> <action>(copilot.applyInlaysNextWord)
@@ -81,3 +83,6 @@ nmap <leader>zo :so ~/.ideavimrc<CR>
 """ IdeaVim development stuff
 set ideastrictmode
 set rnu
+
+" Better Pasting
+vnoremap <silent> p "_dP
