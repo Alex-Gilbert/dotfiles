@@ -6,6 +6,11 @@ autorandr -c
 
 if xrandr --query | grep -q "^HDMI-0 connected"; then
     primary_monitor="HDMI-0"
+    # Remove DP-0 if HDMI-0 is connected
+    if xrandr --query | grep -q "^DP-0 connected"; then
+        bspc monitor DP-0 -r
+        xrandr --output DP-0 --off
+    fi
 elif xrandr --query | grep -q "^DP-0 connected"; then
     primary_monitor="DP-0"
 else
@@ -27,5 +32,6 @@ picom --config ~/.config/picom/picom.conf &
 sleep 1
 
 # Start other applications
-~/.config/polybar/launch.sh
+~/.config/polybar/launch.sh --blocks
 feh --bg-scale ~/wallpaper.png
+dunst &

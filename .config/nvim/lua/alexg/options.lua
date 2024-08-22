@@ -63,3 +63,7 @@ vim.cmd([[autocmd WinEnter term://* star]])
 
 -- Register wgsl files
 vim.cmd([[autocmd BufNewFile,BufRead *.wgsl setfiletype wgsl]])
+
+-- Presenting Options
+vim.g.presenting_font_large = 'maxiwi'
+vim.g.presenting_font_small = 'miniwi'

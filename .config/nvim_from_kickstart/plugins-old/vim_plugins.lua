@@ -14,13 +14,5 @@ return {
     {
         'habamax/vim-godot',
         event = "VimEnter",
-    },
-    {
-        'sotte/presenting.vim',
-        event = "VeryLazy",
-    },
-    {
-        'ThePrimeagen/vim-be-good',
-        event = "VeryLazy",
-    },
+    }
 }
