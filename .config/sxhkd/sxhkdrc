@@ -96,3 +96,30 @@ super + braceright
 # move a floating window
 super + {Left,Down,Up,Right}
 	bspc node -v {-20 0,0 20,0 -20,20 0}
+
+# switch to dock
+super + ;
+    autorandr -l docked
+
+# switch to undock
+super + :
+    autorandr -l undocked
+
+# flameshot
+super + c
+    flameshot full -c
+
+super + shift + c
+    flameshot gui
+
+# disable sleep
+super + shift + s
+    xset s off
+    xset s noblank
+    xset -dpms
+
+# enable sleep
+super + s
+    xset s on
+    xset s blank
+    xset +dpms
