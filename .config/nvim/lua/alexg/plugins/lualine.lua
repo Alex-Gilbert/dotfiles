@@ -9,6 +9,13 @@ local function buffer_name()
     )
 end
 
+local function jsonpath()
+    local jsonpath = require('jsonpath')
+    local jsonpath_str = jsonpath.get()
+
+    return string.format(" %s", jsonpath_str)
+end
+
 function lualine_config()
     require('lualine').setup {
         options = {
@@ -32,7 +39,7 @@ function lualine_config()
         sections = {
             lualine_a = { 'mode' },
             lualine_b = { 'branch', 'diff', 'diagnostics' },
-            lualine_c = { 'filename' },
+            lualine_c = { 'filename', jsonpath },
             lualine_x = { 'encoding', 'fileformat', 'filetype' },
             lualine_y = { 'progress' },
             lualine_z = { 'location' }
@@ -49,7 +56,7 @@ function lualine_config()
         winbar = {
             lualine_a = {},
             lualine_b = {},
-            lualine_c = {{buffer_name}},
+            lualine_c = {buffer_name},
             lualine_x = {},
             lualine_y = {},
             lualine_z = {}

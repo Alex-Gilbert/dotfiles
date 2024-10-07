@@ -1,105 +1,82 @@
-local open_terminal = require("alexg.my_scripts.open_terminal")
-
 local mappings = {
+    { "<leader>W", "<cmd>wall!<CR>", desc = "Save", nowait = true, remap = false },
+    { "<leader>a", "<cmd>lua require('harpoon.mark').add_file()<CR>", desc = "Mark File", nowait = true, remap = false },
+    { "<leader>e", "<cmd>lua require('harpoon.ui').toggle_quick_menu()<CR>", desc = "Open Harpoon Menu", nowait = true, remap = false },
+    { "<leader>l", "<cmd>Lazy<CR>", desc = "Lazy Plugin Manager", nowait = true, remap = false },
+    { "<leader>q", "<cmd>wqall!<CR>", desc = "Quit", nowait = true, remap = false },
+    { "<leader>r", "<cmd>%s/\\<<C-r><C-w>\\>//g<left><left><CR>", desc = "Change Instances of Word", nowait = true, remap = false },
+    { "<leader>w", "<cmd>w!<CR>", desc = "Save", nowait = true, remap = false },
 
-    ["a"] = { "<cmd>lua require('harpoon.mark').add_file()<CR>", "Mark File" },                -- Close current file
-    ["e"] = { "<cmd>lua require('harpoon.ui').toggle_quick_menu()<CR>", "Open Harpoon Menu" }, -- Close current file
-    ["l"] = { "<cmd>Lazy<CR>", "Lazy Plugin Manager" },                                        -- Invoking plugin manager
-    ["q"] = { "<cmd>wqall!<CR>", "Quit" },                                                     -- Quit Neovim after saving the file
-    ["w"] = { "<cmd>w!<CR>", "Save" },                                                         -- Save current file
-    ["W"] = { "<cmd>wall!<CR>", "Save" },                                                      -- Save current file
-    ["r"] = { "<cmd>%s/\\<<C-r><C-w>\\>//g<left><left><CR>", "Change Instances of Word" },
+    { "<leader>c", group = "Code", nowait = true, remap = false },
+    { "<leader>cS", "<cmd>Telescope lsp_dynamic_workspace_symbols<cr>", desc = "Workspace Symbols", nowait = true, remap = false },
+    { "<leader>ca", "<cmd>lua vim.lsp.buf.code_action()<cr>", desc = "Code Action", nowait = true, remap = false },
+    { "<leader>cd", "<cmd>lua vim.diagnostic.open_float()<cr>", desc = "Open Float Diagnostic", nowait = true, remap = false },
+    { "<leader>cf", "<cmd>lua vim.lsp.buf.format({async=true})<cr>", desc = "Format Code", nowait = true, remap = false },
 
-    p = {
-        name = "Project",
-        v = { "<cmd>Oil<cr>", "Explore" },
-        f = { "<cmd>lua require('telescope.builtin').find_files()<cr>", "Find Files" },
-        r = { "<cmd>lua require('telescope.builtin').registers()<cr>", "Find Files" },
-        s = { "<cmd>Telescope live_grep<cr>", "Search in Files" },
+    { "<leader>cg", group = "ChatGPT", nowait = true, remap = false },
+    { "<leader>cgc", "<cmd>ChatGPT<CR>", desc = "ChatGPT", nowait = true, remap = false },
+    { "<leader>ch", "<cmd>lua vim.lsp.buf.hover()<cr>", desc = "Doc Hover", nowait = true, remap = false },
+    { "<leader>ci", "<cmd>LspInfo<cr>", desc = "Info", nowait = true, remap = false },
+    { "<leader>cl", "<cmd>lua vim.lsp.codelens.run()<cr>", desc = "CodeLens Action", nowait = true, remap = false },
+    { "<leader>cp", "<cmd>Telescope luasnip<cr>", desc = "Search Snippets", nowait = true, remap = false },
+    { "<leader>cr", "<cmd>lua vim.lsp.buf.rename()<cr>", desc = "Rename", nowait = true, remap = false },
+    { "<leader>cs", "<cmd>Telescope lsp_document_symbols<cr>", desc = "Document Symbols", nowait = true, remap = false },
+
+    { "<leader>g", group = "Git", nowait = true, remap = false },
+    { "<leader>gg", "<cmd>Neogit<CR>", desc = "Git", nowait = true, remap = false },
+
+    { "<leader>n", group = "Split", nowait = true, remap = false },
+    { "<leader>nh", "<cmd>vertical leftabove split<CR><cmd>Oil<CR>", desc = "Split Left", nowait = true, remap = false },
+    { "<leader>nj", "<cmd>horizontal belowright split<CR><cmd>Oil<CR>", desc = "Split Down", nowait = true, remap = false },
+    { "<leader>nk", "<cmd>horizontal leftabove split<CR><cmd>Oil<CR>", desc = "Split Up", nowait = true, remap = false },
+    { "<leader>nl", "<cmd>vertical belowright split<CR><cmd>Oil<CR>", desc = "Split Right", nowait = true, remap = false },
+    { "<leader>ns", "<cmd>clo<CR>", desc = "Close Split", nowait = true, remap = false },
+
+    { "<leader>o", group = "Obsidian", nowait = true, remap = false },
+    { "<leader>ob", "<cmd>ObsidianBacklinks<cr>", desc = "Backlinks", nowait = true, remap = false },
+    { "<leader>ol", "<cmd>ObsidianLink<cr>", desc = "Link", nowait = true, remap = false },
+    { "<leader>on", "<cmd>ObsidianNew<cr>", desc = "New Note", nowait = true, remap = false },
+    { "<leader>oo", "<cmd>ObsidianSearch<cr>", desc = "Search or Create Note", nowait = true, remap = false },
+    { "<leader>or", "<cmd>ObsidianRename<cr>", desc = "Rename", nowait = true, remap = false },
+    { "<leader>os", "<cmd>ObsidianQuickSwitch<cr>", desc = "Quick Switch", nowait = true, remap = false },
+    { "<leader>ot", "<cmd>ObsidianTemplate<cr>", desc = "Insert Template", nowait = true, remap = false },
+
+    { "<leader>p", group = "Project", nowait = true, remap = false },
+    { "<leader>pf", "<cmd>lua require('telescope.builtin').find_files()<cr>", desc = "Find Files", nowait = true, remap = false },
+    { "<leader>pr", "<cmd>lua require('telescope.builtin').registers()<cr>", desc = "Find Files", nowait = true, remap = false },
+    { "<leader>ps", "<cmd>Telescope live_grep<cr>", desc = "Search in Files", nowait = true, remap = false },
+    { "<leader>pv", "<cmd>Oil<cr>", desc = "Explore", nowait = true, remap = false },
+
+    { "<leader>s", group = "Surround", nowait = true, remap = false },
+
+    { "<leader>t", group = "Tree Explorer", nowait = true, remap = false },
+    { "<leader>td", "<cmd>Neotree float reveal_force_cwd<cr>", desc = "Find File in Tree", nowait = true, remap = false },
+    { "<leader>th", "<cmd>Neotree close float<cr>", desc = "Hide Tree", nowait = true, remap = false },
+    { "<leader>tt", "<cmd>Neotree float<cr>", desc = "Toggle Tree", nowait = true, remap = false },
+
+    { "<leader>x", group = "trouble", nowait = true, remap = false },
+    { "<leader>xd", "<cmd>TroubleToggle document_diagnostics<cr>", desc = "Document Diagnostics", nowait = true, remap = false },
+    { "<leader>xl", "<cmd>TroubleToggle loclist<cr>", desc = "Loc List", nowait = true, remap = false },
+    { "<leader>xq", "<cmd>TroubleToggle quickfix<cr>", desc = "Quick Fix", nowait = true, remap = false },
+    { "<leader>xr", "cmd>TroubleToggle lsp_references<cr>", desc = "LSP References", nowait = true, remap = false },
+    { "<leader>xw", "<cmd>TroubleToggle workspace_diagnostics<cr>", desc = "Workspace Diagnostics", nowait = true, remap = false },
+    { "<leader>xx", "<cmd>TroubleToggle<cr>", desc = "Toggle Trouble", nowait = true, remap = false },
+    {
+      mode = { "n", "v" },
+      { "<leader>cga", "<cmd>ChatGPTRun add_tests<CR>", desc = "Add Tests", nowait = true, remap = false },
+      { "<leader>cgd", "<cmd>ChatGPTRun docstring<CR>", desc = "Docstring", nowait = true, remap = false },
+      { "<leader>cge", "<cmd>ChatGPTEditWithInstruction<CR>", desc = "Edit with instruction", nowait = true, remap = false },
+      { "<leader>cgf", "<cmd>ChatGPTRun fix_bugs<CR>", desc = "Fix Bugs", nowait = true, remap = false },
+      { "<leader>cgg", "<cmd>ChatGPTRun grammar_correction<CR>", desc = "Grammar Correction", nowait = true, remap = false },
+      { "<leader>cgk", "<cmd>ChatGPTRun keywords<CR>", desc = "Keywords", nowait = true, remap = false },
+      { "<leader>cgl", "<cmd>ChatGPTRun code_readability_analysis<CR>", desc = "Code Readability Analysis", nowait = true, remap = false },
+      { "<leader>cgo", "<cmd>ChatGPTRun optimize_code<CR>", desc = "Optimize Code", nowait = true, remap = false },
+      { "<leader>cgp", "<cmd>ChatGPTRun complete_code<CR>", desc = "Complete Code", nowait = true, remap = false },
+      { "<leader>cgr", "<cmd>ChatGPTRun roxygen_edit<CR>", desc = "Roxygen Edit", nowait = true, remap = false },
+      { "<leader>cgs", "<cmd>ChatGPTRun summarize<CR>", desc = "Summarize", nowait = true, remap = false },
+      { "<leader>cgt", "<cmd>ChatGPTRun translate<CR>", desc = "Translate", nowait = true, remap = false },
+      { "<leader>cgx", "<cmd>ChatGPTRun explain_code<CR>", desc = "Explain Code", nowait = true, remap = false },
     },
+  }
 
-    c = {
-        name = "Code",
-        p = { "<cmd>Telescope luasnip<cr>", "Search Snippets" },
-        a = { "<cmd>lua vim.lsp.buf.code_action()<cr>", "Code Action" },
-        h = { "<cmd>lua vim.lsp.buf.hover()<cr>", "Doc Hover" },
-        d = { "<cmd>lua vim.diagnostic.open_float()<cr>", "Open Float Diagnostic" },
-        f = { "<cmd>lua vim.lsp.buf.format({async=true})<cr>", "Format Code" },
-        i = { "<cmd>LspInfo<cr>", "Info" },
-        l = { "<cmd>lua vim.lsp.codelens.run()<cr>", "CodeLens Action" },
-        r = { "<cmd>lua vim.lsp.buf.rename()<cr>", "Rename" },
-        s = { "<cmd>Telescope lsp_document_symbols<cr>", "Document Symbols" },
-        S = {
-            "<cmd>Telescope lsp_dynamic_workspace_symbols<cr>",
-            "Workspace Symbols",
-        },
-        g = {
-            name = "ChatGPT",
-            c = { "<cmd>ChatGPT<CR>", "ChatGPT" },
-            e = { "<cmd>ChatGPTEditWithInstruction<CR>", "Edit with instruction", mode = { "n", "v" } },
-            p = { "<cmd>ChatGPTRun complete_code<CR>", "Complete Code", mode = { "n", "v" } },
-            g = { "<cmd>ChatGPTRun grammar_correction<CR>", "Grammar Correction", mode = { "n", "v" } },
-            t = { "<cmd>ChatGPTRun translate<CR>", "Translate", mode = { "n", "v" } },
-            k = { "<cmd>ChatGPTRun keywords<CR>", "Keywords", mode = { "n", "v" } },
-            d = { "<cmd>ChatGPTRun docstring<CR>", "Docstring", mode = { "n", "v" } },
-            a = { "<cmd>ChatGPTRun add_tests<CR>", "Add Tests", mode = { "n", "v" } },
-            o = { "<cmd>ChatGPTRun optimize_code<CR>", "Optimize Code", mode = { "n", "v" } },
-            s = { "<cmd>ChatGPTRun summarize<CR>", "Summarize", mode = { "n", "v" } },
-            f = { "<cmd>ChatGPTRun fix_bugs<CR>", "Fix Bugs", mode = { "n", "v" } },
-            x = { "<cmd>ChatGPTRun explain_code<CR>", "Explain Code", mode = { "n", "v" } },
-            r = { "<cmd>ChatGPTRun roxygen_edit<CR>", "Roxygen Edit", mode = { "n", "v" } },
-            l = { "<cmd>ChatGPTRun code_readability_analysis<CR>", "Code Readability Analysis", mode = { "n", "v" } },
-        },
-    },
-
-    t = {
-        name = "Tree Explorer",
-        t = { "<cmd>Neotree float<cr>", "Toggle Tree" },
-        h = { "<cmd>Neotree close float<cr>", "Hide Tree" },
-        d = { "<cmd>Neotree float reveal_force_cwd<cr>", "Find File in Tree" },
-    },
-
-    g = {
-        name = "Git",
-        g = { "<cmd>Neogit<CR>", "Git" },
-    },
-
-    n = {
-        name = "Split",
-        h = { "<cmd>vertical leftabove split<CR><cmd>Oil<CR>", "Split Left" },
-        j = { "<cmd>horizontal belowright split<CR><cmd>Oil<CR>", "Split Down" },
-        k = { "<cmd>horizontal leftabove split<CR><cmd>Oil<CR>", "Split Up" },
-        l = { "<cmd>vertical belowright split<CR><cmd>Oil<CR>", "Split Right" },
-        s = { "<cmd>clo<CR>", "Close Split" },
-        H = { function() open_terminal.in_current_dir("left") end, "Open Terminal Left" },
-        J = { function() open_terminal.in_current_dir("right") end, "Open Terminal Right" },
-        K = { function() open_terminal.in_current_dir("up") end, "Open Terminal Up" },
-        L = { function() open_terminal.in_current_dir("down") end, "Open Terminal Down" },
-    },
-
-    s = {
-        name = "Surround",
-    },
-
-    x = {
-        name = "trouble",
-        x = { "<cmd>TroubleToggle<cr>", "Toggle Trouble" },
-        w = { "<cmd>TroubleToggle workspace_diagnostics<cr>", "Workspace Diagnostics" },
-        d = { "<cmd>TroubleToggle document_diagnostics<cr>", "Document Diagnostics" },
-        q = { "<cmd>TroubleToggle quickfix<cr>", "Quick Fix" },
-        l = { "<cmd>TroubleToggle loclist<cr>", "Loc List" },
-        r = { "cmd>TroubleToggle lsp_references<cr>", "LSP References" },
-    },
-
-    o = {
-        name = "Obsidian",
-        n = { "<cmd>ObsidianNew<cr>", "New Note" },
-        o = { "<cmd>ObsidianSearch<cr>", "Search or Create Note" },
-        t = { "<cmd>ObsidianTemplate<cr>", "Insert Template" },
-        b = { "<cmd>ObsidianBacklinks<cr>", "Backlinks" },
-        r = { "<cmd>ObsidianRename<cr>", "Rename" },
-        s = { "<cmd>ObsidianQuickSwitch<cr>", "Quick Switch" },
-        l = { "<cmd>ObsidianLink<cr>", "Link" },
-    }
-}
 return mappings

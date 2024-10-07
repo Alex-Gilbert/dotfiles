@@ -23,4 +23,8 @@ return {
         'ThePrimeagen/vim-be-good',
         event = "VeryLazy",
     },
+    {
+        'chrisbra/csv.vim',
+        event = "VeryLazy",
+    }
 }

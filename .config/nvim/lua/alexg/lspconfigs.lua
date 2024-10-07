@@ -26,5 +26,22 @@ return {
                 AutomaticWorkspaceInit = true
             }
         })
+    end,
+
+    pylsp = function()
+        lsp.pylsp.setup({
+            on_attach = function()
+                print('Hello From Python')
+            end,
+            settings = {
+                pylsp = {
+                    plugins = {
+                        pycodestyle = {
+                            maxLineLength = 120
+                        }
+                    }
+                }
+            }
+        })
     end
 }

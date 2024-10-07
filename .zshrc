@@ -104,6 +104,8 @@ export PATH="$PATH:$HOME/dotfiles/scripts/"
 export PATH="$PATH:$HOME/dc-repos/artiv-deployment/"
 export PATH="$PATH:$HOME/.local/bin/"
 
+export GAMS_VERSION=46.4
+
 # lua
 source $HOME/lua51/bin/activate
 
