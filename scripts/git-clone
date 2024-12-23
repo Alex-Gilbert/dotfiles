@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Usage: git-clone [w|p] git@github.com:username/repo.git
+if [ -z "$1" ] || [ -z "$2" ]; then
+  echo "Usage: $0 [w|p] git@github.com:username/repo.git"
+  exit 1
+fi
+
+# Determine the prefix and Git configuration based on the first argument
+if [ "$1" == "w" ]; then
+  PREFIX="w."
+  GIT_NAME="dc-apg"
+  GIT_EMAIL="alex.gilbert@defconai.com"
+elif [ "$1" == "p" ]; then
+  PREFIX="p."
+  GIT_NAME="Alex Gilbert"
+  GIT_EMAIL="alexp.gilbert@pm.me"
+else
+  echo "Invalid option. Use 'w' for work or 'p' for personal."
+  echo "Usage: $0 [w|p] git@github.com:username/repo.git"
+  exit 1
+fi
+
+# Debug: Show input arguments and prefix
+echo "Prefix chosen: $PREFIX"
+echo "Original SSH address: $2"
+
+# Modify the SSH address with the appropriate prefix using `sed`
+REPO=$(echo "$2" | sed "s/github.com/${PREFIX}github.com/")
+
+# Debug: Show the modified SSH address
+echo "Modified SSH address: $REPO"
+
+# Clone the repository
+git clone "$REPO"
+
+# Extract the repository name
+REPO_NAME=$(basename "$2" .git)
+
+# Navigate into the repository directory
+cd "$REPO_NAME" || exit
+
+# Set Git username and email for this repository
+git config user.name "$GIT_NAME"
+git config user.email "$GIT_EMAIL"
+
+echo "Repository cloned and Git user set for $1."

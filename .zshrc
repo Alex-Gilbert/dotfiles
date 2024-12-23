@@ -88,8 +88,11 @@ alias l='ls -CF'
 alias lg='lazygit'
 alias cu=cluster-utils.sh
 alias z=zellij
-alias n=nvim
 alias cpf='xclip -selection clipboard -t $(file -b --mime-type "$1") -i < "$1"'
+alias n=nvim
+alias lazyvim='NVIM_APPNAME=lazyvim nvim'
+alias ksn='NVIM_APPNAME=kickstart-nvim nvim'
+alias chrome='google-chrome-stable'
 
 alias dive="docker run --rm -it \
     -v /var/run/docker.sock:/var/run/docker.sock \
@@ -103,6 +106,9 @@ export PATH="$PATH:$HOME/.local/renderdoc_1.31/bin/"
 export PATH="$PATH:$HOME/dotfiles/scripts/"
 export PATH="$PATH:$HOME/dc-repos/artiv-deployment/"
 export PATH="$PATH:$HOME/.local/bin/"
+export PATH="$PATH:$HOME/.dotnet/tools/"
+export PATH="$PATH:$HOME/.local/azure-functions/"
+export PATH="$PATH:$HOME/dev/defcon/skyshark/target/release/"
 
 export GAMS_VERSION=46.4
 
@@ -113,4 +119,7 @@ source $HOME/lua51/bin/activate
 eval "$(zoxide init zsh --cmd cd)"
 eval "$(fzf --zsh)"
 eval $(keychain --eval --quiet ~/.ssh/id_rsa_work ~/.ssh/id_rsa_personal)
-source /usr/share/nvm/init-nvm.sh
+# eval "$(direnv hook zsh)"
+
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm

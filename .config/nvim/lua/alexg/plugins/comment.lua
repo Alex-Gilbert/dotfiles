@@ -24,9 +24,9 @@ local options = {
         ---Add comment on the line above
         above = 'gcO',
         ---Add comment on the line below
-        below = 'gco',
-        ---Add comment at the end of line
-        eol = 'gcA',
+        -- below = 'gco',
+        -- ---Add comment at the end of line
+        -- eol = 'gcA',
     },
     ---Enable keybindings
     ---NOTE: If given `false` then the plugin won't create any mappings
@@ -36,7 +36,7 @@ local options = {
         ---Extra mapping; `gco`, `gcO`, `gcA`
         extra = true,
     },
-    ---Function to call before (un)comment
+    ---Function to call before --[[ (un) ]]comment
     pre_hook = nil,
     ---Function to call after (un)comment
     post_hook = nil,
