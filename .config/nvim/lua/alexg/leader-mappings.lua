@@ -40,6 +40,8 @@ local mappings = {
     { "<leader>or", "<cmd>ObsidianRename<cr>", desc = "Rename", nowait = true, remap = false },
     { "<leader>os", "<cmd>ObsidianQuickSwitch<cr>", desc = "Quick Switch", nowait = true, remap = false },
     { "<leader>ot", "<cmd>ObsidianTemplate<cr>", desc = "Insert Template", nowait = true, remap = false },
+    { "<leader>od", "<cmd>ObsidianDaily<cr>", desc = "Insert Template", nowait = true, remap = false },
+    { "<leader>oy", "<cmd>ObsidianYesterday<cr>", desc = "Insert Template", nowait = true, remap = false },
 
     { "<leader>p", group = "Project", nowait = true, remap = false },
     { "<leader>pf", "<cmd>lua require('telescope.builtin').find_files()<cr>", desc = "Find Files", nowait = true, remap = false },

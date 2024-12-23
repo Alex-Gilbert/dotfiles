@@ -29,7 +29,6 @@ local harpoon_config = function()
     })
 end
 
-
 return {
     'ThePrimeagen/harpoon',
     config = harpoon_config,

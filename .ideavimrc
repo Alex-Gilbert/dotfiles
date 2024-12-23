@@ -86,3 +86,5 @@ set rnu
 
 " Better Pasting
 vnoremap <silent> p "_dP
+
+set clipboard+=unnamedplus

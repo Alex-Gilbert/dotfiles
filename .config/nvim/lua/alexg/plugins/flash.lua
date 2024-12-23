@@ -172,7 +172,7 @@ local flash_opts = {
             -- show jump labels
             jump_labels = false,
             -- set to `false` to use the current line only
-            multi_line = true,
+            multi_line = false,
             -- When using jump labels, don't use these keys
             -- This allows using those keys directly after the motion
             label = { exclude = "hjkliardc" },
