@@ -91,7 +91,7 @@ alias z=zellij
 alias cpf='xclip -selection clipboard -t $(file -b --mime-type "$1") -i < "$1"'
 alias n=nvim
 alias lazyvim='NVIM_APPNAME=lazyvim nvim'
-alias ksn='NVIM_APPNAME=kickstart-nvim nvim'
+alias ksn='NVIM_APPNAME=nvim_from_kickstart nvim'
 alias chrome='google-chrome-stable'
 
 alias dive="docker run --rm -it \
@@ -109,17 +109,14 @@ export PATH="$PATH:$HOME/.local/bin/"
 export PATH="$PATH:$HOME/.dotnet/tools/"
 export PATH="$PATH:$HOME/.local/azure-functions/"
 export PATH="$PATH:$HOME/dev/defcon/skyshark/target/release/"
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 
 export GAMS_VERSION=46.4
 
 # lua
-source $HOME/lua51/bin/activate
+# source $HOME/lua51/bin/activate
 
 # Shell Integration
 eval "$(zoxide init zsh --cmd cd)"
 eval "$(fzf --zsh)"
-eval $(keychain --eval --quiet ~/.ssh/id_rsa_work ~/.ssh/id_rsa_personal)
-# eval "$(direnv hook zsh)"
-
-export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+# eval $(keychain --eval --quiet ~/.ssh/id_rsa_work ~/.ssh/id_rsa_personal)
