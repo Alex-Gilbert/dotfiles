@@ -44,10 +44,10 @@ M.init = function()
 	keymap("n", "N", "Nzzzv")
 
 	-- Resize with arrows when using multiple windows
-	-- keymap("n", "<C-Up>", ":resize -2<CR>")
-	-- keymap("n", "<C-down>", ":resize +2<cr>")
-	-- keymap("n", "<C-right>", ":vertical resize -2<cr>")
-	-- keymap("n", "<C-left>", ":vertical resize +2<cr>")
+	keymap("n", "<C-Up>", ":resize -2<CR>")
+	keymap("n", "<C-down>", ":resize +2<cr>")
+	keymap("n", "<C-right>", ":vertical resize -2<cr>")
+	keymap("n", "<C-left>", ":vertical resize +2<cr>")
 
 	--Better terminal navigation
 	keymap("t", "<C-X>", "<C-\\><C-N>", nil, term_opts)
@@ -82,8 +82,8 @@ M.whichkey_spec = {
 
 	{ "<leader>p", group = "Project", nowait = true, remap = false },
 	{ "<leader>ps", group = "Project Search", nowait = true, remap = false },
-
 	{ "<leader>s", group = "Surround", nowait = true, remap = false },
+	{ "<leader>o", group = "Obsidian", nowait = true, remap = false },
 }
 
 M.set_copilot_keys = function()
@@ -109,6 +109,10 @@ M.set_telescope_keys = function()
 	keymap("n", "<leader>pst", builtin.builtin, "[P]roject [S]earch by [G]rep")
 	keymap("n", "<leader>psd", builtin.diagnostics, "[P]roject [S]earch [D]iagnostics")
 	keymap("n", "<leader>psr", builtin.resume, "[P]roject [S]earch [R]esume")
+
+	keymap("n", "<leader>psp", function()
+		vim.cmd.Telescope({ "yank_history" })
+	end, "[P]roject [S]earch [P]aste")
 
 	-- Search hidden files with live grep
 	keymap("n", "<leader>ps.", function()
@@ -153,6 +157,53 @@ M.set_lsp_keys = function(event, client)
 	if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
 		keymap("n", "<leader>th", function()
 			vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
+		end, "[T]oggle Inlay [H]ints")
+	end
+end
+
+M.set_rust_lsp_keys = function(bufnr, client)
+	local lsp_opts = { buffer = bufnr }
+	local telescope = require("telescope.builtin")
+	local lsp = vim.lsp
+
+	keymap("n", "gd", telescope.lsp_definitions, "[G]oto [D]efinition", lsp_opts)
+	keymap("n", "gD", lsp.buf.declaration, "[G]oto [D]eclaration", lsp_opts)
+	keymap("n", "gr", telescope.lsp_references, "[G]oto [R]eferences", lsp_opts)
+	keymap("n", "gI", telescope.lsp_implementations, "[G]oto [I]mplementations", lsp_opts)
+	keymap("n", "<leader>ct", telescope.lsp_type_definitions, "[C]ode Goto [T]ype Definition")
+	keymap("n", "<leader>cs", telescope.lsp_document_symbols, "[C]ode Document [S]ymbols")
+	keymap("n", "<leader>cS", telescope.lsp_dynamic_workspace_symbols, "[C]ode Workspace [S]ymbols")
+	keymap("n", "<leader>cr", vim.lsp.buf.rename, "[C]ode [R]ename")
+
+	keymap({ "n", "x" }, "<leader>ca", function()
+		vim.cmd.RustLsp("codeAction")
+	end, "[C]ode [A]ction", lsp_opts)
+
+	keymap("n", "K", function()
+		vim.cmd.RustLsp({ "hover", "actions" })
+	end, "Hover", lsp_opts)
+
+	keymap("n", "<leader>ce", function()
+		vim.cmd.RustLsp({ "explainError", "current" })
+	end, "[C]ode [E]xplain Error", lsp_opts)
+
+	keymap("n", "<leader>cd", function()
+		vim.cmd.RustLsp({ "renderDiagnostic", "current" })
+	end, "[C]ode [D]iagnostics", lsp_opts)
+
+	keymap("n", "gR", function()
+		vim.cmd.RustLsp("relatedDiagnostics")
+	end, "[G]oto [R]elated Diagnostic", lsp_opts)
+
+	print("Setting up Rust LSP keys")
+
+	-- The following code creates a keymap to toggle inlay hints in your
+	-- code, if the language server you are using supports them
+	--
+	-- This may be unwanted, since they displace some of your code
+	if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+		keymap("n", "<leader>th", function()
+			vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr }))
 		end, "[T]oggle Inlay [H]ints")
 	end
 end
@@ -220,7 +271,6 @@ M.oil_keys = {
 	["g?"] = { "actions.show_help", mode = "n" },
 	["<CR>"] = "actions.select",
 	["<C-s>"] = { "actions.select", opts = { vertical = true } },
-	["<C-h>"] = { "actions.select", opts = { horizontal = true } },
 	["<C-t>"] = { "actions.select", opts = { tab = true } },
 	["<C-p>"] = "actions.preview",
 	["<C-c>"] = { "actions.close", mode = "n" },
@@ -288,6 +338,21 @@ M.set_harpoon_keys = function(harpoon)
 	keymap("n", "<C-4>", function()
 		harpoon:list():select(4)
 	end, "[H]arpoon [4]")
+	keymap("n", "<C-5>", function()
+		harpoon:list():select(5)
+	end, "[H]arpoon [5]")
+	keymap("n", "<C-6>", function()
+		harpoon:list():select(6)
+	end, "[H]arpoon [6]")
+	keymap("n", "<C-7>", function()
+		harpoon:list():select(7)
+	end, "[H]arpoon [7]")
+	keymap("n", "<C-8>", function()
+		harpoon:list():select(8)
+	end, "[H]arpoon [8]")
+	keymap("n", "<C-9>", function()
+		harpoon:list():select(9)
+	end, "[H]arpoon [9]")
 
 	keymap("n", "<C-S-H>", function()
 		harpoon:list():prev()
@@ -352,4 +417,105 @@ M.flash_keys = {
 	},
 }
 
+M.set_yank_keys = function()
+	keymap({ "n", "x" }, "p", "<Plug>(YankyPutAfter)")
+	keymap({ "n", "x" }, "P", "<Plug>(YankyPutBefore)")
+	keymap({ "n", "x" }, "gp", "<Plug>(YankyGPutAfter)")
+	keymap({ "n", "x" }, "gP", "<Plug>(YankyGPutBefore)")
+
+	keymap("n", "<c-p>", "<Plug>(YankyPreviousEntry)")
+	keymap("n", "<c-n>", "<Plug>(YankyNextEntry)")
+end
+
+M.obsidian_keys = {
+	{
+		"<leader>ob",
+		function()
+			vim.cmd.ObsidianBacklinks()
+		end,
+		"[O]bsidian [B]acklinks",
+	},
+
+	{
+		"<leader>ol",
+		function()
+			vim.cmd.ObsidianLink()
+		end,
+		"[O]bsidian [L]ink",
+	},
+
+	{
+		"<leader>on",
+		function()
+			vim.cmd.ObsidianNew()
+		end,
+		"[O]bsidian [N]ew Note",
+	},
+
+	{
+		"<leader>oo",
+		function()
+			vim.cmd.ObsidianSearch()
+		end,
+		"[O]bsidian Search or Create Note",
+	},
+
+	{
+		"<leader>or",
+		function()
+			vim.cmd.ObsidianRename()
+		end,
+		"[O]bsidian [R]ename",
+	},
+
+	{
+		"<leader>os",
+		function()
+			vim.cmd.ObsidianQuickSwitch()
+		end,
+		"[O]bsidian Quick [S]witch",
+	},
+
+	{
+		"<leader>op",
+		function()
+			vim.cmd.ObsidianTemplate()
+		end,
+		"[O]bsidian Insert Tem[p]late",
+	},
+}
+
+M.set_obsidian_keys = function()
+	keymap("n", "gf", function()
+		if require("obsidian").util.cursor_on_markdown_link() then
+			return "<cmd>ObsidianFollowLink<CR>"
+		else
+			return "gf"
+		end
+	end, "[G]o to [F]ile", { noremap = true, expr = true })
+
+	keymap("n", "<leader>od", function()
+		require("obsidian").util.toggle_checkbox()
+	end, "[O]bsidian [D]one")
+
+	keymap("n", "<leader>op", function()
+		vim.cmd.ProcessNote()
+	end, "[O]bsidian [P]rocess Note")
+
+	keymap("n", "<leader>ott", function()
+		vim.cmd.ObsidianCreateTask()
+	end, "[O]bsidian [T]ask Create")
+
+	keymap("n", "<leader>oti", function()
+		vim.cmd.ObsidianTaskID()
+	end, "[O]bsidian [T]ask [I]d")
+
+	keymap("n", "<leader>otd", function()
+		vim.cmd.ObsidianTaskDue()
+	end, "[O]bsidian [T]ask [D]ue")
+
+	keymap("n", "<leader>otp", function()
+		vim.cmd.ObsidianTaskPriority()
+	end, "[O]bsidian [T]ask [P]riority")
+end
 return M

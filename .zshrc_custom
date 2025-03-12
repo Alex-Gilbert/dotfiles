@@ -87,11 +87,10 @@ alias la='ls -A'
 alias l='ls -CF'
 alias lg='lazygit'
 alias cu=cluster-utils.sh
-alias z=zellij
+alias z='zellij -l welcome'
 alias cpf='xclip -selection clipboard -t $(file -b --mime-type "$1") -i < "$1"'
-alias n=nvim
-alias lazyvim='NVIM_APPNAME=lazyvim nvim'
-alias ksn='NVIM_APPNAME=nvim_from_kickstart nvim'
+alias ksn=nvim
+alias n='nvim'
 alias chrome='google-chrome-stable'
 
 alias dive="docker run --rm -it \
@@ -99,6 +98,7 @@ alias dive="docker run --rm -it \
     wagoodman/dive:latest"
 
 # Path
+export PATH="$PATH:$HOME/rga-2.11.0.28/"
 export PATH="$PATH:$HOME/.local/CPLEX_Studio221/cplex/bin/x86-64_linux/"
 export PATH="$PATH:$HOME/.local/zig-0.12.0/"
 export PATH="$PATH:$HOME/.local/pandoc-3.1.8/bin/"

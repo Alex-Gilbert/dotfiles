@@ -7,7 +7,8 @@ scrollback_editor "/usr/local/bin/nvim"
 
 keybinds clear-defaults=true {
     normal {
-        bind "Alt q" { Quit; }
+        bind "Alt q" { Detach; }
+        bind "Alt Q" { Quit; }
         bind "Alt n" { NewPane; }
 
         bind "Alt x" { CloseFocus; }
@@ -32,6 +33,13 @@ keybinds clear-defaults=true {
         bind "Alt g" { SwitchToMode "Session"; }
         bind "Alt t" { SwitchToMode "Tab"; }
         bind "Alt m" { SwitchToMode "Move"; }
+        bind "Alt f" {
+            LaunchPlugin "filepicker" {
+                floating true
+                move_to_focused_tab true
+                close_on_selection true
+            }
+        }
 
         bind "Alt 1" { GoToTab 1; SwitchToMode "Normal"; }
         bind "Alt 2" { GoToTab 2; SwitchToMode "Normal"; }
@@ -84,7 +92,9 @@ keybinds clear-defaults=true {
 
     renametab {
         bind "Esc" { UndoRenameTab; SwitchToMode "Tab"; }
+        bind "Enter" { SwitchToMode "Tab";}
     }
+
     tab {
         bind "r" { SwitchToMode "RenameTab"; TabNameInput 0; }
 

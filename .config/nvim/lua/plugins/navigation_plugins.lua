@@ -32,6 +32,7 @@ return {
 		event = "VimEnter",
 		branch = "0.1.x",
 		dependencies = {
+			"gbprod/yanky.nvim",
 			"nvim-lua/plenary.nvim",
 			{
 				"nvim-telescope/telescope-fzf-native.nvim",
