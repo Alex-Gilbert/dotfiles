@@ -8,9 +8,11 @@ end)
 
 g.have_nerd_font = true
 
+vim.o.exrc = true
+
 opt.autowrite = true -- Enable auto write
 opt.completeopt = "menu,menuone,noselect"
-opt.conceallevel = 0 -- So that I can see `` in markdown files
+opt.conceallevel = 2
 opt.confirm = true -- Confirm to save changes before exiting modified buffer
 opt.cursorline = true -- Enable highlighting of the current line
 opt.colorcolumn = "120"

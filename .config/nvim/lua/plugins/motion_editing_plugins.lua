@@ -27,13 +27,13 @@ return {
 	},
 
 	-- Copilot
-	{
-		"github/copilot.vim",
-		event = "VeryLazy",
-		config = function()
-			require("alex-config.keymaps").set_copilot_keys()
-		end,
-	},
+	-- {
+	-- 	"github/copilot.vim",
+	-- 	event = "VeryLazy",
+	-- 	config = function()
+	-- 		require("alex-config.keymaps").set_copilot_keys()
+	-- 	end,
+	-- },
 
 	-- Flash
 	{
@@ -42,5 +42,27 @@ return {
 		-- config = flash_config,
 		keys = require("alex-config.keymaps").flash_keys,
 		opts = {},
+	},
+
+	-- Yanky
+	{
+		"gbprod/yanky.nvim",
+		opts = {},
+		config = function(_, opts)
+			require("yanky").setup(opts)
+			require("alex-config.keymaps").set_yank_keys()
+		end,
+	},
+
+	-- Zen Mode
+	{
+		"folke/zen-mode.nvim",
+		opts = {
+			window = {
+				options = {
+					relativenumber = true,
+				},
+			},
+		},
 	},
 }
