@@ -1,0 +1,50 @@
+#!/bin/bash
+# Usage: wt project branch-name
+# Example: wt rust-project feature-branch
+
+PROJECT=$1
+BRANCH=$2
+
+# Find the main project
+MAIN_REPO=$(find ~/dev/remote -type d -name "$PROJECT" | head -n 1)
+
+if [ -z "$MAIN_REPO" ]; then
+  echo "Project $PROJECT not found"
+  exit 1
+fi
+
+# Create worktree directory if it doesn't exist
+WORKTREE_BASE="$HOME/dev/worktrees/$PROJECT"
+mkdir -p "$WORKTREE_BASE"
+
+# Check if branch exists
+if ! git -C "$MAIN_REPO" show-ref --verify --quiet "refs/heads/$BRANCH"; then
+  # Ask to create branch if it doesn't exist
+  read -p "Branch $BRANCH doesn't exist. Create it? (y/n) " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    git -C "$MAIN_REPO" branch "$BRANCH"
+  else
+    exit 1
+  fi
+fi
+
+# Create the worktree
+WORKTREE_PATH="$WORKTREE_BASE/$BRANCH"
+git -C "$MAIN_REPO" worktree add "$WORKTREE_PATH" "$BRANCH"
+
+# Change to the worktree directory
+echo "Worktree created at $WORKTREE_PATH"
+cd "$WORKTREE_PATH"
+
+# Optional: open in zellij
+read -p "Open in zellij? (y/n) " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+  SESSION_NAME="${PROJECT}-${BRANCH}"
+  if ! zellij list-sessions | grep -q "$SESSION_NAME"; then
+    zellij --session "$SESSION_NAME"
+  else
+    zellij attach "$SESSION_NAME"
+  fi
+fi

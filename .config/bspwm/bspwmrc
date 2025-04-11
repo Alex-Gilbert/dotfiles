@@ -1,23 +1,13 @@
 #! /bin/sh
-
 pgrep -x sxhkd > /dev/null || sxhkd &
 
-autorandr -c
+# Set up monitors
+bspc monitor DP-1 -d 1 2 3 4 5 6 7 8 9
+bspc monitor HDMI-A-1 -d 10
 
-if xrandr --query | grep -q "^HDMI-0 connected"; then
-    primary_monitor="HDMI-0"
-    # Remove DP-0 if HDMI-0 is connected
-    if xrandr --query | grep -q "^DP-0 connected"; then
-        bspc monitor DP-0 -r
-        xrandr --output DP-0 --off
-    fi
-elif xrandr --query | grep -q "^DP-0 connected"; then
-    primary_monitor="DP-0"
-else
-    primary_monitor=$(xrandr --query | grep " connected" | head -n 1 | cut -d' ' -f1) # Fallback to the first connected
-fi
-
-bspc monitor $primary_monitor -d I II III IV V VI VII VIII IX
+# Set DP-1 as primary monitor
+xrandr --output DP-1 --primary --mode 3840x2160 --pos 0x0 --rotate normal \
+       --output HDMI-A-1 --mode 1920x1200 --pos 3840x0 --rotate left
 
 bspc config border_width         2
 bspc config window_gap           3
@@ -27,12 +17,12 @@ bspc config borderless_monocle   true
 bspc config gapless_monocle      true
 
 # Start picom
-picom --config ~/.config/picom/picom.conf &
+picom --config ~/.config/picom/picom-minimal.conf &
 
 # Sleep for a bit to let picom start
 sleep 1
 
 # Start other applications
-~/.config/polybar/launch.sh --blocks
+~/.config/polybar/launch.sh
 feh --bg-scale ~/wallpaper.png
 dunst &

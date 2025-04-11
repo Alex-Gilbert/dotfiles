@@ -30,6 +30,25 @@ return {
 		end,
 	},
 
+	-- {
+	-- 	"aktersnurra/no-clown-fiesta.nvim",
+	-- 	priority = 1000,
+	-- 	config = function()
+	-- 		local opts = {
+	-- 			styles = {
+	-- 				type = { bold = true },
+	-- 				lsp = { underline = false },
+	-- 				match_paren = { underline = true },
+	-- 			},
+	-- 		}
+	--
+	-- 		local plugin = require("no-clown-fiesta")
+	-- 		plugin.setup(opts)
+	-- 		return plugin.load()
+	-- 	end,
+	-- 	lazy = false,
+	-- },
+
 	"Zeioth/heirline-components.nvim",
 	"SmiteshP/nvim-navic",
 
@@ -44,7 +63,8 @@ return {
 		},
 		lazy = false,
 		config = function()
-			local colors = require("kanagawa.colors").setup()
+			-- local colors = require("kanagawa.colors").setup()
+			-- local colors = require("kanagawa.colors").setup()
 			local heirline = require("heirline")
 			local my_heir = require("alex-config.heirlines")
 			local components = require("heirline-components.all")
@@ -53,10 +73,10 @@ return {
 
 			heirline.setup({
 				statusline = my_heir.Statusline,
-                tabline = my_heir.TabLine,
+				tabline = my_heir.TabLine,
 			})
 
-            vim.o.showtabline = 2
+			vim.o.showtabline = 2
 		end,
 	},
 }

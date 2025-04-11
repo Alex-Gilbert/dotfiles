@@ -1,0 +1,27 @@
+# Quick project navigation with tab completion
+function pcd() {
+  local projdir="$HOME/dev"
+  local project_path=$(find "$projdir" -type d -name "$1" | head -n 1)
+  if [ -n "$project_path" ]; then
+    cd "$project_path"
+    # Optional: automatically create or attach to zellij session
+    if [ -n "$2" ] && [ "$2" = "z" ]; then
+      local session_name=$(basename "$project_path")
+      if ! zellij list-sessions | grep -q "$session_name"; then
+        zellij --session "$session_name"
+      else
+        zellij attach "$session_name"
+      fi
+    fi
+  else
+    echo "Project not found: $1"
+  fi
+}
+
+# Tab completion for pcd
+_pcd() {
+  local cur=${COMP_WORDS[COMP_CWORD]}
+  local projdir="$HOME/dev"
+  COMPREPLY=( $(find "$projdir" -type d -name "*$cur*" -not -path "*/\.*" | xargs -n 1 basename) )
+}
+complete -F _pcd pcd

@@ -1,0 +1,144 @@
+# i3 config file (v4)
+# Please see https://i3wm.org/docs/userguide.html for a complete reference
+
+
+# Set mod key (Mod4=Super/Windows key)
+set $mod Mod4
+set $alt Mod1
+
+# Font for window titles
+font pango:JetBrainsMono Nerd Font 10 
+
+# Use Mouse+$mod to drag floating windows
+floating_modifier $mod
+
+# Kill focused window
+bindsym $mod+q kill
+
+# Start terminal
+bindsym $mod+t exec kitty
+
+# Start browser
+bindsym $mod+b exec thorium-browser
+
+# Start file manager
+bindsym $mod+e exec dolphin
+
+# Start rofi (application launcher)
+bindsym $mod+a exec rofi -show drun
+bindsym $mod+Tab exec rofi -show window
+
+# Change focus
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+
+# Move focused window
+bindsym $mod+ctrl+h move left
+bindsym $mod+ctrl+j move down
+bindsym $mod+ctrl+k move up
+bindsym $mod+ctrl+l move right
+
+# Cycle through layouts
+bindsym $mod+w exec i3-cycle-layouts.sh
+
+# Always use split container mode by default (more like bspwm's binary tree)
+# This automatically splits windows in alternating orientations
+for_window [class=".*"] split toggle
+
+# Split in horizontal orientation
+bindsym $mod+$alt+h split h
+# Split in vertical orientation
+bindsym $mod+$alt+v split v
+
+# Enter fullscreen mode for the focused container
+bindsym $mod+f fullscreen toggle
+
+# Change container layout
+bindsym $mod+ctrl+t layout tabbed
+bindsym $mod+ctrl+s layout stacking
+bindsym $mod+ctrl+e layout toggle split
+
+# Toggle tiling / floating
+bindsym $mod+ctrl+f floating toggle
+
+# Workspace names
+set $ws1 "1"
+set $ws2 "2"
+set $ws3 "3"
+set $ws4 "4"
+set $ws5 "5"
+set $ws6 "6"
+set $ws7 "7"
+set $ws8 "8"
+set $ws9 "9"
+set $ws10 "10"
+
+# Switch to workspace
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+5 workspace $ws5
+bindsym $mod+6 workspace $ws6
+bindsym $mod+7 workspace $ws7
+bindsym $mod+8 workspace $ws8
+bindsym $mod+9 workspace $ws9
+bindsym $mod+0 workspace $ws10
+
+# Move focused container to workspace
+bindsym $mod+ctrl+1 move container to workspace $ws1
+bindsym $mod+ctrl+2 move container to workspace $ws2
+bindsym $mod+ctrl+3 move container to workspace $ws3
+bindsym $mod+ctrl+4 move container to workspace $ws4
+bindsym $mod+ctrl+5 move container to workspace $ws5
+bindsym $mod+ctrl+6 move container to workspace $ws6
+bindsym $mod+ctrl+7 move container to workspace $ws7
+bindsym $mod+ctrl+8 move container to workspace $ws8
+bindsym $mod+ctrl+9 move container to workspace $ws9
+bindsym $mod+ctrl+0 move container to workspace $ws10
+
+# Restart i3 inplace
+bindsym $mod+$alt+r restart
+
+# Exit i3
+bindsym $mod+$alt+q exec "i3-nagbar -t warning -m 'Exit i3?' -B 'Yes' 'i3-msg exit'"
+
+# Screenshots with flameshot
+bindsym $mod+c exec flameshot full -c
+bindsym $mod+shift+c exec flameshot gui
+
+# Gaps and borders
+gaps inner 0
+smart_gaps off
+default_border pixel 0
+hide_edge_borders smart
+
+# Color settings
+# class                 border  backgr. text    indicator child_border
+client.focused          #81A1C1 #81A1C1 #FFFFFF #81A1C1   #81A1C1
+client.focused_inactive #373B41 #373B41 #FFFFFF #373B41   #373B41
+client.unfocused        #282A2E #282A2E #C5C8C6 #282A2E   #282A2E
+client.urgent           #A54242 #A54242 #FFFFFF #A54242   #A54242
+
+# Dual monitor setup
+exec_always --no-startup-id "xrandr --output DP-0 --primary --mode 3840x2160 --rate 239.99 --pos 0x0 --rotate normal --output HDMI-0 --mode 2560x1440 --pos 3840x0 --rotate left"
+
+# Assign workspaces to monitors
+workspace $ws1 output DP-0
+workspace $ws2 output DP-0
+workspace $ws3 output DP-0
+workspace $ws4 output DP-0
+workspace $ws5 output DP-0
+workspace $ws6 output DP-0
+workspace $ws7 output DP-0
+workspace $ws8 output DP-0
+workspace $ws9 output DP-0
+workspace $ws10 output HDMI-0
+
+# Autostart applications
+exec_always --no-startup-id "picom --config ~/.config/picom/picom-minimal.conf"
+exec_always --no-startup-id "~/.config/polybar/launch.sh"
+exec_always --no-startup-id "feh --bg-scale ~/wallpaper.jpg"
+exec --no-startup-id "dunst"
