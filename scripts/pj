@@ -1,0 +1,16 @@
+#!/bin/bash
+# Usage: pj rust-project
+
+PROJECT_NAME=$1
+FOUND=$(find ~/dev -type d -name "$PROJECT_NAME" | head -n 1)
+
+if [ -n "$FOUND" ]; then
+  cd "$FOUND"
+  if ! zellij list-sessions | grep -q "$PROJECT_NAME"; then
+    zellij --session "$PROJECT_NAME"
+  else
+    zellij attach "$PROJECT_NAME"
+  fi
+else
+  echo "Project not found: $PROJECT_NAME"
+fi

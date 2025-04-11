@@ -99,6 +99,7 @@ end
 
 M.set_telescope_keys = function()
 	-- See `:help telescope.builtin`
+	require("telescope").load_extension("project_navigator")
 	local builtin = require("telescope.builtin")
 
 	keymap("n", "<leader>pf", builtin.find_files, "[P]roject [F]iles")
@@ -110,9 +111,9 @@ M.set_telescope_keys = function()
 	keymap("n", "<leader>psd", builtin.diagnostics, "[P]roject [S]earch [D]iagnostics")
 	keymap("n", "<leader>psr", builtin.resume, "[P]roject [S]earch [R]esume")
 
-	keymap("n", "<leader>psp", function()
+	keymap("n", "<leader>psy", function()
 		vim.cmd.Telescope({ "yank_history" })
-	end, "[P]roject [S]earch [P]aste")
+	end, "[P]roject [S]earch [Y]ank")
 
 	-- Search hidden files with live grep
 	keymap("n", "<leader>ps.", function()
@@ -131,6 +132,24 @@ M.set_telescope_keys = function()
 			previewer = false,
 		}))
 	end, { desc = "[/] Fuzzily search in current buffer" })
+
+	-- Telescope project finder
+	-- Key mappings
+	keymap("n", "<leader>fp", function()
+		require("telescope").extensions.project_navigator.projects({
+			include_worktrees = false,
+		})
+	end, "Find Projects")
+
+	keymap("n", "<leader>fP", function()
+		require("telescope").extensions.project_navigator.projects({
+			include_worktrees = true,
+		})
+	end, "Find Projects & Worktrees")
+
+	keymap("n", "<leader>fw", function()
+		require("telescope").extensions.project_navigator.worktrees()
+	end, "Find Current Project Worktrees")
 end
 
 M.set_lsp_keys = function(event, client)

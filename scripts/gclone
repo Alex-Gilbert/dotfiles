@@ -1,0 +1,8 @@
+#!/bin/bash
+# Usage: gclone https://github.com/username/repo.git
+URL=$1
+REPO_PATH=$(echo $URL | sed -e 's/https:\/\///' -e 's/\.git$//')
+DEST="$HOME/dev/remote/$REPO_PATH"
+mkdir -p "$(dirname "$DEST")"
+git clone "$URL" "$DEST"
+echo "Cloned to $DEST"

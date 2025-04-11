@@ -1,0 +1,6 @@
+# Aliases
+alias lg = lazygit
+alias cu = cluster-utils.sh
+alias z = zellij -l welcome
+alias n = nvim
+alias dive = docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock wagoodman/dive:latest
