@@ -1,6 +1,7 @@
 # i3 config file (v4)
 # Please see https://i3wm.org/docs/userguide.html for a complete reference
 
+focus_follows_mouse no
 
 # Set mod key (Mod4=Super/Windows key)
 set $mod Mod4
@@ -49,6 +50,7 @@ for_window [class=".*"] split toggle
 
 # Split in horizontal orientation
 bindsym $mod+$alt+h split h
+
 # Split in vertical orientation
 bindsym $mod+$alt+v split v
 
@@ -110,17 +112,17 @@ bindsym $mod+c exec flameshot full -c
 bindsym $mod+shift+c exec flameshot gui
 
 # Gaps and borders
-gaps inner 0
-smart_gaps off
-default_border pixel 0
+gaps inner 1
+smart_gaps on
+default_border pixel 1
 hide_edge_borders smart
 
 # Color settings
 # class                 border  backgr. text    indicator child_border
-client.focused          #81A1C1 #81A1C1 #FFFFFF #81A1C1   #81A1C1
-client.focused_inactive #373B41 #373B41 #FFFFFF #373B41   #373B41
-client.unfocused        #282A2E #282A2E #C5C8C6 #282A2E   #282A2E
-client.urgent           #A54242 #A54242 #FFFFFF #A54242   #A54242
+client.focused          #7E9CD8 #7E9CD8 #DCD7BA #7E9CD8   #7E9CD8
+client.focused_inactive #223249 #223249 #DCD7BA #223249   #223249
+client.unfocused        #1F1F28 #1F1F28 #727169 #1F1F28   #1F1F28
+client.urgent           #C34043 #C34043 #DCD7BA #C34043   #C34043
 
 # Dual monitor setup
 exec_always --no-startup-id "xrandr --output DP-0 --primary --mode 3840x2160 --rate 239.99 --pos 0x0 --rotate normal --output HDMI-0 --mode 2560x1440 --pos 3840x0 --rotate left"
