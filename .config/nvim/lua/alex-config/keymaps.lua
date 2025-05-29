@@ -517,9 +517,9 @@ M.set_obsidian_keys = function()
 		require("obsidian").util.toggle_checkbox()
 	end, "[O]bsidian [D]one")
 
-	keymap("n", "<leader>op", function()
-		vim.cmd.ProcessNote()
-	end, "[O]bsidian [P]rocess Note")
+	-- keymap("n", "<leader>op", function()
+	-- 	vim.cmd.ProcessNote()
+	-- end, "[O]bsidian [P]rocess Note")
 
 	keymap("n", "<leader>ott", function()
 		vim.cmd.ObsidianCreateTask()

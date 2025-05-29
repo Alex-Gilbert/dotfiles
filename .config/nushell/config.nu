@@ -58,6 +58,8 @@ def fzf-history [] {
   each { |cmd| nu -c $cmd }
 }
 
+
+
 # keybindings
 $env.config.keybindings ++= [
   {
@@ -69,7 +71,18 @@ $env.config.keybindings ++= [
       send: executehostcommand
       cmd: "fzf-history"
     }
+  },
+  {
+    name: proj
+    modifier: alt
+    keycode: char_p
+    mode: [emacs, vi_normal, vi_insert]
+    event: {
+      send: executehostcommand
+      cmd: "proj"
+    }
   }
 ]
+
 
 source ~/.zoxide.nu
