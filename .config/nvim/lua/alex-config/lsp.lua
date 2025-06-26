@@ -2,7 +2,15 @@ local lsp = require("lspconfig")
 
 local M = {}
 
-M.additional_tools = { "stylua" }
+M.additional_tools = {
+	"stylua", -- Lua formatter
+	"delve", -- Go debugger
+	"golangci-lint", -- Go linter
+	"gofumpt", -- Go formatter
+	"goimports", -- Go import formatter
+	"gotests", -- Go test generator
+	"impl", -- Go interface implementation generator
+}
 
 M.servers = {
 	lua_ls = {
@@ -48,6 +56,48 @@ M.servers = {
 
 	clangd = {
 		cmd = { "clangd", "--experimental-modules-support" },
+	},
+
+	-- Add Go language server
+	gopls = {
+		on_attach = function()
+			print("Hello From Go")
+		end,
+		settings = {
+			gopls = {
+				gofumpt = true, -- Use gofumpt for formatting
+				codelenses = {
+					gc_details = false,
+					generate = true,
+					regenerate_cgo = true,
+					run_govulncheck = true,
+					test = true,
+					tidy = true,
+					upgrade_dependency = true,
+					vendor = true,
+				},
+				hints = {
+					assignVariableTypes = true,
+					compositeLiteralFields = true,
+					compositeLiteralTypes = true,
+					constantValues = true,
+					functionTypeParameters = true,
+					parameterNames = true,
+					rangeVariableTypes = true,
+				},
+				analyses = {
+					nilness = true,
+					unusedparams = true,
+					unusedwrite = true,
+					useany = true,
+				},
+				usePlaceholders = true,
+				completeUnimported = true,
+				staticcheck = true,
+				directoryFilters = { "-.git", "-.vscode", "-.idea", "-.vscode-test", "-node_modules" },
+				semanticTokens = true,
+			},
+		},
 	},
 }
 

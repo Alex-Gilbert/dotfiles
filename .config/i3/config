@@ -41,8 +41,6 @@ bindsym $mod+ctrl+j move down
 bindsym $mod+ctrl+k move up
 bindsym $mod+ctrl+l move right
 
-# Cycle through layouts
-bindsym $mod+w exec i3-cycle-layouts.sh
 
 # Always use split container mode by default (more like bspwm's binary tree)
 # This automatically splits windows in alternating orientations
@@ -57,10 +55,27 @@ bindsym $mod+$alt+v split v
 # Enter fullscreen mode for the focused container
 bindsym $mod+f fullscreen toggle
 
-# Change container layout
-bindsym $mod+ctrl+t layout tabbed
-bindsym $mod+ctrl+s layout stacking
-bindsym $mod+ctrl+e layout toggle split
+# Canvas mode toggle (replaces layout cycling)
+bindsym $mod+w exec ~/dotfiles/scripts/canvas-mode.sh toggle
+
+# Device check shortcut  
+bindsym $mod+shift+w exec ~/dotfiles/scripts/canvas-mode.sh check && kitty
+
+# Dedicated art workspace on Kamvas when in canvas mode
+set $wsart "art"
+bindsym $mod+ctrl+a workspace $wsart
+
+# Art application window rules
+for_window [class="krita"] floating disable
+for_window [class="krita" title=".*Docker.*"] floating enable, sticky enable
+for_window [class="Blender"] floating disable  
+for_window [class="Gimp"] floating disable
+for_window [class="Gimp" window_type="dialog"] floating enable
+
+# Move art apps to art workspace
+assign [class="krita"] $wsart
+assign [class="Blender"] $wsart
+assign [class="Gimp"] $wsart
 
 # Toggle tiling / floating
 bindsym $mod+ctrl+f floating toggle
