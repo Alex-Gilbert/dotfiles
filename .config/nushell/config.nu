@@ -22,7 +22,7 @@ $env.config = {
     history: {
         max_size: 1_000_000
         file_format: "sqlite"
-        isolation: false
+        isolation: true
     }
     completions: {
         case_sensitive: false
