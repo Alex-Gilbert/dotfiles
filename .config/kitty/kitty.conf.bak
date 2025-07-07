@@ -1,0 +1,49 @@
+# Font Configuration
+font_family DepartureMono Nerd Font Mono
+font_size 20.0
+
+# Window and UI Configuration
+hide_window_decorations yes
+dynamic_padding no
+window_opacity 1.0
+
+# Shell Configuration
+shell /usr/bin/fish
+
+# Scrolling Configuration
+scrollback_lines 10000
+
+# Padding Configuration
+padding_horizontal 6
+padding_vertical 6
+
+# Colors Configuration
+background #1f1f28
+foreground #dcd7ba
+selection_background #2d4f67
+selection_foreground #c8c093
+background_opacity 0.95
+
+# Normal colors
+color0  #090618
+color1  #c34043
+color2  #76946a
+color3  #c0a36e
+color4  #7e9cd8
+color5  #957fb8
+color6  #6a9589
+color7  #c8c093
+
+# Bright colors
+color8  #727169
+color9  #e82424
+color10 #98bb6c
+color11 #e6c384
+color12 #7fb4ca
+color13 #938aa9
+color14 #7aa89f
+color15 #dcd7ba
+
+# Extended colors
+color16 #ffa066
+color17 #ff5d62
