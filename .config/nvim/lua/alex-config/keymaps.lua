@@ -152,79 +152,109 @@ M.set_telescope_keys = function()
 	end, "Find Current Project Worktrees")
 end
 
-M.set_lsp_keys = function(event, client)
-	local lsp_opts = { buffer = event.buf }
-
-	local telescope = require("telescope.builtin")
-	local lsp = vim.lsp
-
-	keymap("n", "gd", telescope.lsp_definitions, "[G]oto [D]efinition", lsp_opts)
-	keymap("n", "gD", lsp.buf.declaration, "[G]oto [D]eclaration", lsp_opts)
-	keymap("n", "gr", telescope.lsp_references, "[G]oto [R]eferences", lsp_opts)
-	keymap("n", "gI", telescope.lsp_implementations, "[G]oto [I]mplementations", lsp_opts)
-	keymap("n", "<leader>ct", telescope.lsp_type_definitions, "[C]ode Goto [T]ype Definition")
-	keymap("n", "<leader>cs", telescope.lsp_document_symbols, "[C]ode Document [S]ymbols")
-	keymap("n", "<leader>cS", telescope.lsp_dynamic_workspace_symbols, "[C]ode Workspace [S]ymbols")
-	keymap("n", "<leader>cr", vim.lsp.buf.rename, "[C]ode [R]ename")
-	keymap({ "n", "x" }, "<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction")
-	keymap("n", "K", lsp.buf.hover, "Hover")
-
-	-- The following code creates a keymap to toggle inlay hints in your
-	-- code, if the language server you are using supports them
-	--
-	-- This may be unwanted, since they displace some of your code
-	if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
-		keymap("n", "<leader>th", function()
-			vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
-		end, "[T]oggle Inlay [H]ints")
-	end
-end
-
-M.set_rust_lsp_keys = function(bufnr, client)
+-- Base LSP keymaps that apply to all language servers
+local function set_base_lsp_keys(bufnr, client, overrides)
+	overrides = overrides or {}
 	local lsp_opts = { buffer = bufnr }
 	local telescope = require("telescope.builtin")
 	local lsp = vim.lsp
 
-	keymap("n", "gd", telescope.lsp_definitions, "[G]oto [D]efinition", lsp_opts)
-	keymap("n", "gD", lsp.buf.declaration, "[G]oto [D]eclaration", lsp_opts)
-	keymap("n", "gr", telescope.lsp_references, "[G]oto [R]eferences", lsp_opts)
-	keymap("n", "gI", telescope.lsp_implementations, "[G]oto [I]mplementations", lsp_opts)
-	keymap("n", "<leader>ct", telescope.lsp_type_definitions, "[C]ode Goto [T]ype Definition")
-	keymap("n", "<leader>cs", telescope.lsp_document_symbols, "[C]ode Document [S]ymbols")
-	keymap("n", "<leader>cS", telescope.lsp_dynamic_workspace_symbols, "[C]ode Workspace [S]ymbols")
-	keymap("n", "<leader>cr", vim.lsp.buf.rename, "[C]ode [R]ename")
+	-- Navigation keymaps (with overrides support)
+	keymap("n", "gd", overrides.goto_definition or telescope.lsp_definitions, "[G]oto [D]efinition", lsp_opts)
+	keymap("n", "gD", overrides.goto_declaration or lsp.buf.declaration, "[G]oto [D]eclaration", lsp_opts)
+	keymap("n", "gr", overrides.goto_references or telescope.lsp_references, "[G]oto [R]eferences", lsp_opts)
+	keymap(
+		"n",
+		"gI",
+		overrides.goto_implementation or telescope.lsp_implementations,
+		"[G]oto [I]mplementations",
+		lsp_opts
+	)
+	keymap(
+		"n",
+		"<leader>ct",
+		overrides.type_definition or telescope.lsp_type_definitions,
+		"[C]ode Goto [T]ype Definition",
+		lsp_opts
+	)
 
-	keymap({ "n", "x" }, "<leader>ca", function()
-		vim.cmd.RustLsp("codeAction")
-	end, "[C]ode [A]ction", lsp_opts)
+	-- Document/workspace symbols
+	keymap("n", "<leader>cs", telescope.lsp_document_symbols, "[C]ode Document [S]ymbols", lsp_opts)
+	keymap("n", "<leader>cS", telescope.lsp_dynamic_workspace_symbols, "[C]ode Workspace [S]ymbols", lsp_opts)
 
-	keymap("n", "K", function()
-		vim.cmd.RustLsp({ "hover", "actions" })
-	end, "Hover", lsp_opts)
+	-- Actions (with overrides support)
+	keymap("n", "<leader>cr", overrides.rename or lsp.buf.rename, "[C]ode [R]ename", lsp_opts)
+	keymap({ "n", "x" }, "<leader>ca", overrides.code_action or lsp.buf.code_action, "[C]ode [A]ction", lsp_opts)
+	keymap("n", "K", overrides.hover or lsp.buf.hover, "Hover", lsp_opts)
 
-	keymap("n", "<leader>ce", function()
-		vim.cmd.RustLsp({ "explainError", "current" })
-	end, "[C]ode [E]xplain Error", lsp_opts)
-
-	keymap("n", "<leader>cd", function()
-		vim.cmd.RustLsp({ "renderDiagnostic", "current" })
-	end, "[C]ode [D]iagnostics", lsp_opts)
-
-	keymap("n", "gR", function()
-		vim.cmd.RustLsp("relatedDiagnostics")
-	end, "[G]oto [R]elated Diagnostic", lsp_opts)
-
-	print("Setting up Rust LSP keys")
-
-	-- The following code creates a keymap to toggle inlay hints in your
-	-- code, if the language server you are using supports them
-	--
-	-- This may be unwanted, since they displace some of your code
-	if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+	-- Inlay hints toggle
+	if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
 		keymap("n", "<leader>th", function()
-			vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr }))
-		end, "[T]oggle Inlay [H]ints")
+			vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }))
+		end, "[T]oggle Inlay [H]ints", lsp_opts)
 	end
+
+	-- Apply any additional keymaps from overrides
+	if overrides.additional_keymaps then
+		for _, keymap_config in ipairs(overrides.additional_keymaps) do
+			keymap(unpack(keymap_config))
+		end
+	end
+end
+
+-- Standard LSP keymaps for non-Rust languages
+M.set_lsp_keys = function(event, client)
+	set_base_lsp_keys(event.buf, client)
+end
+
+-- Rust-specific LSP keymaps with rustaceanvim enhancements
+M.set_rust_lsp_keys = function(bufnr, client)
+	local lsp_opts = { buffer = bufnr }
+
+	-- Rust-specific overrides
+	local rust_overrides = {
+		code_action = function()
+			vim.cmd.RustLsp("codeAction")
+		end,
+		hover = function()
+			vim.cmd.RustLsp({ "hover", "actions" })
+		end,
+		additional_keymaps = {
+			-- Rust-specific keymaps
+			{
+				"n",
+				"<leader>ce",
+				function()
+					vim.cmd.RustLsp({ "explainError", "current" })
+				end,
+				"[C]ode [E]xplain Error",
+				lsp_opts,
+			},
+
+			{
+				"n",
+				"<leader>cd",
+				function()
+					vim.cmd.RustLsp({ "renderDiagnostic", "current" })
+				end,
+				"[C]ode [D]iagnostics",
+				lsp_opts,
+			},
+
+			{
+				"n",
+				"gR",
+				function()
+					vim.cmd.RustLsp("relatedDiagnostics")
+				end,
+				"[G]oto [R]elated Diagnostic",
+				lsp_opts,
+			},
+		},
+	}
+
+	set_base_lsp_keys(bufnr, client, rust_overrides)
+	print("Setting up Rust LSP keys")
 end
 
 M.conform_keys = {

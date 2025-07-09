@@ -30,7 +30,7 @@ return {
 	{
 		"nvim-telescope/telescope.nvim",
 		event = "VimEnter",
-		branch = "0.1.x",
+		branch = "master",
 		dependencies = {
 			"gbprod/yanky.nvim",
 			"nvim-lua/plenary.nvim",

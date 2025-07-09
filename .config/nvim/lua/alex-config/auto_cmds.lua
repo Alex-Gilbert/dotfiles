@@ -11,7 +11,7 @@ M.set_base_autocmds = function()
 end
 
 M.set_lsp_autocmds = function(event, client)
-	if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
+	if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
 		local highlight_augroup = vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = false })
 		vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
 			buffer = event.buf,
