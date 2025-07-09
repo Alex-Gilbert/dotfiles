@@ -51,6 +51,12 @@ return {
 			local capabilities = vim.lsp.protocol.make_client_capabilities()
 			capabilities = vim.tbl_deep_extend("force", capabilities, require("cmp_nvim_lsp").default_capabilities())
 
+			capabilities = vim.tbl_deep_extend("force", capabilities, {
+				text_document = {
+					position_encoding = "utf-16",
+				},
+			})
+
 			local servers = require("alex-config.lsp").servers
 			require("mason").setup()
 
