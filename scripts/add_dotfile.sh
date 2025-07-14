@@ -17,14 +17,39 @@ get_absolute_path() {
 # Your dotfiles directory path
 DOTFILES_DIR="$HOME/dotfiles"
 
-# Check if an argument is provided
+# Source cross-platform utilities to get OS_TYPE
+source "$DOTFILES_DIR/scripts/cross-platform-utils.sh"
+
+# Check if arguments are provided
 if [ $# -eq 0 ]; then
-    echo "Usage: $0 <file-or-directory-to-add>"
+    echo "Usage: $0 <file-or-directory-to-add> [--os <linux|macos>]"
+    echo "  If --os is not specified, defaults to 'common'"
     exit 1
 fi
 
-# Input path (convert to absolute path if necessary)
-INPUT_PATH="$(get_absolute_path "$1")"
+# Parse arguments
+TARGET_OS="common"
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --os)
+            TARGET_OS="$2"
+            shift 2
+            ;;
+        *)
+            INPUT_PATH="$1"
+            shift
+            ;;
+    esac
+done
+
+# Validate OS choice
+if [[ "$TARGET_OS" != "common" && "$TARGET_OS" != "linux" && "$TARGET_OS" != "macos" ]]; then
+    echo "Error: --os must be 'common', 'linux', or 'macos'"
+    exit 1
+fi
+
+# Convert input path to absolute path if necessary
+INPUT_PATH="$(get_absolute_path "$INPUT_PATH")"
 
 # Verify that the path exists and is either a file or a directory
 if [ ! -f "$INPUT_PATH" ] && [ ! -d "$INPUT_PATH" ]; then
@@ -35,8 +60,8 @@ fi
 # Calculate the path relative to the home directory
 RELATIVE_PATH="${INPUT_PATH#$HOME/}"
 
-# Construct the new path for the encrypted file within your DOTFILES directory
-NEW_PATH="$DOTFILES_DIR/${RELATIVE_PATH}"
+# Construct the new path within the appropriate OS-specific directory
+NEW_PATH="$DOTFILES_DIR/$TARGET_OS/${RELATIVE_PATH}"
 
 # Create the target directory if it doesn't exist (for files, or copy root for directories)
 mkdir -p "$(dirname "$NEW_PATH")"
@@ -46,4 +71,4 @@ mv "$INPUT_PATH" "$NEW_PATH"
 echo "Moved $INPUT_PATH to $NEW_PATH"
 
 cd "$DOTFILES_DIR"
-stow .
+stow -v "$TARGET_OS"

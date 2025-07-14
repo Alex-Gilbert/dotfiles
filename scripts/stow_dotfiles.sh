@@ -4,11 +4,32 @@
 DOTFILES_DIR="$HOME/dotfiles"
 export DOTFILES_DIR
 
+# Source cross-platform utilities
+source "$DOTFILES_DIR/scripts/cross-platform-utils.sh"
+
+# OS is set by cross-platform-utils.sh as OS_TYPE
+OS="$OS_TYPE"
+
+echo "Detected OS: $OS"
+
+# Create essential directories to prevent stow from symlinking entire directories
+create_directories() {
+    echo "Creating essential directories..."
+    mkdir -p "$HOME/.config"
+    mkdir -p "$HOME/.local/bin"
+    mkdir -p "$HOME/.local/share"
+    mkdir -p "$HOME/.ssh"
+    mkdir -p "$HOME/.aws"
+    
+    # Add any other directories that should exist before stowing
+    # This prevents stow from creating symlinks to entire directories
+}
+
 decrypt_and_place() {
     local src_file="$1"
 
     # Compute the path relative to the DOTFILES_DIR, ensuring it's an absolute path
-    local src_file_abs_path=$(readlink -f $src_file)
+    local src_file_abs_path=$(portable_readlink -f "$src_file")
 
     # Remove the DOTFILES_DIR part from the absolute path of the source file
     local relative_path="${src_file_abs_path#$DOTFILES_DIR/}"
@@ -34,8 +55,33 @@ decrypt_and_place() {
 
 export -f decrypt_and_place
 
+# Create directories first
+create_directories
+
 # Find and decrypt .gpg files, placing them in the correct location
 find "$DOTFILES_DIR" -type f -name "*.gpg" -exec bash -c 'decrypt_and_place "$0"' {} \;
 
 cd "$DOTFILES_DIR"
-stow .
+
+# Check if the new directory structure exists
+if [ -d "$DOTFILES_DIR/common" ]; then
+    echo "Using new directory structure..."
+    
+    # Stow common configs
+    if [ -d "common" ]; then
+        echo "Stowing common configs..."
+        stow -v common
+    fi
+    
+    # Stow OS-specific configs
+    if [ -d "$OS" ]; then
+        echo "Stowing $OS-specific configs..."
+        stow -v "$OS"
+    fi
+else
+    echo "Using legacy structure..."
+    # Fall back to old behavior for backwards compatibility
+    stow -v .
+fi
+
+echo "Dotfiles installation complete!"

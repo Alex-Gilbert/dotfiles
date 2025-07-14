@@ -1,0 +1,56 @@
+# macOS-specific zsh configuration
+
+# This file is sourced by the main .zshrc when running on macOS
+# Put macOS-only configuration here
+
+# macOS-specific environment variables
+export BROWSER='open -a "Google Chrome"'
+
+# macOS-specific aliases
+alias showfiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder'
+alias hidefiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder'
+alias flushdns='sudo dscacheutil -flushcache'
+
+# Homebrew aliases
+alias brewup='brew update && brew upgrade && brew cleanup'
+alias brewinfo='brew leaves | xargs brew desc --eval-all'
+
+# macOS specific commands
+alias airport='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
+
+# Quick Look from terminal
+alias ql='qlmanage -p'
+
+# Empty trash
+alias emptytrash='sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv ~/.Trash; sudo rm -rfv /private/var/log/asl/*.asl'
+
+# Show/hide desktop icons
+alias showdesktop='defaults write com.apple.finder CreateDesktop -bool true && killall Finder'
+alias hidedesktop='defaults write com.apple.finder CreateDesktop -bool false && killall Finder'
+
+# Python setup (if using Homebrew Python)
+if [[ -d "/opt/homebrew/opt/python@3.12/libexec/bin" ]]; then
+    export PATH="/opt/homebrew/opt/python@3.12/libexec/bin:$PATH"
+fi
+
+# GNU coreutils (if installed via Homebrew)
+if [[ -d "/opt/homebrew/opt/coreutils/libexec/gnubin" ]]; then
+    export PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
+    export MANPATH="/opt/homebrew/opt/coreutils/libexec/gnuman:$MANPATH"
+fi
+
+# Add other GNU tools to PATH (sed, grep, etc.)
+if [[ -d "/opt/homebrew/opt/gnu-sed/libexec/gnubin" ]]; then
+    export PATH="/opt/homebrew/opt/gnu-sed/libexec/gnubin:$PATH"
+fi
+if [[ -d "/opt/homebrew/opt/grep/libexec/gnubin" ]]; then
+    export PATH="/opt/homebrew/opt/grep/libexec/gnubin:$PATH"
+fi
+if [[ -d "/opt/homebrew/opt/findutils/libexec/gnubin" ]]; then
+    export PATH="/opt/homebrew/opt/findutils/libexec/gnubin:$PATH"
+fi
+
+# iTerm2 shell integration
+if [[ -f "$HOME/.iterm2_shell_integration.zsh" ]]; then
+    source "$HOME/.iterm2_shell_integration.zsh"
+fi
