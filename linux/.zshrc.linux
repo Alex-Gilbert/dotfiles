@@ -1,0 +1,37 @@
+# Linux-specific zsh configuration
+
+# This file is sourced by the main .zshrc when running on Linux
+# Put Linux-only configuration here
+
+# Linux-specific environment variables
+export BROWSER='google-chrome-stable'
+
+# X11 specific
+export DISPLAY="${DISPLAY:-:0}"
+
+# Linux-specific aliases
+alias open='xdg-open'  # macOS-like 'open' command
+alias pbcopy='xclip -selection clipboard'
+alias pbpaste='xclip -selection clipboard -o'
+
+# Systemd aliases
+alias sc='systemctl'
+alias scu='systemctl --user'
+alias jc='journalctl'
+alias jcu='journalctl --user'
+
+# Package management (adjust based on your distro)
+if command -v pacman >/dev/null 2>&1; then
+    # Arch Linux
+    alias update='sudo pacman -Syu'
+    alias install='sudo pacman -S'
+    alias search='pacman -Ss'
+elif command -v apt >/dev/null 2>&1; then
+    # Debian/Ubuntu
+    alias update='sudo apt update && sudo apt upgrade'
+    alias install='sudo apt install'
+    alias search='apt search'
+fi
+
+# Linux-specific keychains/ssh-agent
+# eval $(keychain --eval --quiet ~/.ssh/id_rsa_work ~/.ssh/id_rsa_personal)
