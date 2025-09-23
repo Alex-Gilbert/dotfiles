@@ -1,0 +1,217 @@
+# AeroSpace config - i3-like with Alt as mod key
+# Based on /home/alex/dotfiles/.config/i3/config
+
+# Startup
+after-startup-command = []
+start-at-login = true
+
+# Normalization (like i3's smart gaps)
+enable-normalization-flatten-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = true
+
+# Layouts
+accordion-padding = 30
+default-root-container-layout = 'tiles'
+default-root-container-orientation = 'auto'
+
+# Mouse follows focus on monitor change (like i3 focus_follows_mouse no)
+on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+
+# Don't auto-unhide hidden macOS apps
+automatically-unhide-macos-hidden-apps = false
+
+# Key mapping preset
+[key-mapping]
+preset = 'qwerty'
+
+# Gaps (matching i3: inner 1, outer 0)
+[gaps]
+inner.horizontal = 1
+inner.vertical = 1
+outer.left = 0
+outer.bottom = 0
+outer.top = 0
+outer.right = 0
+
+# Main binding mode - Alt as mod key
+[mode.main.binding]
+
+# CORE WINDOW MANAGEMENT
+alt-q = 'close'
+alt-f = 'fullscreen'
+alt-ctrl-f = 'layout floating tiling'
+
+# FOCUS MOVEMENT (hjkl vim-style)
+alt-h = 'focus left'
+alt-j = 'focus down'
+alt-k = 'focus up'
+alt-l = 'focus right'
+
+# WINDOW MOVEMENT
+alt-ctrl-h = 'move left'
+alt-ctrl-j = 'move down'
+alt-ctrl-k = 'move up'
+alt-ctrl-l = 'move right'
+
+# CONTAINER SPLITTING (Alt+Cmd mimics i3's $mod+$alt)
+alt-cmd-h = 'split horizontal'
+alt-cmd-v = 'split vertical'
+
+# SCRATCHPAD (using workspace S as pseudo-scratchpad)
+alt-z = ['workspace-back-and-forth', 'workspace S']
+alt-shift-z = 'move-node-to-workspace S'
+
+# WORKSPACE SWITCHING (numbers)
+alt-1 = 'workspace 1'
+alt-2 = 'workspace 2'
+alt-3 = 'workspace 3'
+alt-4 = 'workspace 4'
+alt-5 = 'workspace 5'
+alt-6 = 'workspace 6'
+alt-7 = 'workspace 7'
+alt-8 = 'workspace 8'
+alt-9 = 'workspace 9'
+alt-0 = 'workspace 10'
+
+# WORKSPACE MOVEMENT (ctrl + numbers)
+alt-ctrl-1 = 'move-node-to-workspace 1'
+alt-ctrl-2 = 'move-node-to-workspace 2'
+alt-ctrl-3 = 'move-node-to-workspace 3'
+alt-ctrl-4 = 'move-node-to-workspace 4'
+alt-ctrl-5 = 'move-node-to-workspace 5'
+alt-ctrl-6 = 'move-node-to-workspace 6'
+alt-ctrl-7 = 'move-node-to-workspace 7'
+alt-ctrl-8 = 'move-node-to-workspace 8'
+alt-ctrl-9 = 'move-node-to-workspace 9'
+alt-ctrl-0 = 'move-node-to-workspace 10'
+
+# SPECIAL WORKSPACES
+alt-ctrl-a = 'workspace art'
+alt-grave = 'workspace-back-and-forth'
+
+# RESIZE MODE
+alt-r = 'mode resize'
+
+# MOVE MODE
+alt-shift-m = 'mode move'
+
+# SERVICE MODE
+alt-shift-semicolon = 'mode service'
+
+# GAPS CONTROL
+alt-shift-g = 'resize smart +5'
+alt-ctrl-g = 'resize smart -5'
+
+# FLATTEN/RESET
+alt-shift-r = 'flatten-workspace-tree'
+
+# MONITOR OPERATIONS
+alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
+
+# Resize mode
+[mode.resize.binding]
+h = 'resize width -50'
+j = 'resize height +50'
+k = 'resize height -50'
+l = 'resize width +50'
+
+# Faster resizing
+shift-h = 'resize width -100'
+shift-j = 'resize height +100'
+shift-k = 'resize height -100'
+shift-l = 'resize width +100'
+
+# Fine control
+minus = 'resize smart -50'
+equal = 'resize smart +50'
+shift-minus = 'resize smart -100'
+shift-equal = 'resize smart +100'
+
+# Back to normal
+enter = 'mode main'
+escape = 'mode main'
+alt-r = 'mode main'
+
+# Move mode
+[mode.move.binding]
+# Move window in workspace
+h = 'move left'
+j = 'move down'
+k = 'move up'
+l = 'move right'
+
+# Back to normal
+enter = 'mode main'
+escape = 'mode main'
+alt-shift-m = 'mode main'
+
+# Service mode
+[mode.service.binding]
+escape = ['reload-config', 'mode main']
+r = ['flatten-workspace-tree', 'mode main']  # reset layout
+f = ['layout floating tiling', 'mode main']  # toggle floating
+backspace = ['close-all-windows-but-current', 'mode main']
+
+# Join operations (like i3's mark/goto)
+alt-shift-h = ['join-with left', 'mode main']
+alt-shift-j = ['join-with down', 'mode main']
+alt-shift-k = ['join-with up', 'mode main']
+alt-shift-l = ['join-with right', 'mode main']
+
+# WINDOW RULES (matching i3 config)
+
+# Art applications to art workspace
+[[on-window-detected]]
+if.app-name-regex-substring = 'krita'
+run = 'move-node-to-workspace art'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'blender'
+run = 'move-node-to-workspace art'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'gimp'
+run = 'move-node-to-workspace art'
+
+# Communication apps
+[[on-window-detected]]
+if.app-id = 'org.mozilla.thunderbird'
+run = 'move-node-to-workspace 9'
+
+[[on-window-detected]]
+if.app-id = 'com.hnc.Discord'
+run = 'move-node-to-workspace 10'
+
+[[on-window-detected]]
+if.app-id = 'com.spotify.client'
+run = 'move-node-to-workspace 10'
+
+# Float certain windows by default (matching i3 for_window rules)
+[[on-window-detected]]
+if.app-name-regex-substring = 'preferences'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'bluetooth'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.window-title-regex-substring = 'picture.in.picture'
+check-further-callbacks = false
+run = 'layout floating'
+
+# Focus new windows (matching i3 behavior)
+[[on-window-detected]]
+if.app-id = 'org.chromium.thorium'
+check-further-callbacks = true
+run = []  # Just for focus, AeroSpace handles this
+
+[[on-window-detected]]
+if.app-id = 'net.kovidgoyal.kitty'
+check-further-callbacks = true
+run = []  # Just for focus, AeroSpace handles this
+
+[[on-window-detected]]
+if.app-id = 'com.microsoft.VSCode'
+check-further-callbacks = true
+run = []  # Just for focus, AeroSpace handles this

@@ -1,0 +1,66 @@
+# Ghostty Configuration with Kanagawa Theme
+# Based on the Kanagawa colorscheme
+
+# Font configuration
+font-family = "JetBrainsMono Nerd Font"
+font-size = 12
+
+# Window configuration
+window-padding-x = 10
+window-padding-y = 10
+
+# Kanagawa colorscheme
+# Source: https://github.com/rebelot/kanagawa.nvim/
+background = #1F1F28
+foreground = #DCD7BA
+selection-background = #2D4F67
+selection-foreground = #C8C093
+cursor-color = #C8C093
+
+# Normal colors
+palette = 0=#16161D
+palette = 1=#C34043
+palette = 2=#76946A
+palette = 3=#C0A36E
+palette = 4=#7E9CD8
+palette = 5=#957FB8
+palette = 6=#6A9589
+palette = 7=#C8C093
+
+# Bright colors
+palette = 8=#727169
+palette = 9=#E82424
+palette = 10=#98BB6C
+palette = 11=#E6C384
+palette = 12=#7FB4CA
+palette = 13=#938AA9
+palette = 14=#7AA89F
+palette = 15=#DCD7BA
+
+# Extended colors
+palette = 16=#FFA066
+palette = 17=#FF5D62
+
+# Shell integration
+shell-integration = fish
+
+# Performance
+gtk-single-instance = true
+
+# macOS specific
+macos-option-as-alt = true
+macos-titlebar-style = tabs
+
+# Scrollback
+scrollback-limit = 10000
+
+# Window
+window-decoration = true
+window-theme = dark
+
+# Cursor
+cursor-style = block
+cursor-style-blink = true
+
+# Copy on select
+copy-on-select = clipboard
