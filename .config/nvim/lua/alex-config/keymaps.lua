@@ -776,4 +776,47 @@ M.dap_keys = {
 		desc = "[d]ebug [w]idgets",
 	},
 }
+
+M.set_crates_keys = function(bufnr)
+	local crates = require("crates")
+	local opts = { silent = true, buffer = bufnr }
+
+	-- Toggle UI elements (virtual text)
+	keymap("n", "<leader>ct", crates.toggle, "[C]rates [T]oggle", opts)
+	keymap("n", "<leader>cr", crates.reload, "[C]rates [R]eload", opts)
+
+	-- Popup keymaps
+	keymap("n", "<leader>cv", crates.show_versions_popup, "[C]rates [V]ersions", opts)
+	keymap("n", "<leader>cf", crates.show_features_popup, "[C]rates [F]eatures", opts)
+	keymap("n", "<leader>cd", crates.show_dependencies_popup, "[C]rates [D]ependencies", opts)
+	keymap("n", "<leader>ci", crates.show_crate_popup, "[C]rates [I]nfo", opts)
+
+	-- Update/upgrade crates
+	keymap("n", "<leader>cu", crates.update_crate, "[C]rates [U]pdate", opts)
+	keymap("v", "<leader>cu", crates.update_crates, "[C]rates [U]pdate", opts)
+	keymap("n", "<leader>cU", crates.upgrade_crate, "[C]rates [U]pgrade", opts)
+	keymap("v", "<leader>cU", crates.upgrade_crates, "[C]rates [U]pgrade", opts)
+	keymap("n", "<leader>ca", crates.update_all_crates, "[C]rates Update [A]ll", opts)
+	keymap("n", "<leader>cA", crates.upgrade_all_crates, "[C]rates Upgrade [A]ll", opts)
+
+	-- Extract and expand
+	keymap("n", "<leader>cx", crates.expand_plain_crate_to_inline_table, "[C]rates E[x]pand", opts)
+	keymap("n", "<leader>cX", crates.extract_crate_into_table, "[C]rates E[X]tract", opts)
+
+	-- Open external links
+	keymap("n", "<leader>ch", crates.open_homepage, "[C]rates [H]omepage", opts)
+	keymap("n", "<leader>cR", crates.open_repository, "[C]rates [R]epository", opts)
+	keymap("n", "<leader>cD", crates.open_documentation, "[C]rates [D]ocumentation", opts)
+	keymap("n", "<leader>cC", crates.open_crates_io, "[C]rates Open [C]rates.io", opts)
+
+	-- Override K for hover in Cargo.toml
+	keymap("n", "K", function()
+		if crates.popup_available() then
+			crates.show_popup()
+		else
+			vim.lsp.buf.hover()
+		end
+	end, "Show Crate Info", opts)
+end
+
 return M

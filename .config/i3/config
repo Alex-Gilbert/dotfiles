@@ -13,86 +13,52 @@ font pango:JetBrainsMono Nerd Font 10
 # Use Mouse+$mod to drag floating windows
 floating_modifier $mod
 
-# Kill focused window
+# ========== ALL KEYBINDINGS (organized to prevent conflicts) ==========
+
+# CORE WINDOW MANAGEMENT
 bindsym $mod+q kill
+bindsym $mod+f fullscreen toggle
+bindsym $mod+ctrl+f floating toggle
 
-# Start terminal
-bindsym $mod+t exec kitty
-
-# Start browser
-bindsym $mod+b exec thorium-browser
-
-# Start file manager
-bindsym $mod+e exec dolphin
-
-# Start rofi (application launcher)
-bindsym $mod+a exec rofi -show drun
-bindsym $mod+Tab exec rofi -show window
-
-# Change focus
+# FOCUS MOVEMENT (hjkl vim-style)
 bindsym $mod+h focus left
 bindsym $mod+j focus down
 bindsym $mod+k focus up
 bindsym $mod+l focus right
 
-# Move focused window
+# WINDOW MOVEMENT
 bindsym $mod+ctrl+h move left
 bindsym $mod+ctrl+j move down
 bindsym $mod+ctrl+k move up
 bindsym $mod+ctrl+l move right
 
-
-# Always use split container mode by default (more like bspwm's binary tree)
-# This automatically splits windows in alternating orientations
-for_window [class=".*"] split toggle
-
-# Split in horizontal orientation
+# CONTAINER SPLITTING
 bindsym $mod+$alt+h split h
-
-# Split in vertical orientation
 bindsym $mod+$alt+v split v
 
-# Enter fullscreen mode for the focused container
-bindsym $mod+f fullscreen toggle
+# FOCUS PARENT/CHILD
+bindsym $mod+shift+p focus parent
+bindsym $mod+ctrl+shift+p focus child
 
-# Canvas mode toggle (replaces layout cycling)
-bindsym $mod+w exec ~/dotfiles/scripts/canvas-mode.sh toggle
+# SCRATCHPAD
+bindsym $mod+z scratchpad show
+bindsym $mod+shift+z move scratchpad
 
-# Device check shortcut  
-bindsym $mod+shift+w exec ~/dotfiles/scripts/canvas-mode.sh check && kitty
+# APPLICATION LAUNCHERS
+bindsym $mod+t exec kitty
+bindsym $mod+b exec thorium-browser
+bindsym $mod+a exec rofi -show drun
+bindsym $mod+Tab exec rofi -show window
+bindsym $mod+shift+Return exec kitty --class floating-terminal
 
-# Dedicated art workspace on Kamvas when in canvas mode
-set $wsart "art"
-bindsym $mod+ctrl+a workspace $wsart
+# ADDITIONAL APP SHORTCUTS
+bindsym $mod+shift+t exec thunderbird
+bindsym $mod+shift+d exec discord
+bindsym $mod+shift+s exec spotify
+bindsym $mod+shift+v exec code
+bindsym $mod+e exec kitty -e yazi
 
-# Art application window rules
-for_window [class="krita"] floating disable
-for_window [class="krita" title=".*Docker.*"] floating enable, sticky enable
-for_window [class="Blender"] floating disable  
-for_window [class="Gimp"] floating disable
-for_window [class="Gimp" window_type="dialog"] floating enable
-
-# Move art apps to art workspace
-assign [class="krita"] $wsart
-assign [class="Blender"] $wsart
-assign [class="Gimp"] $wsart
-
-# Toggle tiling / floating
-bindsym $mod+ctrl+f floating toggle
-
-# Workspace names
-set $ws1 "1"
-set $ws2 "2"
-set $ws3 "3"
-set $ws4 "4"
-set $ws5 "5"
-set $ws6 "6"
-set $ws7 "7"
-set $ws8 "8"
-set $ws9 "9"
-set $ws10 "10"
-
-# Switch to workspace
+# WORKSPACE SWITCHING (numbers)
 bindsym $mod+1 workspace $ws1
 bindsym $mod+2 workspace $ws2
 bindsym $mod+3 workspace $ws3
@@ -104,7 +70,7 @@ bindsym $mod+8 workspace $ws8
 bindsym $mod+9 workspace $ws9
 bindsym $mod+0 workspace $ws10
 
-# Move focused container to workspace
+# WORKSPACE MOVEMENT (ctrl + numbers)
 bindsym $mod+ctrl+1 move container to workspace $ws1
 bindsym $mod+ctrl+2 move container to workspace $ws2
 bindsym $mod+ctrl+3 move container to workspace $ws3
@@ -116,15 +82,199 @@ bindsym $mod+ctrl+8 move container to workspace $ws8
 bindsym $mod+ctrl+9 move container to workspace $ws9
 bindsym $mod+ctrl+0 move container to workspace $ws10
 
-# Restart i3 inplace
-bindsym $mod+$alt+r restart
+# SPECIAL WORKSPACES
+bindsym $mod+ctrl+a workspace $wsart
+bindsym $mod+grave workspace back_and_forth
 
-# Exit i3
-bindsym $mod+$alt+q exec "i3-nagbar -t warning -m 'Exit i3?' -B 'Yes' 'i3-msg exit'"
+# VOLUME CONTROLS (using equals/backspace to avoid conflicts)
+bindsym $mod+equal exec pactl set-sink-volume @DEFAULT_SINK@ +5%
+bindsym $mod+shift+equal exec pactl set-sink-volume @DEFAULT_SINK@ +10%
+bindsym $mod+BackSpace exec pactl set-sink-volume @DEFAULT_SINK@ -5%
+bindsym $mod+shift+BackSpace exec pactl set-sink-volume @DEFAULT_SINK@ -10%
+bindsym $mod+m exec pactl set-sink-mute @DEFAULT_SINK@ toggle
 
-# Screenshots with flameshot
+# BRIGHTNESS CONTROLS (using brackets)
+bindsym $mod+bracketright exec brightnessctl set +10%
+bindsym $mod+shift+bracketright exec brightnessctl set +20%
+bindsym $mod+bracketleft exec brightnessctl set 10%-
+bindsym $mod+shift+bracketleft exec brightnessctl set 20%-
+
+# MEDIA CONTROLS
+bindsym $mod+space exec playerctl play-pause
+bindsym $mod+period exec playerctl next
+bindsym $mod+comma exec playerctl previous
+
+# SCREENSHOTS
 bindsym $mod+c exec flameshot full -c
 bindsym $mod+shift+c exec flameshot gui
+
+# DISPLAY MANAGEMENT 
+
+# SYSTEM CONTROLS
+bindsym $mod+shift+l exec i3lock -c 1f1f28
+bindsym $mod+r mode "resize"
+bindsym $mod+shift+m mode "move"
+bindsym $mod+shift+r exec kitty -e nvim ~/.config/i3/config
+
+# GAPS CONTROL
+bindsym $mod+shift+g gaps inner current plus 5
+bindsym $mod+ctrl+g gaps inner current minus 5
+bindsym $mod+$alt+g gaps inner all set 0; gaps outer all set 0
+
+# SYSTEM INFO
+bindsym $mod+i exec kitty -e htop
+bindsym $mod+shift+i exec kitty -e nvtop
+bindsym $mod+n exec kitty -e nmtui
+
+# WALLPAPER/THEME
+bindsym $mod+shift+b exec feh --bg-scale ~/wallpaper.jpg
+
+# SYSTEM MANAGEMENT
+bindsym $mod+$alt+r restart
+bindsym $mod+$alt+q exec "i3-nagbar -t warning -m 'Exit i3?' -B 'Yes' 'i3-msg exit'"
+
+# CANVAS MODE (your existing custom functionality)
+bindsym $mod+w exec ~/dotfiles/scripts/canvas-mode.sh toggle
+bindsym $mod+shift+w exec ~/dotfiles/scripts/canvas-mode.sh check && kitty
+
+# HARDWARE FUNCTION KEYS (fallback - these don't conflict)
+bindsym XF86AudioRaiseVolume exec pactl set-sink-volume @DEFAULT_SINK@ +5%
+bindsym XF86AudioLowerVolume exec pactl set-sink-volume @DEFAULT_SINK@ -5%
+bindsym XF86AudioMute exec pactl set-sink-mute @DEFAULT_SINK@ toggle
+bindsym XF86MonBrightnessUp exec brightnessctl set +10%
+bindsym XF86MonBrightnessDown exec brightnessctl set 10%-
+bindsym XF86AudioPlay exec playerctl play-pause
+bindsym XF86AudioNext exec playerctl next
+bindsym XF86AudioPrev exec playerctl previous
+
+# ========== RESIZE MODE ==========
+mode "resize" {
+    bindsym h resize shrink width 10 px or 10 ppt
+    bindsym j resize grow height 10 px or 10 ppt
+    bindsym k resize shrink height 10 px or 10 ppt
+    bindsym l resize grow width 10 px or 10 ppt
+    
+    # Faster resizing
+    bindsym shift+h resize shrink width 20 px or 20 ppt
+    bindsym shift+j resize grow height 20 px or 20 ppt
+    bindsym shift+k resize shrink height 20 px or 20 ppt
+    bindsym shift+l resize grow width 20 px or 20 ppt
+    
+    # Back to normal
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+    bindsym $mod+r mode "default"
+}
+
+# ========== MOVE MODE ==========
+mode "move" {
+    # Move window to different positions in workspace
+    bindsym h move left 30 px
+    bindsym j move down 30 px
+    bindsym k move up 30 px
+    bindsym l move right 30 px
+    
+    # Faster movement
+    bindsym shift+h move left 100 px
+    bindsym shift+j move down 100 px
+    bindsym shift+k move up 100 px
+    bindsym shift+l move right 100 px
+    
+    # BSP-like positioning shortcuts
+    bindsym Left move position 0 0
+    bindsym Right move position 50 ppt 0
+    bindsym Up move position 0 0
+    bindsym Down move position 0 50 ppt
+    bindsym c move position center
+    
+    # Move to screen edges/corners
+    bindsym ctrl+h move position 0 center
+    bindsym ctrl+l move position 100 ppt center
+    bindsym ctrl+k move position center 0
+    bindsym ctrl+j move position center 100 ppt
+    
+    # Corner positions
+    bindsym 1 move position 0 0
+    bindsym 2 move position 50 ppt 0
+    bindsym 3 move position 100 ppt 0
+    bindsym 4 move position 0 50 ppt
+    bindsym 5 move position center
+    bindsym 6 move position 100 ppt 50 ppt
+    bindsym 7 move position 0 100 ppt
+    bindsym 8 move position 50 ppt 100 ppt
+    bindsym 9 move position 100 ppt 100 ppt
+    
+    # Back to normal
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+    bindsym $mod+shift+m mode "default"
+}
+
+# ========== WORKSPACE DEFINITIONS ==========
+set $ws1 "1"
+set $ws2 "2"
+set $ws3 "3"
+set $ws4 "4"
+set $ws5 "5"
+set $ws6 "6"
+set $ws7 "7"
+set $ws8 "8"
+set $ws9 "9"
+set $ws10 "10"
+set $wsart "art"
+
+# ========== WINDOW RULES ==========
+
+# Always use split container mode by default (more like bspwm's binary tree)
+for_window [class=".*"] split toggle
+
+# Art application window rules
+for_window [class="krita"] floating disable
+for_window [class="krita" title=".*Docker.*"] floating enable, sticky enable
+for_window [class="Blender"] floating disable  
+for_window [class="Gimp"] floating disable
+for_window [class="Gimp" window_type="dialog"] floating enable
+
+# Float certain windows by default
+for_window [class="pavucontrol"] floating enable
+for_window [class="Blueman-manager"] floating enable
+for_window [class="Nm-connection-editor"] floating enable
+for_window [class="Lxappearance"] floating enable
+for_window [class="Arandr"] floating enable
+for_window [title="Picture-in-Picture"] floating enable, sticky enable
+for_window [class="feh"] floating enable
+for_window [class="Sxiv"] floating enable
+for_window [class="mpv"] floating enable
+for_window [window_role="pop-up"] floating enable
+for_window [window_role="task_dialog"] floating enable
+for_window [title="Preferences$"] floating enable
+for_window [class="floating-terminal"] floating enable, resize set 800 600, move position center
+
+# Make ripdrag windows floating
+for_window [class="ripdrag"] floating enable
+for_window [class="ripdrag"] resize set 300 400
+for_window [class="ripdrag"] move position center
+
+# Center floating windows
+for_window [floating] move position center
+
+# Focus new windows
+for_window [class="Thorium"] focus
+for_window [class="kitty"] focus
+for_window [class="Code"] focus
+
+# Urgent window handling
+for_window [urgent=latest] focus
+
+# ========== WORKSPACE ASSIGNMENTS ==========
+assign [class="krita"] $wsart
+assign [class="Blender"] $wsart
+assign [class="Gimp"] $wsart
+assign [class="thunderbird"] $ws9
+assign [class="discord"] $ws10
+assign [class="Spotify"] $ws10
+
+# ========== APPEARANCE ==========
 
 # Gaps and borders
 gaps inner 1
@@ -132,30 +282,55 @@ smart_gaps on
 default_border pixel 1
 hide_edge_borders smart
 
-# Color settings
+# Color settings (Kanagawa theme)
 # class                 border  backgr. text    indicator child_border
 client.focused          #7E9CD8 #7E9CD8 #DCD7BA #7E9CD8   #7E9CD8
 client.focused_inactive #223249 #223249 #DCD7BA #223249   #223249
 client.unfocused        #1F1F28 #1F1F28 #727169 #1F1F28   #1F1F28
 client.urgent           #C34043 #C34043 #DCD7BA #C34043   #C34043
 
-# Dual monitor setup
-exec_always --no-startup-id "xrandr --output DP-0 --primary --mode 3840x2160 --rate 239.99 --pos 0x0 --rotate normal --output HDMI-0 --mode 2560x1440 --pos 3840x0 --rotate left"
+# ========== STATUS BAR ==========
+bar {
+    position top
+    status_command i3blocks
+    
+    colors {
+        background #1d2021
+        statusline #ebdbb2
+        separator  #665c54
+        
+        # class            border  backgr. text
+        focused_workspace  #458588 #458588 #ebdbb2
+        active_workspace   #83a598 #83a598 #ebdbb2
+        inactive_workspace #1d2021 #1d2021 #a89984
+        urgent_workspace   #cc241d #cc241d #ebdbb2
+    }
+    
+    font pango:JetBrains Mono 9
+}
 
-# Assign workspaces to monitors
-workspace $ws1 output DP-0
-workspace $ws2 output DP-0
-workspace $ws3 output DP-0
-workspace $ws4 output DP-0
-workspace $ws5 output DP-0
-workspace $ws6 output DP-0
-workspace $ws7 output DP-0
-workspace $ws8 output DP-0
-workspace $ws9 output DP-0
-workspace $ws10 output HDMI-0
+# ========== DISPLAY CONFIGURATION ==========
 
-# Autostart applications
+# Single monitor setup (primary configuration)
+exec_always --no-startup-id "xrandr --output DP-0 --primary --mode 3840x2160 --rate 239.99 --pos 0x0 --rotate normal"
+
+# ========== AUTOSTART APPLICATIONS ==========
+
+# Essential services
 exec_always --no-startup-id "picom --config ~/.config/picom/picom-minimal.conf"
-exec_always --no-startup-id "~/.config/polybar/launch.sh"
 exec_always --no-startup-id "feh --bg-scale ~/wallpaper.jpg"
 exec --no-startup-id "dunst"
+
+# System tray applications
+exec --no-startup-id "nm-applet"
+exec --no-startup-id "blueman-applet"
+exec --no-startup-id "pasystray"
+
+# Additional services
+exec --no-startup-id "redshift-gtk"
+exec --no-startup-id "flameshot"
+exec --no-startup-id "xss-lock -- i3lock -c 1f1f28"
+
+# Auto-lock after inactivity
+exec --no-startup-id "xset s 300 300"
+exec --no-startup-id "xset dpms 600 900 1200"
