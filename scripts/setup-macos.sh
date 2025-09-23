@@ -61,7 +61,7 @@ install_packages() {
     local packages=(
         git
         stow
-        zsh
+        fish
         neovim
         tmux
         fzf
@@ -116,18 +116,30 @@ install_packages() {
 setup_shell() {
     echo "🐚 Setting up shell..."
     
-    # Add Homebrew zsh to allowed shells if not already there
-    if ! grep -q "/opt/homebrew/bin/zsh" /etc/shells; then
-        echo "Adding Homebrew zsh to allowed shells..."
-        echo "/opt/homebrew/bin/zsh" | sudo tee -a /etc/shells
+    # Determine fish path
+    local fish_path=""
+    if [[ -f "/opt/homebrew/bin/fish" ]]; then
+        fish_path="/opt/homebrew/bin/fish"
+    elif [[ -f "/usr/local/bin/fish" ]]; then
+        fish_path="/usr/local/bin/fish"
+    else
+        echo "Error: fish not found in expected locations"
+        return 1
     fi
     
-    # Set zsh as default shell
-    if [[ "$SHELL" != "/opt/homebrew/bin/zsh" ]] && [[ -f "/opt/homebrew/bin/zsh" ]]; then
-        echo "Setting zsh as default shell..."
-        chsh -s /opt/homebrew/bin/zsh
-    elif [[ "$SHELL" != "/usr/local/bin/zsh" ]] && [[ -f "/usr/local/bin/zsh" ]]; then
-        chsh -s /usr/local/bin/zsh
+    # Add Homebrew fish to allowed shells if not already there
+    if ! grep -q "$fish_path" /etc/shells; then
+        echo "Adding fish to allowed shells..."
+        echo "$fish_path" | sudo tee -a /etc/shells
+    fi
+    
+    # Set fish as default shell
+    if [[ "$SHELL" != "$fish_path" ]]; then
+        echo "Setting fish as default shell..."
+        chsh -s "$fish_path"
+        echo "✓ Fish set as default shell. Please restart your terminal."
+    else
+        echo "✓ Fish is already the default shell"
     fi
 }
 
@@ -221,11 +233,11 @@ main() {
     echo "✅ macOS setup complete!"
     echo ""
     echo "Next steps:"
-    echo "1. Restart your terminal or run: source ~/.zshrc"
+    echo "1. Restart your terminal to use fish shell"
     echo "2. Configure git: git config --global user.name 'Your Name'"
     echo "3. Configure git: git config --global user.email 'your@email.com'"
     echo "4. Set up SSH keys for GitHub"
-    echo "5. Run 'p10k configure' to set up your prompt"
+    echo "5. Fish shell configuration will be loaded from your dotfiles"
 }
 
 # Run main function
