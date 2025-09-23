@@ -14,10 +14,15 @@ alias z 'zellij -l welcome'
 alias n nvim
 alias dive 'docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock wagoodman/dive:latest'
 alias dd 'nohup dolphin $PWD > /dev/null 2>&1 &'
+alias c='xclip -selection clipboard'
+alias serena='uvx --from git+https://github.com/oraios/serena serena start-mcp-server'
+alias kay kubectl
+alias mouse-speed='xinput set-prop 14 "libinput Accel Speed"'
+alias space-check='sudo du -h --max-depth=1 . | sort -h'
 
-# PATH additions
+# ATH additions
 set -gx PATH $PATH \
-    $HOME/.nsccli/bin \
+    $HOME/binaryen-version_123/bin \
     $HOME/.npm-global/bin \
     $HOME/rga-2.11.0.28 \
     $HOME/.local/CPLEX_Studio221/cplex/bin/x86-64_linux \
@@ -29,6 +34,7 @@ set -gx PATH $PATH \
     $HOME/.local/bin \
     $HOME/.dotnet/tools \
     $HOME/.local/azure-functions \
+    $HOME/.cargo/bin \
     $HOME/dev/defcon/skyshark/target/release \
     $(go env GOBIN) \
     $(go env GOPATH)/bin
@@ -48,3 +54,6 @@ set fish_greeting
 # Custom key bindings
 bind -M insert \er 'fzf-history'
 bind -M default \er 'fzf-history'
+
+# opencode
+fish_add_path /home/alex/.opencode/bin

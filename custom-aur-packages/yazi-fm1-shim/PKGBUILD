@@ -1,0 +1,19 @@
+pkgname=yazi-fm1-shim
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="FileManager1 D-Bus shim so Chromium/Thorium 'Show in folder' opens Kitty + yazi; plus yazi-as-file-manager desktop entry"
+arch=('any')
+url='https://example.local/yazi-fm1-shim'
+license=('MIT')
+depends=('python' 'python-dbus-next' 'kitty' 'yazi' 'systemd')
+source=('yazi-fm1.py' 'yazi-fm1.service' 'yazi-folder.desktop')
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+  install -Dm755 "${srcdir}/yazi-fm1.py" "${pkgdir}/usr/bin/yazi-fm1"
+  install -Dm644 "${srcdir}/yazi-fm1.service" "${pkgdir}/usr/lib/systemd/user/yazi-fm1.service"
+  install -Dm644 "${srcdir}/yazi-folder.desktop" "${pkgdir}/usr/share/applications/yazi-folder.desktop"
+  # license stub
+  install -d "${pkgdir}/usr/share/licenses/${pkgname}"
+  printf '%s\n' "MIT-like (script is tiny). Do whatever; no warranty." > "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

@@ -57,43 +57,63 @@ return {
 				},
 			})
 
-			local servers = require("alex-config.lsp").servers
+			local lsp_config = require("alex-config.lsp")
+			local servers = lsp_config.servers
+			local external_servers = lsp_config.external_servers
+
+			-- Run setup_config for all external servers that define it
+			for server_name, server_config in pairs(external_servers) do
+				if type(server_config.setup_config) == "function" then
+					server_config.setup_config()
+				end
+			end
+
 			require("mason").setup()
 
-			-- You can add other tools here that you want Mason to install
-			-- for you, so that they are available from within Neovim.
+			-- Only install servers from the main servers table
 			local ensure_installed = vim.tbl_keys(servers or {})
-			vim.list_extend(ensure_installed, require("alex-config.lsp").additional_tools)
+			vim.list_extend(ensure_installed, lsp_config.additional_tools)
 
 			local navic = require("nvim-navic")
 
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
+
+			-- Helper function to setup an LSP server
+			local function setup_server(server_name, server_config)
+				server_config = server_config or {}
+				server_config.capabilities =
+					vim.tbl_deep_extend("force", {}, capabilities, server_config.capabilities or {})
+
+				-- Attach Navic to servers that support document symbols
+				local original_on_attach = server_config.on_attach
+
+				server_config.on_attach = function(client, bufnr)
+					if original_on_attach then
+						original_on_attach(client, bufnr)
+					end
+
+					if client.server_capabilities.documentSymbolProvider then
+						navic.attach(client, bufnr)
+					end
+				end
+
+				require("lspconfig")[server_name].setup(server_config)
+			end
 
 			require("mason-lspconfig").setup({
 				automatic_installation = true,
 				ensure_installed = {},
 				handlers = {
 					function(server_name)
-						local server = servers[server_name] or {}
-						server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
-
-						-- Attach Navic to servers that support document symbols
-						local orginal_on_attach = server.on_attach
-
-						server.on_attach = function(client, bufnr)
-							if orginal_on_attach then
-								orginal_on_attach(client, bufnr)
-							end
-
-							if client.server_capabilities.documentSymbolProvider then
-								navic.attach(client, bufnr)
-							end
-						end
-
-						require("lspconfig")[server_name].setup(server)
+						setup_server(server_name, servers[server_name])
 					end,
 				},
 			})
+
+			-- Setup external servers (not managed by Mason)
+			for server_name, server_config in pairs(external_servers) do
+				setup_server(server_name, server_config)
+			end
 		end,
 	},
 
@@ -105,16 +125,16 @@ return {
 		opts = {
 			notify_on_error = false,
 			format_on_save = function(bufnr)
-				-- Disable "format_on_save lsp_fallback" for languages that don't
-				-- have a well standardized coding style. You can add additional
-				-- languages here or re-enable it for the disabled ones.
-				local disable_filetypes = { c = true, cpp = true }
-				local lsp_format_opt
-				if disable_filetypes[vim.bo[bufnr].filetype] then
-					lsp_format_opt = "never"
-				else
-					lsp_format_opt = "fallback"
-				end
+				-- -- Disable "format_on_save lsp_fallback" for languages that don't
+				-- -- have a well standardized coding style. You can add additional
+				-- -- languages here or re-enable it for the disabled ones.
+				-- local disable_filetypes = { c = true, cpp = true }
+				-- local lsp_format_opt
+				-- if disable_filetypes[vim.bo[bufnr].filetype] then
+				lsp_format_opt = "never"
+				-- else
+				-- 	lsp_format_opt = "fallback"
+				-- end
 				return {
 					timeout_ms = 500,
 					lsp_format = lsp_format_opt,
@@ -187,7 +207,7 @@ return {
 
 	{ -- rustaceanvim
 		"mrcjkb/rustaceanvim",
-		version = "^5",
+		version = "^6",
 		lazy = false,
 		config = function()
 			vim.g.rustaceanvim = {
@@ -197,6 +217,62 @@ return {
 					end,
 				},
 			}
+		end,
+	},
+	{
+		"saecki/crates.nvim",
+		event = { "BufRead Cargo.toml" }, -- Lazy load only when opening Cargo.toml
+		dependencies = { "nvim-lua/plenary.nvim" },
+		config = function()
+			local crates = require("crates")
+
+			crates.setup({
+				-- Smart features
+				smart_insert = true,
+				remove_enabled_default_features = true,
+				remove_empty_features = true,
+				insert_closing_quote = true,
+
+				-- Auto features
+				autoload = true,
+				autoupdate = true,
+				autoupdate_throttle = 250,
+				loading_indicator = true,
+
+				-- Enable crate name completion (searches crates.io)
+				completion = {
+					crates = {
+						enabled = true,
+						max_results = 8,
+						min_chars = 3,
+					},
+				},
+
+				-- Use LSP for completion and code actions
+				lsp = {
+					enabled = true,
+					actions = true,
+					completion = true,
+					hover = true,
+					on_attach = function(client, bufnr)
+						-- This will use your existing LSP on_attach if needed
+						local keymaps = require("alex-config.keymaps")
+						if keymaps.set_crates_keys then
+							keymaps.set_crates_keys(bufnr)
+						end
+					end,
+				},
+
+				-- Popup configuration
+				popup = {
+					autofocus = false,
+					hide_on_select = false,
+					show_version_date = true,
+					show_dependency_version = true,
+					style = "minimal",
+					border = "rounded", -- Match your Neovim style
+				},
+			})
 		end,
 	},
 }

@@ -1,0 +1,9 @@
+[Unit]
+Description=FileManager1 shim for yazi (opens Kitty + yazi)
+
+[Service]
+ExecStart=/usr/bin/yazi-fm1
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

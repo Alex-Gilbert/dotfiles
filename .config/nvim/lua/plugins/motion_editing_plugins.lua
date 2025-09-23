@@ -66,9 +66,16 @@ return {
 	{
 		"folke/flash.nvim",
 		event = "VeryLazy",
-		-- config = flash_config,
 		keys = require("alex-config.keymaps").flash_keys,
-		opts = {},
+		opts = {
+			-- options used when flash is activated through
+			-- `f`, `F`, `t`, `T`, `;` and `,` motions
+			modes = {
+				char = {
+					enabled = false,
+				},
+			},
+		},
 	},
 
 	-- Yanky

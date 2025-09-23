@@ -61,7 +61,7 @@ zinit snippet OMZP::command-not-found
 zinit load zsh-users/zsh-history-substring-search
 zinit ice wait atload'_history_substring_search_config'
 
-source ~/zsh-vi-mode-alex.zsh
+# source ~/zsh-vi-mode-alex.zsh
 
 # Load zsh-completions
 autoload -U compinit && compinit
@@ -77,7 +77,7 @@ zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' menu no
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
-zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
+# zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 
 
 # Aliases
@@ -117,6 +117,6 @@ export GAMS_VERSION=46.4
 # source $HOME/lua51/bin/activate
 
 # Shell Integration
-eval "$(zoxide init zsh --cmd cd)"
+# eval "$(zoxide init zsh --cmd cd)"
 eval "$(fzf --zsh)"
 # eval $(keychain --eval --quiet ~/.ssh/id_rsa_work ~/.ssh/id_rsa_personal)

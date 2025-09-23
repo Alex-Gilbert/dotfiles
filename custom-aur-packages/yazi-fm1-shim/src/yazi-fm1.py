@@ -1,0 +1,1 @@
+/home/alex/dotfiles/custom-aur-packages/yazi-fm1-shim/yazi-fm1.py

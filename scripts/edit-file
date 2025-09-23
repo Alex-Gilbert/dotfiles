@@ -1,0 +1,10 @@
+#!/bin/bash
+# Save as ~/.local/bin/edit-file
+
+mime=$(file -b --mime-type "$1")
+case "$mime" in
+    image/*) exec krita "$@" ;;
+    video/*) exec kdenlive "$@" ;;
+    audio/*) exec audacity "$@" ;;
+    *) exec nvim "$@" ;;
+esac
