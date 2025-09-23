@@ -1,0 +1,68 @@
+# skhd config - handles app launches, media, system controls
+# Works alongside AeroSpace for i3-like experience on macOS
+# Alt is the primary mod key
+# Terminal: __TERMINAL_NAME__
+
+# APPLICATION LAUNCHERS
+alt - t : open -na __TERMINAL_PATH__
+alt - b : open -na "/Applications/Thorium.app"
+alt - e : open -na __TERMINAL_PATH__ __TERMINAL_YAZI_ARGS__
+
+# Launcher bindings for Sol (or use spotlight/raycast)
+alt - a : open -na /Applications/Sol.app --args --launcher
+alt - tab : open -na /Applications/Sol.app --args --windows
+
+# Floating terminal
+alt + shift - return : open -na __TERMINAL_PATH__ __TERMINAL_FLOAT_ARGS__
+
+# ADDITIONAL APP SHORTCUTS
+alt + shift - t : open -na /Applications/Thunderbird.app
+alt + shift - d : open -na /Applications/Discord.app
+alt + shift - s : open -na /Applications/Spotify.app
+alt + shift - v : open -na "/Applications/Visual Studio Code.app"
+
+# VOLUME CONTROLS
+alt - equal : osascript -e "set volume output volume (output volume of (get volume settings) + 5)"
+alt + shift - equal : osascript -e "set volume output volume (output volume of (get volume settings) + 10)"
+alt - backspace : osascript -e "set volume output volume (output volume of (get volume settings) - 5)"
+alt + shift - backspace : osascript -e "set volume output volume (output volume of (get volume settings) - 10)"
+alt - m : osascript -e "set volume output muted not (output muted of (get volume settings))"
+
+# BRIGHTNESS CONTROLS (requires 'brightness' from homebrew)
+alt - rightbracket : brightness -i 0.1
+alt + shift - rightbracket : brightness -i 0.2
+alt - leftbracket : brightness -i -0.1
+alt + shift - leftbracket : brightness -i -0.2
+
+# MEDIA CONTROLS
+alt - space : osascript -e 'tell application "Spotify" to playpause' || osascript -e 'tell application "Music" to playpause'
+alt - period : osascript -e 'tell application "Spotify" to next track' || osascript -e 'tell application "Music" to next track'
+alt - comma : osascript -e 'tell application "Spotify" to previous track' || osascript -e 'tell application "Music" to previous track'
+
+# SCREENSHOTS
+alt - c : screencapture -c  # Full screen to clipboard
+alt + shift - c : screencapture -i -c  # Interactive selection to clipboard
+
+# SYSTEM CONTROLS
+alt + shift - l : /System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend
+
+# SYSTEM INFO (matching i3 bindings)
+alt - i : open -na __TERMINAL_PATH__ __TERMINAL_BTOP_ARGS__
+alt + shift - i : open -na __TERMINAL_PATH__ __TERMINAL_POWER_ARGS__
+alt - n : open -x /System/Library/PreferencePanes/Network.prefPane
+
+# WALLPAPER (using macOS wallpaper command if available, or fallback)
+alt + shift - b : osascript -e 'tell application "System Events" to tell every desktop to set picture to "~/wallpaper.jpg"'
+
+# Canvas mode toggle (if you have a macOS equivalent script)
+# alt - w : ~/dotfiles/scripts/canvas-mode.sh toggle
+
+# System restart (be careful with this!)
+# alt + cmd - r : osascript -e 'tell app "System Events" to restart'
+
+# NOTE: Some i3 bindings are handled by AeroSpace:
+# - Window management (focus, move, resize)
+# - Workspace switching
+# - Layout changes
+# - Gaps control
+# These should NOT be duplicated here to avoid conflicts
