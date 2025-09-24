@@ -1,32 +1,10 @@
 #!/bin/bash
-# Usage: git-clone [w|p] <repository-url>
-# Clones a git repository and places it in the correct directory structure:
-# ~/dev/remote/HOST/ACCOUNT/REPO/
-# Also sets up appropriate git config based on work or personal context
 
-if [ -z "$1" ] || [ -z "$2" ]; then
-  echo "Usage: $0 [w|p] <repository-url>"
-  echo "  w: work context"
-  echo "  p: personal context"
-  exit 1
-fi
+PREFIX="p."
+GIT_NAME="Alex Gilbert"
+GIT_EMAIL="alexp.gilbert@pm.me"
 
-# Determine the prefix and Git configuration based on the first argument
-if [ "$1" == "w" ]; then
-  PREFIX="w."
-  GIT_NAME="dc-apg"
-  GIT_EMAIL="alex.gilbert@defconai.com"
-elif [ "$1" == "p" ]; then
-  PREFIX="p."
-  GIT_NAME="Alex Gilbert"
-  GIT_EMAIL="alexp.gilbert@pm.me"
-else
-  echo "Invalid option. Use 'w' for work or 'p' for personal."
-  echo "Usage: $0 [w|p] <repository-url>"
-  exit 1
-fi
-
-REPO_URL="$2"
+REPO_URL="$1"
 echo "Original URL: $REPO_URL"
 
 # Parse the repository information from the URL
