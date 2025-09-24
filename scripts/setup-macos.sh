@@ -98,8 +98,6 @@ install_packages() {
     echo "📦 Installing additional tools via cask..."
     local casks=(
         kitty           # Terminal emulator
-        google-chrome
-        visual-studio-code
     )
     
     for cask in "${casks[@]}"; do

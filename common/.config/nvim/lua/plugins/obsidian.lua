@@ -2,6 +2,7 @@ return {
 	"epwalsh/obsidian.nvim",
 	version = "*", -- recommended, use latest release instead of latest commit
 	lazy = true,
+	keys = require("alex-config.keymaps").obsidian_keys,
 	ft = "markdown",
 	dependencies = {
 		"nvim-lua/plenary.nvim",
@@ -9,94 +10,49 @@ return {
 	opts = {
 		workspaces = {
 			{
-				name = "zettelkasten",
-				path = "~/Zettelkasten",
+				name = "personal",
+				path = "~/alex-vault/",
 			},
 		},
-		notes_subdir = "00-inbox",
 
-		-- Template handling
-		templates = {
-			subdir = "90-resources/templates",
-		},
-
+		notes_subdir = "000-INBOX",
 		new_notes_location = "notes_subdir",
+
+		---@param title string|?
+		---@return string
+		note_id_func = function(title)
+			local suffix = ""
+			title = title or vim.fn.input("Title: ")
+			if title ~= nil then
+				suffix = title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):lower()
+			else
+				for _ = 1, 4 do
+					suffix = suffix .. string.char(math.random(65, 90))
+				end
+			end
+			local timestamp = os.date("%Y%m%d")
+			return timestamp .. "-" .. suffix
+		end,
 
 		completion = {
 			nvim_cmp = true,
 			min_chars = 2,
 		},
 
-		preferred_link_style = "wiki",
-
-		-- Disable automatic UI features
-		ui = { enable = false },
-
-		-- Custom note ID function that returns just the title
-		---@param title string|?
-		---@return string
-		note_id_func = function(title)
-			if title ~= nil then
-				return title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):lower()
-			else
-				return tostring(os.time())
-			end
-		end,
-
-		note_frontmatter_func = function(note)
-			local out = { id = note.id, tags = note.tags }
-			if note.metadata ~= nil and not vim.tbl_isempty(note.metadata) then
-				for k, v in pairs(note.metadata) do
-					out[k] = v
-				end
-			end
-			return out
-		end,
-
-		-- Optional, customize how note file names are generated given the ID, target directory, and title.
-		---@param spec { id: string, dir: obsidian.Path, title: string|? }
-		---@return string|obsidian.Path The full path to the new note.
-		note_path_func = function(spec)
-			-- Use just the note ID as the filename
-			local path = spec.dir / tostring(spec.id)
-			return path:with_suffix(".md")
-		end,
-
-		wiki_link_func = function(opts)
-			if opts.id == nil then
-				return string.format("[[%s]]", opts.label)
-			elseif opts.label ~= opts.id then
-				return string.format("[[%s|%s]]", opts.id, opts.label)
-			else
-				return string.format("[[%s]]", opts.id)
-			end
-		end,
-
-		-- Optional, configure key mappings.
-		disable_frontmatter = false,
-
-		-- Optional, by default when you use `:ObsidianFollowLink` on a link to an external
-		-- URL it will be ignored but you can customize this behavior here.
-		-- Windows/Linux behavior
-		daily_notes = {
+		templates = {
+			folder = "999-TEMPLATES",
 			date_format = "%Y-%m-%d",
-			template = "daily-template.md",
-			alias_format = "%B %-d, %Y",
-			default_tags = { "daily-notes" },
 			time_format = "%H:%M",
 		},
 
-		-- Load platform utilities
+		---@param url string
 		follow_url_func = function(url)
-			local platform = require("utils.platform")
-			local open_cmd = platform.get_open_cmd()
-			vim.fn.jobstart({ open_cmd, url })
+			vim.fn.jobstart({ "xdg-open", url }) -- linux
 		end,
 
+		---@param img string
 		follow_img_func = function(img)
-			local platform = require("utils.platform")
-			local open_cmd = platform.get_open_cmd()
-			vim.fn.jobstart({ open_cmd, img })
+			vim.fn.jobstart({ "xdg-open", img }) -- linux
 		end,
 
 		picker = { name = "telescope.nvim" },
@@ -105,53 +61,30 @@ return {
 	},
 	config = function(_, opts)
 		require("obsidian").setup(opts)
-		local platform = require("utils.platform")
-		
 		local process_note = function()
 			local filepath = vim.fn.expand("%:p") -- Get the current file path
 			local filename = vim.fn.expand("%:t") -- Get the current file name
 			local filedir = vim.fn.expand("%:p:h") -- Get the file's directory
 			local sanitized_title = filename:gsub("%.md$", ""):gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):lower()
 
-			-- Fetch file creation date using platform-appropriate stat command
-			local stat_cmd = platform.get_stat_cmd("birth")
-			local handle = io.popen(stat_cmd .. ' "' .. filepath .. '"')
+			-- Fetch file creation date using `stat`
+			local handle = io.popen('stat -c %w "' .. filepath .. '"') -- `%w` gets the birth/creation time
 			local creation_date = handle:read("*a"):gsub("\n", "")
 			handle:close()
 
-			-- If birth time is not available, fallback to modification time
-			if creation_date == "" or creation_date == "?" or creation_date == "-" then
-				local mtime_cmd = platform.get_stat_cmd("modified")
-				local mtime_handle = io.popen(mtime_cmd .. ' "' .. filepath .. '"')
-				creation_date = mtime_handle:read("*a"):gsub("\n", "")
+			-- If `stat` doesn't support `%w`, fallback to `mtime`
+			if creation_date == "" or creation_date == "?" then
+				local mtime_handle = io.popen('stat -c %y "' .. filepath .. '"') -- `%y` gets modification time
+				creation_date = mtime_handle:read("*a"):gsub("\n", ""):sub(1, 10):gsub("-", "")
 				mtime_handle:close()
-				
-				-- Extract date portion (handling different output formats)
-				if platform.is_macos then
-					-- macOS stat returns epoch timestamp, convert it
-					local timestamp = tonumber(creation_date)
-					if timestamp then
-						creation_date = os.date("%Y%m%d", timestamp)
-					end
-				else
-					-- Linux stat returns formatted date, extract YYYYMMDD
-					creation_date = creation_date:sub(1, 10):gsub("-", "")
-				end
 			else
-				-- Handle birth time format
-				if platform.is_macos then
-					local timestamp = tonumber(creation_date)
-					if timestamp then
-						creation_date = os.date("%Y%m%d", timestamp)
-					end
-				else
-					creation_date = creation_date:sub(1, 10):gsub("-", "")
-				end
+				creation_date = creation_date:sub(1, 10):gsub("-", "")
 			end
 
 			-- Ensure creation_date is valid
-			if not creation_date or creation_date == "" or not creation_date:match("^%d%d%d%d%d%d%d%d$") then
-				creation_date = os.date("%Y%m%d")
+			if creation_date == "" then
+				print("Error: Unable to determine file creation date for " .. filepath)
+				return
 			end
 
 			-- Generate the new filename
@@ -159,46 +92,54 @@ return {
 			local new_filepath = filedir .. "/" .. new_filename
 
 			-- Rename the file
-			if filepath ~= new_filepath then
-				local ok, err = os.rename(filepath, new_filepath)
-				if ok then
-					-- Reopen the renamed file in the current buffer
-					vim.cmd("edit " .. vim.fn.fnameescape(new_filepath))
-					print("Renamed to: " .. new_filename)
-				else
-					print("Error renaming file: " .. err)
-				end
-			else
-				print("File already has the correct name: " .. new_filename)
+			os.rename(filepath, new_filepath)
+
+			-- Read the file content
+			local lines = {}
+			for line in io.lines(new_filepath) do
+				table.insert(lines, line)
 			end
+
+			-- Look for the frontmatter block
+			local frontmatter_start, frontmatter_end, id_found = nil, nil, false
+			for i, line in ipairs(lines) do
+				if line:match("^---$") then
+					if not frontmatter_start then
+						frontmatter_start = i
+					else
+						frontmatter_end = i
+						break
+					end
+				elseif line:match("^id: ") then
+					id_found = true
+					lines[i] = "id: " .. creation_date .. "-" .. sanitized_title -- Update the existing id
+				end
+			end
+
+			-- If frontmatter exists but `id` is not found, add it
+			if frontmatter_start and frontmatter_end and not id_found then
+				table.insert(lines, frontmatter_end, "id: " .. creation_date .. "-" .. sanitized_title)
+			elseif not frontmatter_start then
+				-- If no frontmatter, add it
+				table.insert(lines, 1, "---")
+				table.insert(lines, 2, "id: " .. creation_date .. "-" .. sanitized_title)
+				table.insert(lines, 3, "---")
+			end
+
+			-- Write updated content back to the renamed file
+			local file = io.open(new_filepath, "w")
+			for _, line in ipairs(lines) do
+				file:write(line .. "\n")
+			end
+			file:close()
+
+			-- Open the renamed file
+			vim.cmd("edit " .. new_filepath)
+
+			print("Note renamed and processed: " .. new_filename)
 		end
 
-		vim.keymap.set("n", "<leader>zp", process_note, { desc = "Process Note" })
-		vim.keymap.set("n", "<leader>z<leader>", "<cmd>ObsidianQuickSwitch<CR>", { desc = "Quick Switch" })
-		vim.keymap.set("n", "<leader>zf", "<cmd>ObsidianSearch<CR>", { desc = "Find in vault" })
-		vim.keymap.set("n", "<leader>zn", "<cmd>ObsidianNew<CR>", { desc = "New note" })
-		vim.keymap.set("n", "<leader>zN", "<cmd>ObsidianNewFromTemplate<CR>", { desc = "New from template" })
-		vim.keymap.set("n", "<leader>zt", "<cmd>ObsidianTags<CR>", { desc = "Tags" })
-		vim.keymap.set("n", "<leader>zd", "<cmd>ObsidianDailies<CR>", { desc = "Daily notes" })
-		vim.keymap.set("n", "<leader>zD", "<cmd>ObsidianToday<CR>", { desc = "Today's note" })
-		vim.keymap.set("n", "<leader>zy", "<cmd>ObsidianYesterday<CR>", { desc = "Yesterday's note" })
-		vim.keymap.set("n", "<leader>zb", "<cmd>ObsidianBacklinks<CR>", { desc = "Backlinks" })
-		vim.keymap.set("n", "<leader>zl", "<cmd>ObsidianLinks<CR>", { desc = "Links" })
-		vim.keymap.set("n", "<leader>zo", "<cmd>ObsidianOpen<CR>", { desc = "Open in Obsidian" })
-		vim.keymap.set("n", "<leader>zx", "<cmd>ObsidianExtractNote<CR>", { desc = "Extract note" })
-		vim.keymap.set("n", "<leader>zi", "<cmd>ObsidianTemplate<CR>", { desc = "Insert template" })
-		vim.keymap.set("n", "<leader>zT", "<cmd>ObsidianTOC<CR>", { desc = "Table of Contents" })
-		vim.keymap.set("n", "<leader>zr", "<cmd>ObsidianRename<CR>", { desc = "Rename note" })
-		vim.keymap.set("n", "<leader>zs", "<cmd>ObsidianQuickSwitch<CR>", { desc = "Quick switch" })
-		vim.keymap.set("n", "<leader>zw", "<cmd>ObsidianWorkspace<CR>", { desc = "Switch workspace" })
-
-		-- Concealer setup
-		vim.opt.conceallevel = 1
-		vim.api.nvim_create_autocmd({ "BufRead", "BufEnter" }, {
-			pattern = { "*.md" },
-			callback = function()
-				vim.opt.conceallevel = 1
-			end,
-		})
+		vim.api.nvim_create_user_command("ProcessNote", process_note, {})
+		require("alex-config.keymaps").set_obsidian_keys()
 	end,
 }

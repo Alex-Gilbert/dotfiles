@@ -1,18 +1,19 @@
 # skhd config - handles app launches, media, system controls
 # Works alongside AeroSpace for i3-like experience on macOS
 # Alt is the primary mod key
+# Terminal: Ghostty
 
 # APPLICATION LAUNCHERS
-alt - t : open -na /Applications/Kitty.app
+alt - t : open -na /Applications/Ghostty.app
 alt - b : open -na "/Applications/Thorium.app"
-alt - e : open -na /Applications/Kitty.app --args -e yazi
+alt - e : open -na /Applications/Ghostty.app --args -e yazi
 
 # Launcher bindings for Sol (or use spotlight/raycast)
 alt - a : open -na /Applications/Sol.app --args --launcher
 alt - tab : open -na /Applications/Sol.app --args --windows
 
 # Floating terminal
-alt + shift - return : open -na /Applications/Kitty.app --args --class floating-terminal
+alt + shift - return : open -na /Applications/Ghostty.app --args --class=floating-terminal
 
 # ADDITIONAL APP SHORTCUTS
 alt + shift - t : open -na /Applications/Thunderbird.app
@@ -46,8 +47,8 @@ alt + shift - c : screencapture -i -c  # Interactive selection to clipboard
 alt + shift - l : /System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend
 
 # SYSTEM INFO (matching i3 bindings)
-alt - i : open -na /Applications/Kitty.app --args -e btop || open -na /Applications/Kitty.app --args -e htop
-alt + shift - i : open -na /Applications/Kitty.app --args -e sudo powermetrics --samplers smc
+alt - i : open -na /Applications/Ghostty.app --args -e btop
+alt + shift - i : open -na /Applications/Ghostty.app --args -e 'sudo powermetrics --samplers smc'
 alt - n : open -x /System/Library/PreferencePanes/Network.prefPane
 
 # WALLPAPER (using macOS wallpaper command if available, or fallback)

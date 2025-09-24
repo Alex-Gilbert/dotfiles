@@ -84,7 +84,7 @@ case $terminal_choice in
         mkdir -p ~/.config/ghostty
         
         if [ -f "$(dirname "$0")/.config/ghostty/config" ]; then
-            cp "$(dirname "$0")/.config/ghostty/config" ~/.config/ghostty/config
+            # cp "$(dirname "$0")/.config/ghostty/config" ~/.config/ghostty/config
             echo "✅ Kanagawa theme configured for Ghostty"
         fi
         ;;
@@ -211,9 +211,9 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "⚠️  Note: Logout required for this setting to take effect"
 fi
 
-# Start services
-echo "🚀 Starting services..."
-brew services start skhd
+# # Start services
+# echo "🚀 Starting services..."
+# brew services start skhd
 
 # Launch AeroSpace
 echo "🚀 Launching AeroSpace..."
