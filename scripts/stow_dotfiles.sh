@@ -1,87 +1,56 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Define the path to your dotfiles directory
-DOTFILES_DIR="$HOME/dotfiles"
-export DOTFILES_DIR
+REPO_DIR="${DOTFILES_DIR:-"$HOME/dotfiles"}"
 
-# Source cross-platform utilities
-source "$DOTFILES_DIR/scripts/cross-platform-utils.sh"
+# source utils (sets OS_TYPE + portable_readlink)
+# shellcheck source=/dev/null
+source "$REPO_DIR/scripts/cross-platform-utils.sh"
 
-# OS is set by cross-platform-utils.sh as OS_TYPE
-OS="$OS_TYPE"
-
+OS="${OS_TYPE:-$(uname -s | tr '[:upper:]' '[:lower:]')}"
 echo "Detected OS: $OS"
 
-# Create essential directories to prevent stow from symlinking entire directories
 create_directories() {
-    echo "Creating essential directories..."
-    mkdir -p "$HOME/.config"
-    mkdir -p "$HOME/.local/bin"
-    mkdir -p "$HOME/.local/share"
-    mkdir -p "$HOME/.ssh"
-    mkdir -p "$HOME/.aws"
-    
-    # Add any other directories that should exist before stowing
-    # This prevents stow from creating symlinks to entire directories
+  echo "Creating essential directories..."
+  mkdir -p "$HOME/.config" "$HOME/.local/bin" "$HOME/.local/share" "$HOME/.ssh" "$HOME/.aws"
 }
 
 decrypt_and_place() {
-    local src_file="$1"
+  local src_file="$1"
+  local src_abs; src_abs="$(portable_readlink -f "$src_file")"
+  local rel="${src_abs#$DOTFILES_DIR/}"
+  local dest="$HOME/${rel%.gpg}"
 
-    # Compute the path relative to the DOTFILES_DIR, ensuring it's an absolute path
-    local src_file_abs_path=$(portable_readlink -f "$src_file")
-
-    # Remove the DOTFILES_DIR part from the absolute path of the source file
-    local relative_path="${src_file_abs_path#$DOTFILES_DIR/}"
-
-    # Construct the absolute destination path by removing the .gpg extension
-    local dest_path="$HOME/${relative_path%.gpg}" # Correctly form the destination path
-
-    echo "Decrypting $src_file to $dest_path..."
-
-    # Create the destination directory if it doesn't exist
-    mkdir -p "$(dirname "$dest_path")"
-
-    # Decrypt the file into its destination (assumes gpg is configured to not prompt for output file)
-    gpg --quiet --batch --yes --decrypt --output "$dest_path" "$src_file"
-
-    if [ $? -eq 0 ]; then
-        echo "Decrypted and placed: $dest_path"
-        chmod 600 "$dest_path"
-    else
-        echo "Failed to decrypt: $src_file"
-    fi
+  echo "Decrypting $rel -> ${dest#$HOME/}"
+  mkdir -p "$(dirname "$dest")"
+  if gpg --quiet --batch --yes --decrypt --output "$dest" "$src_abs"; then
+    chmod 600 "$dest" || true
+    echo "Decrypted and placed: ${dest#$HOME/}"
+  else
+    echo "Failed to decrypt: $rel" >&2
+  fi
 }
-
 export -f decrypt_and_place
 
-# Create directories first
+process_package() {
+  local pkg="$1"  # "common" or "$OS"
+  local pkg_dir="$REPO_DIR/$pkg"
+
+  if [ -d "$pkg_dir" ]; then
+    echo "Processing $pkg configs..."
+    (
+      DOTFILES_DIR="$pkg_dir"
+      export DOTFILES_DIR
+      find "$DOTFILES_DIR" -type f -name '*.gpg' \
+        -exec bash -c 'decrypt_and_place "$1"' _ "{}" \;
+    )
+    (cd "$REPO_DIR" && stow -v --ignore='\.gpg$' "$pkg")
+  fi
+}
+
 create_directories
 
-# Find and decrypt .gpg files, placing them in the correct location
-find "$DOTFILES_DIR" -type f -name "*.gpg" -exec bash -c 'decrypt_and_place "$0"' {} \;
-
-cd "$DOTFILES_DIR"
-
-# Check if the new directory structure exists
-if [ -d "$DOTFILES_DIR/common" ]; then
-    echo "Using new directory structure..."
-    
-    # Stow common configs
-    if [ -d "common" ]; then
-        echo "Stowing common configs..."
-        stow -v common
-    fi
-    
-    # Stow OS-specific configs
-    if [ -d "$OS" ]; then
-        echo "Stowing $OS-specific configs..."
-        stow -v "$OS"
-    fi
-else
-    echo "Using legacy structure..."
-    # Fall back to old behavior for backwards compatibility
-    stow -v .
-fi
+process_package "common"
+process_package "$OS"
 
 echo "Dotfiles installation complete!"
