@@ -1,11 +1,21 @@
-# ?? (Optional) Make the tiling feel closer to BSP/i3 ???????????????????????????
-# Disables auto-flattening & forced alternating orientations.
-enable-normalization-flatten-containers = true
-enable-normalization-opposite-orientation-for-nested-containers = true
+# Start AeroSpace at login
+start-at-login = true
+
+default-root-container-layout = 'tiles'
+
+on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
 
 after-startup-command = [
   'exec-and-forget borders active_color=0xffe1e3e4 inactive_color=0xff494d64 width=5.0'
 ]
+
+[gaps]
+inner.horizontal = 10
+inner.vertical = 10
+outer.left = 10
+outer.bottom = 10
+outer.top = 10
+outer.right = 10
 
 # defaults write -g NSWindowShouldDragOnGesture -bool true
 
@@ -14,13 +24,25 @@ after-startup-command = [
 # Core
 cmd-alt-ctrl-shift-q = "close"
 cmd-alt-ctrl-shift-f = "fullscreen"          # explicit ON (OFF lives in a mode)
-cmd-alt-ctrl-shift-g = "layout floating"        # quick toggle float<->tile
+cmd-alt-ctrl-shift-g = "layout floating tiling"        # quick toggle float<->tile
 
 # Focus (hjkl)
 cmd-alt-ctrl-shift-h = "focus --boundaries-action wrap-around-the-workspace left"
 cmd-alt-ctrl-shift-j = "focus --boundaries-action wrap-around-the-workspace down"
 cmd-alt-ctrl-shift-k = "focus --boundaries-action wrap-around-the-workspace up"
 cmd-alt-ctrl-shift-l = "focus --boundaries-action wrap-around-the-workspace right"
+
+# Moves (hjkl)
+alt-h = "move left"
+alt-j = "move down"
+alt-k = "move up"
+alt-l = "move right"
+
+# Joins (hjkl)
+alt-ctrl-h = "join-with left"
+alt-ctrl-j = "join-with down"
+alt-ctrl-k = "join-with up"
+alt-ctrl-l = "join-with right"
 
 # Workspaces 1..10 + back-and-forth
 cmd-alt-ctrl-shift-1 = "workspace 1"
@@ -62,19 +84,6 @@ l = "resize smart +70"
 enter = "mode main"
 esc   = "mode main"
 r     = "mode main"
-
-# ?? Move mode (replaces your old alt-ctrl-h/j/k/l) ????????????????????????????
-[mode.move.binding]
-h = "move left"
-j = "move down"
-k = "move up"
-l = "move right"
-
-x = "join-with left"
-
-enter = "mode main"
-esc   = "mode main"
-m     = "mode main"
 
 [[on-window-detected]]
 if.window-title-regex-substring = "Picture-in-Picture"
