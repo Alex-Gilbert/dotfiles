@@ -12,7 +12,7 @@ return {
 			keywordStyle = { italic = true },
 			statementStyle = { bold = true },
 			typeStyle = {},
-			transparent = false, -- do not set background color
+			transparent = true,
 			dimInactive = true, -- dim inactive window `:h hl-NormalNC`
 			terminalColors = true, -- define vim.g.terminal_color_{0,17}
 			colors = { -- add/modify theme and palette colors
@@ -27,6 +27,12 @@ return {
 		},
 		config = function()
 			vim.cmd([[colorscheme kanagawa]])
+			vim.cmd([[
+                hi Normal guibg=NONE ctermbg=NONE
+                hi NormalNC guibg=NONE ctermbg=NONE
+                hi SignColumn guibg=NONE ctermbg=NONE
+                hi EndOfBuffer guibg=NONE ctermbg=NONE
+            ]])
 		end,
 	},
 
@@ -87,13 +93,13 @@ return {
 			vim.o.showtabline = 2
 		end,
 	},
-	{
-		"MeanderingProgrammer/render-markdown.nvim",
-		-- dependencies = { "nvim-treesitter/nvim-treesitter", "echasnovski/mini.nvim" }, -- if you use the mini.nvim suite
-		-- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
-		dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" }, -- if you prefer nvim-web-devicons
-		---@module 'render-markdown'
-		---@type render.md.UserConfig
-		opts = {},
-	},
+	-- {
+	-- 	"MeanderingProgrammer/render-markdown.nvim",
+	-- 	-- dependencies = { "nvim-treesitter/nvim-treesitter", "echasnovski/mini.nvim" }, -- if you use the mini.nvim suite
+	-- 	-- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
+	-- 	dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" }, -- if you prefer nvim-web-devicons
+	-- 	---@module 'render-markdown'
+	-- 	---@type render.md.UserConfig
+	-- 	opts = {},
+	-- },
 }

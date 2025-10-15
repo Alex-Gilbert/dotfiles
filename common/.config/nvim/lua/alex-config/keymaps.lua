@@ -482,7 +482,7 @@ M.obsidian_keys = {
 		function()
 			vim.cmd.ObsidianBacklinks()
 		end,
-		"[O]bsidian [B]acklinks",
+		desc = "[O]bsidian [B]acklinks",
 	},
 
 	{
@@ -490,7 +490,7 @@ M.obsidian_keys = {
 		function()
 			vim.cmd.ObsidianLink()
 		end,
-		"[O]bsidian [L]ink",
+		desc = "[O]bsidian [L]ink",
 	},
 
 	{
@@ -498,7 +498,7 @@ M.obsidian_keys = {
 		function()
 			vim.cmd.ObsidianNew()
 		end,
-		"[O]bsidian [N]ew Note",
+		desc = "[O]bsidian [N]ew Note",
 	},
 
 	{
@@ -506,7 +506,7 @@ M.obsidian_keys = {
 		function()
 			vim.cmd.ObsidianSearch()
 		end,
-		"[O]bsidian Search or Create Note",
+		desc = "[O]bsidian Search or Create Note",
 	},
 
 	{
@@ -514,7 +514,7 @@ M.obsidian_keys = {
 		function()
 			vim.cmd.ObsidianRename()
 		end,
-		"[O]bsidian [R]ename",
+		desc = "[O]bsidian [R]ename",
 	},
 
 	{
@@ -522,7 +522,7 @@ M.obsidian_keys = {
 		function()
 			vim.cmd.ObsidianQuickSwitch()
 		end,
-		"[O]bsidian Quick [S]witch",
+		desc = "[O]bsidian Quick [S]witch",
 	},
 
 	{
@@ -530,8 +530,9 @@ M.obsidian_keys = {
 		function()
 			vim.cmd.ObsidianTemplate()
 		end,
-		"[O]bsidian Insert Tem[p]late",
+		desc = "[O]bsidian Insert Tem[p]late",
 	},
+	{ "<leader>od", ":ObsidianToday<CR>", desc = "[O]bsidian: To[d]ay" },
 }
 
 M.set_obsidian_keys = function()
@@ -543,9 +544,9 @@ M.set_obsidian_keys = function()
 		end
 	end, "[G]o to [F]ile", { noremap = true, expr = true })
 
-	keymap("n", "<leader>od", function()
+	keymap("n", "<leader>otx", function()
 		require("obsidian").util.toggle_checkbox()
-	end, "[O]bsidian [D]one")
+	end, "[O]bsidian [T]ask Done")
 
 	-- keymap("n", "<leader>op", function()
 	-- 	vim.cmd.ProcessNote()
@@ -553,6 +554,7 @@ M.set_obsidian_keys = function()
 
 	keymap("n", "<leader>ott", function()
 		vim.cmd.ObsidianCreateTask()
+		vim.cmd.ObsidianTaskID()
 	end, "[O]bsidian [T]ask Create")
 
 	keymap("n", "<leader>oti", function()
