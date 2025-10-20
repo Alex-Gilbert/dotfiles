@@ -33,16 +33,16 @@ cmd-alt-ctrl-shift-k = "focus --boundaries-action wrap-around-the-workspace up"
 cmd-alt-ctrl-shift-l = "focus --boundaries-action wrap-around-the-workspace right"
 
 # Moves (hjkl)
-alt-h = "move left"
-alt-j = "move down"
-alt-k = "move up"
-alt-l = "move right"
+alt-ctrl-h = "move left"
+alt-ctrl-j = "move down"
+alt-ctrl-k = "move up"
+alt-ctrl-l = "move right"
 
 # Joins (hjkl)
-alt-ctrl-h = "join-with left"
-alt-ctrl-j = "join-with down"
-alt-ctrl-k = "join-with up"
-alt-ctrl-l = "join-with right"
+alt-shift-h = "join-with left"
+alt-shift-j = "join-with down"
+alt-shift-k = "join-with up"
+alt-shift-l = "join-with right"
 
 # Workspaces 1..10 + back-and-forth
 cmd-alt-ctrl-shift-1 = "workspace 1"
@@ -59,16 +59,16 @@ cmd-alt-ctrl-shift-0 = "workspace 10"
 # Move screen to other monitor
 cmd-alt-ctrl-shift-tab   = "move-workspace-to-monitor --wrap-around next"
 
-ctrl-alt-1 = "move-node-to-workspace 1"
-ctrl-alt-2 = "move-node-to-workspace 2"
-ctrl-alt-3 = "move-node-to-workspace 3"
-ctrl-alt-4 = "move-node-to-workspace 4"
-ctrl-alt-5 = "move-node-to-workspace 5"
-ctrl-alt-6 = "move-node-to-workspace 6"
-ctrl-alt-7 = "move-node-to-workspace 7"
-ctrl-alt-8 = "move-node-to-workspace 8"
-ctrl-alt-9 = "move-node-to-workspace 9"
-ctrl-alt-0 = "move-node-to-workspace 10"
+alt-ctrl-1 = "move-node-to-workspace 1"
+alt-ctrl-2 = "move-node-to-workspace 2"
+alt-ctrl-3 = "move-node-to-workspace 3"
+alt-ctrl-4 = "move-node-to-workspace 4"
+alt-ctrl-5 = "move-node-to-workspace 5"
+alt-ctrl-6 = "move-node-to-workspace 6"
+alt-ctrl-7 = "move-node-to-workspace 7"
+alt-ctrl-8 = "move-node-to-workspace 8"
+alt-ctrl-9 = "move-node-to-workspace 9"
+alt-ctrl-0 = "move-node-to-workspace 10"
 
 # Mode switches (single Hyper, no extra mods)
 cmd-alt-ctrl-shift-r = "mode resize"

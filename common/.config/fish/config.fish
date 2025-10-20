@@ -54,6 +54,10 @@ end
 # Common environment variables
 set -gx GAMS_VERSION "46.4"
 
+# Editors
+set -gx EDITOR "nvim"
+set -gx VISUAL "nvim"
+
 # Zoxide integration
 zoxide init fish --cmd cd | source
 

@@ -198,6 +198,7 @@ return {
 						group_index = 0,
 					},
 					{ name = "nvim_lsp" },
+					-- { name = "supermaven" },
 					{ name = "luasnip" },
 					{ name = "path" },
 				},
