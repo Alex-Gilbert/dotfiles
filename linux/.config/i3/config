@@ -4,8 +4,10 @@
 focus_follows_mouse no
 
 # Set mod key (Mod4=Super/Windows key)
-set $mod Mod4
+set $hyp Mod1+Shift+Control+Mod4
+set $altc Mod1+Control
 set $alt Mod1
+set $mod Mod4
 
 # Font for window titles
 font pango:JetBrainsMono Nerd Font 10 
@@ -16,136 +18,65 @@ floating_modifier $mod
 # ========== ALL KEYBINDINGS (organized to prevent conflicts) ==========
 
 # CORE WINDOW MANAGEMENT
-bindsym $mod+q kill
-bindsym $mod+f fullscreen toggle
-bindsym $mod+ctrl+f floating toggle
+bindsym $hyp+q kill
+bindsym $hyp+f fullscreen toggle
+bindsym $hyp+g floating toggle
 
 # FOCUS MOVEMENT (hjkl vim-style)
-bindsym $mod+h focus left
-bindsym $mod+j focus down
-bindsym $mod+k focus up
-bindsym $mod+l focus right
+bindsym $hyp+h focus left
+bindsym $hyp+j focus down
+bindsym $hyp+k focus up
+bindsym $hyp+l focus right
 
 # WINDOW MOVEMENT
-bindsym $mod+ctrl+h move left
-bindsym $mod+ctrl+j move down
-bindsym $mod+ctrl+k move up
-bindsym $mod+ctrl+l move right
-
-# CONTAINER SPLITTING
-bindsym $mod+$alt+h split h
-bindsym $mod+$alt+v split v
-
-# FOCUS PARENT/CHILD
-bindsym $mod+shift+p focus parent
-bindsym $mod+ctrl+shift+p focus child
-
-# SCRATCHPAD
-bindsym $mod+z scratchpad show
-bindsym $mod+shift+z move scratchpad
+bindsym $altc+h move left
+bindsym $altc+j move down
+bindsym $altc+k move up
+bindsym $altc+l move right
 
 # APPLICATION LAUNCHERS
-bindsym $mod+t exec kitty
-bindsym $mod+b exec thorium-browser
-bindsym $mod+a exec rofi -show drun
-bindsym $mod+Tab exec rofi -show window
-bindsym $mod+shift+Return exec kitty --class floating-terminal
-
-# ADDITIONAL APP SHORTCUTS
-bindsym $mod+shift+t exec thunderbird
-bindsym $mod+shift+d exec discord
-bindsym $mod+shift+s exec spotify
-bindsym $mod+shift+v exec code
-bindsym $mod+e exec kitty -e yazi
+bindsym $hyp+t exec kitty
+bindsym $hyp+b exec thorium-browser
+bindsym $hyp+a exec rofi -show drun
+bindsym $hyp+Tab exec rofi -show window
+bindsym $hyp+e exec kitty -e yazi
 
 # WORKSPACE SWITCHING (numbers)
-bindsym $mod+1 workspace $ws1
-bindsym $mod+2 workspace $ws2
-bindsym $mod+3 workspace $ws3
-bindsym $mod+4 workspace $ws4
-bindsym $mod+5 workspace $ws5
-bindsym $mod+6 workspace $ws6
-bindsym $mod+7 workspace $ws7
-bindsym $mod+8 workspace $ws8
-bindsym $mod+9 workspace $ws9
-bindsym $mod+0 workspace $ws10
+bindsym $hyp+1 workspace $ws1
+bindsym $hyp+2 workspace $ws2
+bindsym $hyp+3 workspace $ws3
+bindsym $hyp+4 workspace $ws4
+bindsym $hyp+5 workspace $ws5
+bindsym $hyp+6 workspace $ws6
+bindsym $hyp+7 workspace $ws7
+bindsym $hyp+8 workspace $ws8
+bindsym $hyp+9 workspace $ws9
+bindsym $hyp+0 workspace $ws10
 
 # WORKSPACE MOVEMENT (ctrl + numbers)
-bindsym $mod+ctrl+1 move container to workspace $ws1
-bindsym $mod+ctrl+2 move container to workspace $ws2
-bindsym $mod+ctrl+3 move container to workspace $ws3
-bindsym $mod+ctrl+4 move container to workspace $ws4
-bindsym $mod+ctrl+5 move container to workspace $ws5
-bindsym $mod+ctrl+6 move container to workspace $ws6
-bindsym $mod+ctrl+7 move container to workspace $ws7
-bindsym $mod+ctrl+8 move container to workspace $ws8
-bindsym $mod+ctrl+9 move container to workspace $ws9
-bindsym $mod+ctrl+0 move container to workspace $ws10
+bindsym $alt+1 move container to workspace $ws1
+bindsym $alt+2 move container to workspace $ws2
+bindsym $alt+3 move container to workspace $ws3
+bindsym $alt+4 move container to workspace $ws4
+bindsym $alt+5 move container to workspace $ws5
+bindsym $alt+7 move container to workspace $ws7
+bindsym $alt+8 move container to workspace $ws8
+bindsym $alt+9 move container to workspace $ws9
+bindsym $alt+0 move container to workspace $ws10
 
 # SPECIAL WORKSPACES
 bindsym $mod+ctrl+a workspace $wsart
 bindsym $mod+grave workspace back_and_forth
 
-# VOLUME CONTROLS (using equals/backspace to avoid conflicts)
-bindsym $mod+equal exec pactl set-sink-volume @DEFAULT_SINK@ +5%
-bindsym $mod+shift+equal exec pactl set-sink-volume @DEFAULT_SINK@ +10%
-bindsym $mod+BackSpace exec pactl set-sink-volume @DEFAULT_SINK@ -5%
-bindsym $mod+shift+BackSpace exec pactl set-sink-volume @DEFAULT_SINK@ -10%
-bindsym $mod+m exec pactl set-sink-mute @DEFAULT_SINK@ toggle
-
-# BRIGHTNESS CONTROLS (using brackets)
-bindsym $mod+bracketright exec brightnessctl set +10%
-bindsym $mod+shift+bracketright exec brightnessctl set +20%
-bindsym $mod+bracketleft exec brightnessctl set 10%-
-bindsym $mod+shift+bracketleft exec brightnessctl set 20%-
-
-# MEDIA CONTROLS
-bindsym $mod+space exec playerctl play-pause
-bindsym $mod+period exec playerctl next
-bindsym $mod+comma exec playerctl previous
-
 # SCREENSHOTS
-bindsym $mod+c exec flameshot full -c
-bindsym $mod+shift+c exec flameshot gui
-
-# DISPLAY MANAGEMENT 
-
-# SYSTEM CONTROLS
-bindsym $mod+shift+l exec i3lock -c 1f1f28
-bindsym $mod+r mode "resize"
-bindsym $mod+shift+m mode "move"
-bindsym $mod+shift+r exec kitty -e nvim ~/.config/i3/config
-
-# GAPS CONTROL
-bindsym $mod+shift+g gaps inner current plus 5
-bindsym $mod+ctrl+g gaps inner current minus 5
-bindsym $mod+$alt+g gaps inner all set 0; gaps outer all set 0
-
-# SYSTEM INFO
-bindsym $mod+i exec kitty -e htop
-bindsym $mod+shift+i exec kitty -e nvtop
-bindsym $mod+n exec kitty -e nmtui
-
-# WALLPAPER/THEME
-bindsym $mod+shift+b exec feh --bg-scale ~/wallpaper.jpg
+bindsym $hyp+s exec flameshot full -c
 
 # SYSTEM MANAGEMENT
-bindsym $mod+$alt+r restart
-bindsym $mod+$alt+q exec "i3-nagbar -t warning -m 'Exit i3?' -B 'Yes' 'i3-msg exit'"
+bindsym $alt+r restart
+bindsym $alt+q exec "i3-nagbar -t warning -m 'Exit i3?' -B 'Yes' 'i3-msg exit'"
 
 # CANVAS MODE (your existing custom functionality)
-bindsym $mod+w exec ~/dotfiles/scripts/canvas-mode.sh toggle
-bindsym $mod+shift+w exec ~/dotfiles/scripts/canvas-mode.sh check && kitty
-
-# HARDWARE FUNCTION KEYS (fallback - these don't conflict)
-bindsym XF86AudioRaiseVolume exec pactl set-sink-volume @DEFAULT_SINK@ +5%
-bindsym XF86AudioLowerVolume exec pactl set-sink-volume @DEFAULT_SINK@ -5%
-bindsym XF86AudioMute exec pactl set-sink-mute @DEFAULT_SINK@ toggle
-bindsym XF86MonBrightnessUp exec brightnessctl set +10%
-bindsym XF86MonBrightnessDown exec brightnessctl set 10%-
-bindsym XF86AudioPlay exec playerctl play-pause
-bindsym XF86AudioNext exec playerctl next
-bindsym XF86AudioPrev exec playerctl previous
+bindsym $hyp+w exec ~/dotfiles/scripts/canvas-mode.sh toggle
 
 # ========== RESIZE MODE ==========
 mode "resize" {
@@ -153,12 +84,6 @@ mode "resize" {
     bindsym j resize grow height 10 px or 10 ppt
     bindsym k resize shrink height 10 px or 10 ppt
     bindsym l resize grow width 10 px or 10 ppt
-    
-    # Faster resizing
-    bindsym shift+h resize shrink width 20 px or 20 ppt
-    bindsym shift+j resize grow height 20 px or 20 ppt
-    bindsym shift+k resize shrink height 20 px or 20 ppt
-    bindsym shift+l resize grow width 20 px or 20 ppt
     
     # Back to normal
     bindsym Return mode "default"
