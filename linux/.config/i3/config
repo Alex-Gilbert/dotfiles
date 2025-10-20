@@ -74,6 +74,7 @@ bindsym $hyp+s exec flameshot full -c
 # SYSTEM MANAGEMENT
 bindsym $alt+r restart
 bindsym $alt+q exec "i3-nagbar -t warning -m 'Exit i3?' -B 'Yes' 'i3-msg exit'"
+bindsym $altc+x exec "i3lock -i ~/.config/i3/lockscreen.png && systemctl suspend"
 
 # CANVAS MODE (your existing custom functionality)
 bindsym $hyp+w exec ~/dotfiles/scripts/canvas-mode.sh toggle
@@ -201,15 +202,17 @@ assign [class="Spotify"] $ws10
 
 # ========== APPEARANCE ==========
 
-# Gaps and borders
-gaps inner 1
-smart_gaps on
-default_border pixel 1
-hide_edge_borders smart
+# i3-gaps settings (minimalist rice aesthetic)
+gaps inner 10
+gaps outer 5
+smart_gaps inverse_outer
+default_border pixel 2
+default_floating_border pixel 2
+hide_edge_borders none
 
 # Color settings (Kanagawa theme)
 # class                 border  backgr. text    indicator child_border
-client.focused          #7E9CD8 #7E9CD8 #DCD7BA #7E9CD8   #7E9CD8
+client.focused          #C8C8C8 #1F1F28 #DCD7BA #C8C8C8   #C8C8C8
 client.focused_inactive #223249 #223249 #DCD7BA #223249   #223249
 client.unfocused        #1F1F28 #1F1F28 #727169 #1F1F28   #1F1F28
 client.urgent           #C34043 #C34043 #DCD7BA #C34043   #C34043
@@ -254,7 +257,7 @@ exec --no-startup-id "pasystray"
 # Additional services
 exec --no-startup-id "redshift-gtk"
 exec --no-startup-id "flameshot"
-exec --no-startup-id "xss-lock -- i3lock -c 1f1f28"
+exec --no-startup-id "xss-lock -- i3lock -i ~/.config/i3/lockscreen.jpg"
 
 # Auto-lock after inactivity
 exec --no-startup-id "xset s 300 300"
