@@ -203,11 +203,11 @@ assign [class="Spotify"] $ws10
 # ========== APPEARANCE ==========
 
 # i3-gaps settings (minimalist rice aesthetic)
-gaps inner 10
-gaps outer 5
+gaps inner 5
+gaps outer 3
 smart_gaps inverse_outer
-default_border pixel 2
-default_floating_border pixel 2
+default_border pixel 4
+default_floating_border pixel 4
 hide_edge_borders none
 
 # Color settings (Kanagawa theme)
