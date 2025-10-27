@@ -3,4 +3,7 @@
 # @raycast.title Open WezTerm Window
 # @raycast.mode silent
 
-/Applications/WezTerm.app/Contents/MacOS/wezterm-gui start
+# /Applications/WezTerm.app/Contents/MacOS/wezterm-gui start
+#
+
+kitty --single-instance

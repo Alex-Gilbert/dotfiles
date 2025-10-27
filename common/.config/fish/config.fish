@@ -27,9 +27,7 @@ fish_add_path $HOME/.cargo/bin
 
 # Check if we're on macOS and source macOS-specific config
 if test (uname -s) = "Darwin"
-    if test -f $HOME/dotfiles/macos/.config/fish/config.fish
-        source $HOME/dotfiles/macos/.config/fish/config.fish
-    end
+    fish_add_path /opt/homebrew/opt/libpq/bin
 else
     # Linux-specific paths
     set -gx PATH $PATH \
