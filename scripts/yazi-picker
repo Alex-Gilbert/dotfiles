@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+selected=$(yazi --chooser-file=/dev/stdout)
+if [ -n "$selected" ]; then
+    echo -n "$selected"
+fi
