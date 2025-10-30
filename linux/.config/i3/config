@@ -69,12 +69,12 @@ bindsym $mod+ctrl+a workspace $wsart
 bindsym $mod+grave workspace back_and_forth
 
 # SCREENSHOTS
-bindsym $hyp+s exec flameshot full -c
+bindsym $hyp+s exec flameshot gui
 
 # SYSTEM MANAGEMENT
 bindsym $alt+r restart
 bindsym $alt+q exec "i3-nagbar -t warning -m 'Exit i3?' -B 'Yes' 'i3-msg exit'"
-bindsym $altc+x exec "i3lock -i ~/.config/i3/lockscreen.png && systemctl suspend"
+bindsym $altc+x exec "i3lock -i /home/alex/.config/i3/lockscreen.png && systemctl suspend"
 
 # CANVAS MODE (your existing custom functionality)
 bindsym $hyp+w exec ~/dotfiles/scripts/canvas-mode.sh toggle
@@ -257,7 +257,7 @@ exec --no-startup-id "pasystray"
 # Additional services
 exec --no-startup-id "redshift-gtk"
 exec --no-startup-id "flameshot"
-exec --no-startup-id "xss-lock -- i3lock -i ~/.config/i3/lockscreen.jpg"
+exec --no-startup-id "xss-lock -- i3lock -i /home/alex/.config/i3/lockscreen.png"
 
 # Auto-lock after inactivity
 exec --no-startup-id "xset s 300 300"

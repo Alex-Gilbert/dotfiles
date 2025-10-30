@@ -28,13 +28,6 @@ M.init = function()
 	-- Better pasting
 	keymap("v", "<C-p>", '"_dP')
 
-	-- Normal --
-	-- Better window navigation
-	keymap("n", "<C-h>", "<C-w>h") -- left window
-	keymap("n", "<C-k>", "<C-w>k") -- up window
-	keymap("n", "<C-j>", "<C-w>j") -- down window
-	keymap("n", "<C-l>", "<C-w>l") -- right window
-
 	-- Page Scrolling
 	keymap("n", "<C-d>", "<C-d>zz") -- right window
 	keymap("n", "<C-u>", "<C-u>zz") -- right window

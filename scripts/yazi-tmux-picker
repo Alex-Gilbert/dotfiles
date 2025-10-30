@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+target_pane=$(tmux show-buffer)
+selected=$(yazi . --chooser-file=/dev/stdout)
+if [ -n "$selected" ]; then
+    tmux send-keys -t "$target_pane" "$selected"
+fi
