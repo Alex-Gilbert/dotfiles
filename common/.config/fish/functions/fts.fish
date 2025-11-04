@@ -12,19 +12,19 @@ function fts
         return
     end
 
-    # Check if .tmux file exists
-    if test -f .tmux
-        echo "Loading session from .tmux file..."
+    # Check if .tmux.yaml file exists
+    if test -f .tmux.yaml
+        echo "Loading session from .tmux.yaml file..."
         if test -n "$TMUX"
             # Inside tmux, load detached and switch
-            tmuxp load -d .tmux
+            tmuxp load -d ./.tmux.yaml
             tmux switch-client -t $session_name
         else
             # Outside tmux, load and attach
-            tmuxp load .tmux
+            tmuxp load ./.tmux.yaml
         end
     else
-        # No .tmux file, create simple session
+        # No .tmux.yaml file, create simple session
         if test -n "$TMUX"
             tmux new-session -d -s $session_name -c (pwd)
             tmux switch-client -t $session_name
