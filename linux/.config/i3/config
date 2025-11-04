@@ -35,7 +35,7 @@ bindsym $altc+k move up
 bindsym $altc+l move right
 
 # APPLICATION LAUNCHERS
-bindsym $hyp+t exec kitty
+bindsym $hyp+t exec ~/dotfiles/scripts/launch-ftz.sh
 bindsym $hyp+b exec thorium-browser
 bindsym $hyp+a exec rofi -show drun
 bindsym $hyp+Tab exec rofi -show window

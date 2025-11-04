@@ -6,4 +6,4 @@
 # /Applications/WezTerm.app/Contents/MacOS/wezterm-gui start
 #
 
-kitty --single-instance
+~/dotfiles/macos/scripts/launch-ftz.sh

@@ -10,7 +10,7 @@ set fish_cursor_replace_one underscore
 # Aliases
 alias lg lazygit
 alias cu cluster-utils.sh
-alias z 'zellij -l welcome'
+# alias z 'zellij -l welcome'
 alias n nvim
 alias dive 'docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock wagoodman/dive:latest'
 alias dd 'nohup dolphin $PWD > /dev/null 2>&1 &'
@@ -59,6 +59,7 @@ set -gx EDITOR "nvim"
 set -gx VISUAL "nvim"
 
 # Zoxide integration
+set -Ux _ZO_EXCLUDE_DIRS "/mnt/*:/run/media/*"
 zoxide init fish --cmd cd | source
 
 # Disable greeting
