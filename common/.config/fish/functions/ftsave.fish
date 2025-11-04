@@ -7,7 +7,7 @@ function ftsave
     set session_name (tmux display-message -p '#S')
 
     # Use tmuxp freeze to save the current session
-    tmuxp freeze -o .tmux --yes --force
+    tmuxp freeze -o .tmux.yaml --yes --force
 
-    echo "Saved session '$session_name' to .tmux"
+    echo "Saved session '$session_name' to .tmux.yaml"
 end

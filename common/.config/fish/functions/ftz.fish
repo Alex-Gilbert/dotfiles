@@ -19,9 +19,9 @@ function ftz
             tmux attach-session -t $session_name
         end
     else
-        # Create new (with .tmux support via tmuxp)
-        if test -f .tmux
-            tmuxp load .tmux
+        # Create new (with .tmux.yaml support via tmuxp)
+        if test -f "$selected/.tmux.yaml"
+            tmuxp load "$selected/.tmux.yaml"
         else
             tmux new-session -s $session_name -c $selected
         end

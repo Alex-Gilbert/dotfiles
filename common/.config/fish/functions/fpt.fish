@@ -17,19 +17,19 @@ function fpt
         return
     end
 
-    # Check if .tmux file exists in selected directory
-    if test -f "$selected/.tmux"
-        echo "Loading session from .tmux file..."
+    # Check if .tmux.yaml file exists in selected directory
+    if test -f "$selected/.tmux.yaml"
+        echo "Loading session from .tmux.yaml file..."
         if test -n "$TMUX"
             # Inside tmux, load detached and switch
-            tmuxp load -d "$selected/.tmux"
+            tmuxp load -d "$selected/.tmux.yaml"
             tmux switch-client -t $session_name
         else
             # Outside tmux, load and attach
-            tmuxp load "$selected/.tmux"
+            tmuxp load "$selected/.tmux.yaml"
         end
     else
-        # No .tmux file, create simple session
+        # No .tmux.yaml file, create simple session
         if test -n "$TMUX"
             tmux new-session -d -s $session_name -c $selected
             tmux switch-client -t $session_name

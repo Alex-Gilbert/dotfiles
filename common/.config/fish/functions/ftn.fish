@@ -1,14 +1,14 @@
 function ftn
-    # Determine session name: from .tmux file, argument, or auto-name from directory
+    # Determine session name: from .tmux.yaml file, argument, or auto-name from directory
     if test (count $argv) -gt 0
         # Argument provided, use it
         set session_name (string replace -a . _ $argv[1])
-    else if test -f .tmux
-        # No argument but .tmux exists, get name from file
-        set session_name (grep "^session_name:" .tmux | string split ": ")[2]
+    else if test -f .tmux.yaml
+        # No argument but .tmux.yaml exists, get name from file
+        set session_name (grep "^session_name:" .tmux.yaml | string split ": ")[2]
         set session_name (string replace -a . _ $session_name)
     else
-        # No argument and no .tmux, auto-name from directory
+        # No argument and no .tmux.yaml, auto-name from directory
         set session_name (basename (pwd) | tr . _)
     end
 
@@ -23,20 +23,20 @@ function ftn
         return
     end
 
-    # Check if .tmux file exists
-    if test -f .tmux
-        echo "Loading session from .tmux file..."
+    # Check if .tmux.yaml file exists
+    if test -f .tmux.yaml
+        echo "Loading session from .tmux.yaml file..."
         # tmuxp load will create and attach/switch to the session
         if test -n "$TMUX"
             # Inside tmux, load detached and switch
-            tmuxp load -d .tmux
+            tmuxp load -d ./.tmux.yaml
             tmux switch-client -t $session_name
         else
             # Outside tmux, load and attach
-            tmuxp load .tmux
+            tmuxp load ./.tmux.yaml
         end
     else
-        # No .tmux file, create simple session
+        # No .tmux.yaml file, create simple session
         if test -n "$TMUX"
             tmux new-session -d -s $session_name -c (pwd)
             tmux switch-client -t $session_name
