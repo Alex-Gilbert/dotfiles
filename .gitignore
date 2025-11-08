@@ -5,3 +5,4 @@
 .config/nushell/history.sqlite3-shm
 .config/nushell/history.sqlite3-wal
 .config/nushell/history.txt
+common/.config/tmux/plugins
