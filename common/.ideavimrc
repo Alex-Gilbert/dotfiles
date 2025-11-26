@@ -51,8 +51,8 @@ nmap <leader>pr <action>(ReSharperNavigateTo)
 
 " Code Navigation
 nmap <leader>cp <action>(FileStructurePopup)
-nmap <leader>cu <action>(ShowUsages)
 nmap gd <action>(GotoDeclaration)
+nmap gr <action>(ShowUsages)
 nmap gi <action>(GotoImplementation)
 
 " Refactoring Actions
