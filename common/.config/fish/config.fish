@@ -21,6 +21,7 @@ alias mouse-speed='xinput set-prop 14 "libinput Accel Speed"'
 alias space-check='sudo du -h --max-depth=1 . | sort -h'
 
 # Cross-platform PATH additions
+fish_add_path $HOME/.config/fish/functions
 fish_add_path $HOME/dotfiles/scripts
 fish_add_path $HOME/.local/bin
 fish_add_path $HOME/.cargo/bin
@@ -73,3 +74,7 @@ bind -M default \er 'fzf-history'
 
 # opencode
 fish_add_path /home/alex/.opencode/bin
+
+# dotenv
+set -g fish_dotenv_enable_yes 1
+
