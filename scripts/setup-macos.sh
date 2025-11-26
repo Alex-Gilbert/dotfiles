@@ -71,6 +71,7 @@ install_packages() {
         eza
         zoxide
         lazygit
+        yazi
         gh
         jq
         wget
@@ -189,6 +190,42 @@ setup_dev_environment() {
     fi
 }
 
+# Install Tmux Plugin Manager
+install_tpm() {
+    echo "🔌 Setting up Tmux Plugin Manager..."
+
+    TPM_DIR="$HOME/.config/tmux/plugins/tpm"
+
+    if [[ -d "$TPM_DIR" ]]; then
+        echo "✓ TPM already installed"
+    else
+        echo "Installing TPM..."
+        git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
+        echo "✓ TPM installed. Run 'prefix + I' in tmux to install plugins."
+    fi
+}
+
+# Install Fisher (fish plugin manager)
+install_fisher() {
+    echo "🐟 Setting up Fisher (fish plugin manager)..."
+
+    # Check if fisher is already installed
+    if fish -c "type -q fisher" 2>/dev/null; then
+        echo "✓ Fisher already installed"
+    else
+        echo "Installing Fisher..."
+        fish -c "curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher"
+        echo "✓ Fisher installed"
+    fi
+
+    # Install plugins from fish_plugins if it exists
+    if [[ -f "$HOME/.config/fish/fish_plugins" ]]; then
+        echo "Installing fish plugins..."
+        fish -c "fisher update"
+        echo "✓ Fish plugins installed"
+    fi
+}
+
 # Clone and setup dotfiles
 setup_dotfiles() {
     echo "📁 Setting up dotfiles..."
@@ -226,6 +263,8 @@ main() {
     configure_macos
     setup_dev_environment
     setup_dotfiles
+    install_tpm
+    install_fisher
     
     echo ""
     echo "✅ macOS setup complete!"
@@ -235,7 +274,7 @@ main() {
     echo "2. Configure git: git config --global user.name 'Your Name'"
     echo "3. Configure git: git config --global user.email 'your@email.com'"
     echo "4. Set up SSH keys for GitHub"
-    echo "5. Fish shell configuration will be loaded from your dotfiles"
+    echo "5. Open tmux and press Alt+Space, I to install tmux plugins"
 }
 
 # Run main function
