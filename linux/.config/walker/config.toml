@@ -1,0 +1,69 @@
+# Walker Configuration
+# Raycast-like launcher with clipboard history
+
+[search]
+placeholder = "Search..."
+delay = 0
+history = true
+max_entries = 50
+
+[ui]
+fullscreen = false
+show_initial_entries = true
+icons = true
+icon_size = 24
+margin_top = 200
+margin_bottom = 0
+margin_left = 0
+margin_right = 0
+width = 600
+
+[ui.window]
+anchor = "top"
+
+[style]
+# Walker uses GTK CSS, keeping it minimal
+# For theming, create ~/.config/walker/style.css
+
+[modules]
+
+[modules.applications]
+name = "applications"
+prefix = ""
+switcher_only = false
+weight = 5
+
+[modules.runner]
+name = "runner"
+prefix = ""
+weight = 4
+
+[modules.windows]
+name = "windows"
+prefix = ""
+weight = 3
+
+[modules.clipboard]
+name = "clipboard"
+prefix = ""
+weight = 2
+max_entries = 100
+image_height = 100
+
+[modules.calculator]
+name = "calculator"
+prefix = "="
+weight = 1
+
+[modules.websearch]
+name = "websearch"
+prefix = "?"
+weight = 0
+engines = ["google", "duckduckgo"]
+
+[keys]
+# Vim-style navigation
+next = ["Down", "ctrl+j", "ctrl+n"]
+prev = ["Up", "ctrl+k", "ctrl+p"]
+accept = ["Return"]
+close = ["Escape"]

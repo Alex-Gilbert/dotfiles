@@ -1,0 +1,110 @@
+{
+    "layer": "top",
+    "position": "top",
+    "height": 30,
+    "spacing": 4,
+
+    "modules-left": ["hyprland/workspaces"],
+    "modules-center": ["clock"],
+    "modules-right": [
+        "network",
+        "custom/tailscale",
+        "cpu",
+        "memory",
+        "pulseaudio",
+        "backlight",
+        "battery",
+        "idle_inhibitor",
+        "tray"
+    ],
+
+    "hyprland/workspaces": {
+        "format": "{name}",
+        "on-click": "activate",
+        "sort-by-number": true
+    },
+
+    "clock": {
+        "format": "{:%Y-%m-%d %H:%M:%S}",
+        "interval": 1,
+        "tooltip-format": "<tt>{calendar}</tt>",
+        "calendar": {
+            "mode": "month",
+            "format": {
+                "today": "<span color='#458588'><b>{}</b></span>"
+            }
+        }
+    },
+
+    "network": {
+        "interface": "enp*",
+        "format": "{ifname}: {ipaddr}",
+        "format-wifi": "{essid} ({signalStrength}%): {ipaddr}",
+        "format-ethernet": "{ifname}: {ipaddr}",
+        "format-disconnected": "disconnected",
+        "tooltip-format": "{ifname}: {ipaddr}/{cidr}\nGateway: {gwaddr}",
+        "max-length": 30
+    },
+
+    "custom/tailscale": {
+        "exec": "tailscale status --json 2>/dev/null | jq -r '.Self.HostName // empty'",
+        "format": "󰖂 {}",
+        "interval": 30,
+        "on-click": "tailscale up",
+        "on-click-right": "tailscale down",
+        "tooltip": true,
+        "tooltip-format": "Tailscale: {}"
+    },
+
+    "cpu": {
+        "format": "CPU {usage}%",
+        "interval": 5,
+        "tooltip": true
+    },
+
+    "memory": {
+        "format": "MEM {}%",
+        "interval": 10,
+        "tooltip-format": "{used:0.1f}G / {total:0.1f}G"
+    },
+
+    "pulseaudio": {
+        "format": "VOL {volume}%",
+        "format-muted": "VOL muted",
+        "on-click": "pavucontrol",
+        "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "scroll-step": 5
+    },
+
+    "backlight": {
+        "format": "BRI {percent}%",
+        "on-scroll-up": "brightnessctl set +5%",
+        "on-scroll-down": "brightnessctl set 5%-"
+    },
+
+    "battery": {
+        "states": {
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "BAT {capacity}%",
+        "format-charging": "CHG {capacity}%",
+        "format-plugged": "PLG {capacity}%",
+        "tooltip-format": "{timeTo}"
+    },
+
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": {
+            "activated": "AWAKE",
+            "deactivated": "IDLE"
+        },
+        "tooltip-format-activated": "Idle inhibitor: ON",
+        "tooltip-format-deactivated": "Idle inhibitor: OFF"
+    },
+
+    "tray": {
+        "icon-size": 16,
+        "spacing": 8
+    }
+}
