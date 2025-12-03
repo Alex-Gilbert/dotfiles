@@ -47,13 +47,13 @@
     },
 
     "custom/tailscale": {
-        "exec": "tailscale status --json 2>/dev/null | jq -r '.Self.HostName // empty'",
+        "exec": "tailscale status --json 2>/dev/null | jq -r '.Self.DNSName // empty' | sed 's/\\.$//'",
         "format": "󰖂 {}",
         "interval": 30,
-        "on-click": "tailscale up",
-        "on-click-right": "tailscale down",
+        "on-click": "pkexec tailscale up",
+        "on-click-right": "pkexec tailscale down",
         "tooltip": true,
-        "tooltip-format": "Tailscale: {}"
+        "tooltip-format": "Tailscale: {} (click: up, right-click: down)"
     },
 
     "cpu": {
