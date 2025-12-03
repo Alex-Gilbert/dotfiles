@@ -1,0 +1,42 @@
+# Mako Notification Daemon Configuration
+# Kanagawa theme
+
+# General
+max-visible=5
+sort=-time
+layer=overlay
+anchor=top-right
+
+# Appearance
+font=JetBrainsMono Nerd Font 10
+background-color=#1d2021
+text-color=#ebdbb2
+border-color=#458588
+border-size=2
+border-radius=0
+margin=10
+padding=10
+width=350
+height=150
+
+# Behavior
+default-timeout=5000
+ignore-timeout=0
+
+# Icons
+icons=1
+max-icon-size=48
+icon-location=left
+
+# Urgency levels
+[urgency=low]
+border-color=#665c54
+default-timeout=3000
+
+[urgency=normal]
+border-color=#458588
+default-timeout=5000
+
+[urgency=critical]
+border-color=#cc241d
+default-timeout=0
