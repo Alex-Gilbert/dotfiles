@@ -25,12 +25,14 @@ fish_add_path $HOME/.config/fish/functions
 fish_add_path $HOME/dotfiles/scripts
 fish_add_path $HOME/.local/bin
 fish_add_path $HOME/.cargo/bin
+fish_add_path $HOME/.bun/bin
 
 # Check if we're on macOS and source macOS-specific config
 if test (uname -s) = "Darwin"
     if test -f $HOME/dotfiles/macos/.config/fish/config.fish
         source $HOME/dotfiles/macos/.config/fish/config.fish
     end
+    fish_add_path /usr/local/share/dotnet
 else
     # Linux-specific paths
     set -gx PATH $PATH \
