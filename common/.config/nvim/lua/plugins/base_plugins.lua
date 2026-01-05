@@ -52,6 +52,9 @@ return {
 	{ -- Highlight, edit, and navigate code
 		"nvim-treesitter/nvim-treesitter",
 		build = ":TSUpdate",
+		dependencies = {
+			"nvim-treesitter/nvim-treesitter-textobjects",
+		},
 		main = "nvim-treesitter.configs", -- Sets main module to use for opts
 		-- [[ Configure Treesitter ]] See `:help nvim-treesitter`
 		opts = {
@@ -76,6 +79,36 @@ return {
 				additional_vim_regex_highlighting = { "ruby" },
 			},
 			indent = { enable = true, disable = { "ruby" } },
+			-- Textobjects (used by mini.ai for treesitter-powered text objects)
+			textobjects = {
+				select = { enable = true, lookahead = true },
+				move = {
+					enable = true,
+					goto_next_start = {
+						["]f"] = "@function.outer",
+						["]c"] = "@class.outer",
+						["]a"] = "@parameter.inner",
+					},
+					goto_next_end = {
+						["]F"] = "@function.outer",
+						["]C"] = "@class.outer",
+					},
+					goto_previous_start = {
+						["[f"] = "@function.outer",
+						["[c"] = "@class.outer",
+						["[a"] = "@parameter.inner",
+					},
+					goto_previous_end = {
+						["[F"] = "@function.outer",
+						["[C"] = "@class.outer",
+					},
+				},
+				swap = {
+					enable = true,
+					swap_next = { ["<leader>xp"] = "@parameter.inner" },
+					swap_previous = { ["<leader>xP"] = "@parameter.inner" },
+				},
+			},
 		},
 	},
 	{
