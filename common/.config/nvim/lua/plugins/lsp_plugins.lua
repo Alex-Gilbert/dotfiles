@@ -22,7 +22,8 @@ return {
 			"WhoIsSethDaniel/mason-tool-installer.nvim",
 			-- Autoformat
 			{ "j-hui/fidget.nvim", opts = {} },
-			"hrsh7th/cmp-nvim-lsp",
+			-- Completion capabilities (blink.cmp)
+			"saghen/blink.cmp",
 			-- Navic
 			"SmiteshP/nvim-navic",
 		},
@@ -47,13 +48,10 @@ return {
 				vim.diagnostic.config({ signs = { text = diagnostic_signs } })
 			end
 
-			-- Set up LSP capabilities
-			local capabilities = vim.lsp.protocol.make_client_capabilities()
-			capabilities = vim.tbl_deep_extend("force", capabilities, require("cmp_nvim_lsp").default_capabilities())
-
-			capabilities = vim.tbl_deep_extend("force", capabilities, {
-				text_document = {
-					position_encoding = "utf-16",
+			-- Set up LSP capabilities (using blink.cmp)
+			local capabilities = require("blink.cmp").get_lsp_capabilities({
+				textDocument = {
+					positionEncoding = "utf-16",
 				},
 			})
 
@@ -148,62 +146,55 @@ return {
 		},
 	},
 
-	{ -- Autocompletion
-		"hrsh7th/nvim-cmp",
-		event = "InsertEnter",
+	{ -- Autocompletion (blink.cmp - faster, modern replacement for nvim-cmp)
+		"saghen/blink.cmp",
+		version = "1.*",
 		dependencies = {
-			{
-				"L3MON4D3/LuaSnip",
-				build = (function()
-					if vim.fn.has("win32") == 1 or vim.fn.executable("make") == 0 then
-						return
-					end
-					return "make install_jsregexp"
-				end)(),
-				dependencies = {
-					{
-						"rafamadriz/friendly-snippets",
-						config = function()
-							require("luasnip.loaders.from_vscode").lazy_load()
-						end,
+			"rafamadriz/friendly-snippets",
+		},
+		event = "InsertEnter",
+		---@module 'blink.cmp'
+		---@type blink.cmp.Config
+		opts = {
+			keymap = {
+				preset = "none",
+				["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
+				["<C-e>"] = { "hide" },
+				["<C-y>"] = { "select_and_accept" },
+
+				["<C-p>"] = { "select_prev", "fallback" },
+				["<C-n>"] = { "select_next", "fallback" },
+
+				["<C-b>"] = { "scroll_documentation_up", "fallback" },
+				["<C-f>"] = { "scroll_documentation_down", "fallback" },
+
+				["<C-left>"] = { "snippet_forward", "fallback" },
+				["<C-right>"] = { "snippet_backward", "fallback" },
+			},
+
+			appearance = {
+				use_nvim_cmp_as_default = true,
+				nerd_font_variant = "mono",
+			},
+
+			completion = {
+				accept = { auto_brackets = { enabled = true } },
+				documentation = { auto_show = true, auto_show_delay_ms = 200 },
+				list = { selection = { preselect = true, auto_insert = true } },
+			},
+
+			sources = {
+				default = { "lazydev", "lsp", "path", "snippets", "buffer" },
+				providers = {
+					lazydev = {
+						name = "LazyDev",
+						module = "lazydev.integrations.blink",
+						score_offset = 100,
 					},
 				},
 			},
-			"saadparwaiz1/cmp_luasnip",
-			"hrsh7th/cmp-nvim-lsp",
-			"hrsh7th/cmp-path",
 		},
-		config = function()
-			local cmp = require("cmp")
-			local luasnip = require("luasnip")
-			luasnip.config.setup({})
-
-			cmp.setup({
-				snippet = {
-					expand = function(args)
-						luasnip.lsp_expand(args.body)
-					end,
-				},
-				completion = { completeopt = "menu,menuone,noinsert" },
-
-				-- For an understanding of why these mappings were
-				-- chosen, you will need to read `:help ins-completion`
-				--
-				-- No, but seriously. Please read `:help ins-completion`, it is really good!
-				mapping = cmp.mapping.preset.insert(require("alex-config.keymaps").cmp_keys(cmp, luasnip)),
-				sources = {
-					{
-						name = "lazydev",
-						-- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
-						group_index = 0,
-					},
-					{ name = "nvim_lsp" },
-					-- { name = "supermaven" },
-					{ name = "luasnip" },
-					{ name = "path" },
-				},
-			})
-		end,
+		opts_extend = { "sources.default" },
 	},
 
 	{ -- rustaceanvim

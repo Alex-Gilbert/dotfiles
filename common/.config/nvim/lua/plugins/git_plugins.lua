@@ -11,6 +11,25 @@ return {
 			},
 		},
 	},
+	{ -- Diffview - better diff/merge conflict UI
+		"sindrets/diffview.nvim",
+		dependencies = { "nvim-lua/plenary.nvim" },
+		cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewFileHistory", "DiffviewToggleFiles" },
+		keys = require("alex-config.keymaps").diffview_keys,
+		opts = {
+			enhanced_diff_hl = true,
+			view = {
+				default = { layout = "diff2_horizontal" },
+				merge_tool = {
+					layout = "diff3_mixed",
+					disable_diagnostics = true,
+				},
+			},
+			file_panel = {
+				win_config = { position = "left", width = 35 },
+			},
+		},
+	},
 	{
 		"kdheepak/lazygit.nvim",
 		lazy = true,

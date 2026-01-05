@@ -75,7 +75,7 @@ return {
 			"rebelot/kanagawa.nvim",
 			"Zeioth/heirline-components.nvim",
 			"SmiteshP/nvim-navic",
-			"ThePrimeagen/harpoon",
+			"cbochs/grapple.nvim",
 		},
 		lazy = false,
 		config = function()
