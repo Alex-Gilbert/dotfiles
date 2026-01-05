@@ -115,6 +115,67 @@ return {
 		dependencies = { "nvim-tree/nvim-web-devicons" },
 		opts = {},
 	},
+
+	-- Aerial (code outline / symbol navigation)
+	{
+		"stevearc/aerial.nvim",
+		dependencies = {
+			"nvim-treesitter/nvim-treesitter",
+			"nvim-tree/nvim-web-devicons",
+			"nvim-telescope/telescope.nvim",
+		},
+		keys = {
+			{ "<leader>cs", "<cmd>Telescope aerial<cr>", desc = "[C]ode [S]ymbols (Aerial)" },
+			{ "<leader>cn", "<cmd>AerialNavToggle<cr>", desc = "[C]ode [N]av (Aerial)" },
+			{ "]s", "<cmd>AerialNext<cr>", desc = "Next symbol" },
+			{ "[s", "<cmd>AerialPrev<cr>", desc = "Prev symbol" },
+		},
+		opts = {
+			backends = { "treesitter", "lsp", "markdown", "asciidoc", "man" },
+			layout = {
+				default_direction = "float",
+				max_width = { 80, 0.5 },
+			},
+			float = {
+				relative = "editor",
+				border = "rounded",
+				max_height = 0.7,
+				min_height = { 10, 0.2 },
+			},
+			nav = {
+				border = "rounded",
+				max_height = 0.7,
+				min_height = { 10, 0.2 },
+				max_width = 0.6,
+				min_width = { 0.3, 40 },
+				win_opts = {
+					cursorline = true,
+					winblend = 10,
+				},
+				autojump = true,
+				preview = true,
+			},
+			filter_kind = false, -- Show all symbol types
+			highlight_on_jump = 300,
+			close_on_select = true,
+			show_guides = true,
+		},
+		config = function(_, opts)
+			require("aerial").setup(opts)
+
+			-- Configure telescope extension
+			require("telescope").setup({
+				extensions = {
+					aerial = {
+						show_columns = "both",
+						col1_width = 4,
+						col2_width = 30,
+					},
+				},
+			})
+			require("telescope").load_extension("aerial")
+		end,
+	},
 	{
 		"christoomey/vim-tmux-navigator",
 		cmd = {

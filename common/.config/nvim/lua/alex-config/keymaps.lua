@@ -75,11 +75,12 @@ M.whichkey_spec = {
 
 	{ "<leader>p", group = "Project", nowait = true, remap = false },
 	{ "<leader>ps", group = "Project Search", nowait = true, remap = false },
-	{ "<leader>s", group = "Surround", nowait = true, remap = false },
 	{ "<leader>o", group = "Obsidian", nowait = true, remap = false },
 	{ "<leader>i", group = "Intelligence (AI)", nowait = true, remap = false },
 	{ "<leader>g", group = "[G]it", nowait = true, remap = false },
 	{ "<leader>gd", group = "[G]it [D]iff", nowait = true, remap = false },
+	{ "<leader>x", group = "Swap", nowait = true, remap = false },
+	{ "gs", group = "Surround", nowait = true, remap = false },
 }
 
 M.set_copilot_keys = function()
@@ -175,7 +176,7 @@ local function set_base_lsp_keys(bufnr, client, overrides)
 	)
 
 	-- Document/workspace symbols
-	keymap("n", "<leader>cs", telescope.lsp_document_symbols, "[C]ode Document [S]ymbols", lsp_opts)
+	-- NOTE: <leader>cs is now handled by aerial.nvim (Telescope aerial)
 	keymap("n", "<leader>cS", telescope.lsp_dynamic_workspace_symbols, "[C]ode Workspace [S]ymbols", lsp_opts)
 
 	-- Actions (with overrides support)
@@ -265,20 +266,7 @@ M.conform_keys = {
 }
 
 -- NOTE: cmp_keys removed - blink.cmp handles its own keymaps in lsp_plugins.lua
-
-M.surround_keys = {
-	insert = "<C-g>s",
-	insert_line = "<C-g>S",
-	normal = "z",
-	normal_cur = "zz",
-	normal_line = "Z",
-	normal_cur_line = "ZZ",
-	visual = "z",
-	visual_line = "Z",
-	delete = "<leader>sd",
-	change = "<leader>sc",
-	change_line = "<leader>cS",
-}
+-- NOTE: surround_keys removed - mini.surround handles its own keymaps (gz prefix)
 
 M.oil_keys = {
 	["g?"] = { "actions.show_help", mode = "n" },
@@ -871,11 +859,25 @@ M.diffview_keys = {
 		desc = "[G]it [D]iff against [B]ranch",
 	},
 	{
+		"<leader>gdB",
+		function()
+			require("alex-config.keymaps").diffview_view_branch()
+		end,
+		desc = "[G]it [D]iff view [B]ranch changes (vs HEAD)",
+	},
+	{
 		"<leader>gdc",
 		function()
 			require("alex-config.keymaps").diffview_pick_commit()
 		end,
 		desc = "[G]it [D]iff against [C]ommit",
+	},
+	{
+		"<leader>gdv",
+		function()
+			require("alex-config.keymaps").diffview_view_commit()
+		end,
+		desc = "[G]it [D]iff [V]iew commit (what it changed)",
 	},
 	{
 		"<leader>gdC",
@@ -886,19 +888,19 @@ M.diffview_keys = {
 	},
 }
 
--- Telescope picker: select branch → open diffview against it
+-- Telescope picker: select branch → diff current state against it
 M.diffview_pick_branch = function()
 	local actions = require("telescope.actions")
 	local action_state = require("telescope.actions.state")
 
 	require("telescope.builtin").git_branches({
-		prompt_title = "Diff against branch",
+		prompt_title = "Diff current state against branch",
 		attach_mappings = function(prompt_bufnr, map)
 			local open_diff = function()
 				local selection = action_state.get_selected_entry()
 				actions.close(prompt_bufnr)
 				if selection then
-					-- Extract branch name (remove remote prefix if present)
+					-- LEFT = selected branch, RIGHT = current working tree
 					local branch = selection.value
 					vim.cmd("DiffviewOpen " .. branch)
 				end
@@ -911,18 +913,68 @@ M.diffview_pick_branch = function()
 	})
 end
 
--- Telescope picker: select commit → open diffview against it
-M.diffview_pick_commit = function()
+-- Telescope picker: select branch → view what it has vs current HEAD
+M.diffview_view_branch = function()
 	local actions = require("telescope.actions")
 	local action_state = require("telescope.actions.state")
 
-	require("telescope.builtin").git_commits({
-		prompt_title = "Diff against commit",
+	require("telescope.builtin").git_branches({
+		prompt_title = "View branch changes (vs current HEAD)",
 		attach_mappings = function(prompt_bufnr, map)
 			local open_diff = function()
 				local selection = action_state.get_selected_entry()
 				actions.close(prompt_bufnr)
 				if selection then
+					-- Shows what branch has that HEAD doesn't (like a PR diff)
+					local branch = selection.value
+					vim.cmd("DiffviewOpen HEAD..." .. branch)
+				end
+			end
+
+			map("i", "<CR>", open_diff)
+			map("n", "<CR>", open_diff)
+			return true
+		end,
+	})
+end
+
+-- Telescope picker: select commit → diff current state against it
+M.diffview_pick_commit = function()
+	local actions = require("telescope.actions")
+	local action_state = require("telescope.actions.state")
+
+	require("telescope.builtin").git_commits({
+		prompt_title = "Diff current state against commit",
+		attach_mappings = function(prompt_bufnr, map)
+			local open_diff = function()
+				local selection = action_state.get_selected_entry()
+				actions.close(prompt_bufnr)
+				if selection then
+					-- LEFT = selected commit, RIGHT = current working tree
+					vim.cmd("DiffviewOpen " .. selection.value)
+				end
+			end
+
+			map("i", "<CR>", open_diff)
+			map("n", "<CR>", open_diff)
+			return true
+		end,
+	})
+end
+
+-- Telescope picker: select commit → view what that commit changed
+M.diffview_view_commit = function()
+	local actions = require("telescope.actions")
+	local action_state = require("telescope.actions.state")
+
+	require("telescope.builtin").git_commits({
+		prompt_title = "View commit changes",
+		attach_mappings = function(prompt_bufnr, map)
+			local open_diff = function()
+				local selection = action_state.get_selected_entry()
+				actions.close(prompt_bufnr)
+				if selection then
+					-- Shows what this commit changed (commit vs its parent)
 					vim.cmd("DiffviewOpen " .. selection.value .. "^!")
 				end
 			end
