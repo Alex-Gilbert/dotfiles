@@ -1,7 +1,7 @@
 local utils = require("heirline.utils")
 local conditions = require("heirline.conditions")
 local lib = require("heirline-components.all")
-local harpoon = require("harpoon")
+local grapple = require("grapple")
 
 -- The easy way.
 local Navic = {
@@ -35,10 +35,21 @@ local TablineBufnr = {
 -- we redefine the filename component, as we probably only want the tail and not the relative path
 local TablineFileName = {
 	provider = function(self)
-		-- self.filename will be defined later, just keep looking at the example!
 		local filename = self.filename
-		filename = filename == "" and "[No Name]" or vim.fn.fnamemodify(filename, ":t")
-		return filename
+		if filename == "" then
+			return "[No Name]"
+		end
+
+		-- Handle oil:// paths (directory buffers)
+		if filename:match("^oil://") then
+			-- Strip oil:// prefix and trailing slash
+			local dir_path = filename:gsub("^oil://", ""):gsub("/$", "")
+			local dir_name = vim.fn.fnamemodify(dir_path, ":t")
+			return "oil:" .. (dir_name ~= "" and dir_name or "/")
+		end
+
+		-- Regular file
+		return vim.fn.fnamemodify(filename, ":t")
 	end,
 	hl = function(self)
 		return { bold = self.is_active or self.is_visible, italic = true }
@@ -48,10 +59,12 @@ local TablineFileName = {
 -- Here the filename block finally comes together
 local TablineFileNameBlock = {
 	init = function(self)
-		local list = harpoon:list()
-		local items = list.items
-
-		self.filename = items[self.bufnr].value
+		local tags = grapple.tags()
+		if tags and tags[self.bufnr] then
+			self.filename = tags[self.bufnr].path
+		else
+			self.filename = ""
+		end
 	end,
 	hl = function(self)
 		if self.is_active then
@@ -80,12 +93,13 @@ end
 -- and here we go
 local BufferLine = {
 	init = function(self)
-		local harpoon_number = #harpoon:list().items
+		local tags = grapple.tags() or {}
+		local grapple_count = #tags
 		self.active_child = false
-		local bufs = create_table(harpoon_number)
+		local bufs = create_table(grapple_count)
 
 		self.buffers = bufs
-		self.number = harpoon_number
+		self.number = grapple_count
 
 		for i, bufnr in ipairs(bufs) do
 			local child = self[i]
@@ -107,8 +121,9 @@ local BufferLine = {
 		end
 	end,
 	update = function(self)
-		local harpoon_number = #harpoon:list().items
-		if self.number ~= harpoon_number then
+		local tags = grapple.tags() or {}
+		local grapple_count = #tags
+		if self.number ~= grapple_count then
 			return true
 		end
 		return false

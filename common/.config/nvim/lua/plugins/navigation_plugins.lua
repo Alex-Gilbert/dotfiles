@@ -55,17 +55,21 @@ return {
 		},
 	},
 
-	-- Harpoon
+	-- Grapple (file tagging/navigation)
 	{
-		"ThePrimeagen/harpoon",
-		branch = "harpoon2",
+		"cbochs/grapple.nvim",
 		lazy = false,
-		dependencies = { "nvim-lua/plenary.nvim" },
-		opts = {},
-		config = function()
-			local harpoon = require("harpoon")
-			harpoon:setup()
-			require("alex-config.keymaps").set_harpoon_keys(harpoon)
+		dependencies = {
+			{ "nvim-tree/nvim-web-devicons", lazy = true },
+		},
+		opts = {
+			scope = "git",
+			icons = true,
+			status = true,
+		},
+		config = function(_, opts)
+			require("grapple").setup(opts)
+			require("alex-config.keymaps").set_grapple_keys()
 		end,
 	},
 

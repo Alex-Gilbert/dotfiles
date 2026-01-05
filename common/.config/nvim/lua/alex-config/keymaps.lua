@@ -77,6 +77,9 @@ M.whichkey_spec = {
 	{ "<leader>ps", group = "Project Search", nowait = true, remap = false },
 	{ "<leader>s", group = "Surround", nowait = true, remap = false },
 	{ "<leader>o", group = "Obsidian", nowait = true, remap = false },
+	{ "<leader>i", group = "Intelligence (AI)", nowait = true, remap = false },
+	{ "<leader>g", group = "[G]it", nowait = true, remap = false },
+	{ "<leader>gd", group = "[G]it [D]iff", nowait = true, remap = false },
 }
 
 M.set_copilot_keys = function()
@@ -261,39 +264,7 @@ M.conform_keys = {
 	},
 }
 
-M.cmp_keys = function(cmp, luasnip)
-	return {
-		-- Select the [n]ext item
-		["<C-n>"] = cmp.mapping.select_next_item(),
-		-- Select the [p]revious item
-		["<C-p>"] = cmp.mapping.select_prev_item(),
-
-		-- Scroll the documentation window [b]ack / [f]orward
-		["<C-b>"] = cmp.mapping.scroll_docs(-4),
-		["<C-f>"] = cmp.mapping.scroll_docs(4),
-
-		-- Accept ([y]es) the completion.
-		--  This will auto-import if your LSP supports it.
-		--  This will expand snippets if the LSP sent a snippet.
-		["<C-y>"] = cmp.mapping.confirm({ select = true }),
-
-		-- Manually trigger a completion from nvim-cmp.
-		["<C-Space>"] = cmp.mapping.complete({}),
-
-		-- <c-l> will move you to the right of each of the expansion locations.
-		-- <c-h> is similar, except moving you backwards.
-		["<C-left>"] = cmp.mapping(function()
-			if luasnip.expand_or_locally_jumpable() then
-				luasnip.expand_or_jump()
-			end
-		end, { "i", "s" }),
-		["<C-right>"] = cmp.mapping(function()
-			if luasnip.locally_jumpable(-1) then
-				luasnip.jump(-1)
-			end
-		end, { "i", "s" }),
-	}
-end
+-- NOTE: cmp_keys removed - blink.cmp handles its own keymaps in lsp_plugins.lua
 
 M.surround_keys = {
 	insert = "<C-g>s",
@@ -360,48 +331,116 @@ M.set_oil_keys = function()
 	)
 end
 
-M.set_harpoon_keys = function(harpoon)
+M.set_grapple_keys = function()
+	local grapple = require("grapple")
+
 	keymap("n", "<leader>a", function()
-		harpoon:list():add()
-	end, "[A]dd file to Harpoon")
+		grapple.toggle()
+	end, "[A]dd/Remove file tag (Grapple)")
 	keymap("n", "<leader>e", function()
-		harpoon.ui:toggle_quick_menu(harpoon:list())
-	end, "[E]xplore Harpoon")
+		grapple.toggle_tags()
+	end, "[E]xplore Grapple tags")
 
 	keymap("n", "<C-1>", function()
-		harpoon:list():select(1)
-	end, "[H]arpoon [1]")
+		grapple.select({ index = 1 })
+	end, "[G]rapple [1]")
 	keymap("n", "<C-2>", function()
-		harpoon:list():select(2)
-	end, "[H]arpoon [2]")
+		grapple.select({ index = 2 })
+	end, "[G]rapple [2]")
 	keymap("n", "<C-3>", function()
-		harpoon:list():select(3)
-	end, "[H]arpoon [3]")
+		grapple.select({ index = 3 })
+	end, "[G]rapple [3]")
 	keymap("n", "<C-4>", function()
-		harpoon:list():select(4)
-	end, "[H]arpoon [4]")
+		grapple.select({ index = 4 })
+	end, "[G]rapple [4]")
 	keymap("n", "<C-5>", function()
-		harpoon:list():select(5)
-	end, "[H]arpoon [5]")
+		grapple.select({ index = 5 })
+	end, "[G]rapple [5]")
 	keymap("n", "<C-6>", function()
-		harpoon:list():select(6)
-	end, "[H]arpoon [6]")
+		grapple.select({ index = 6 })
+	end, "[G]rapple [6]")
 	keymap("n", "<C-7>", function()
-		harpoon:list():select(7)
-	end, "[H]arpoon [7]")
+		grapple.select({ index = 7 })
+	end, "[G]rapple [7]")
 	keymap("n", "<C-8>", function()
-		harpoon:list():select(8)
-	end, "[H]arpoon [8]")
+		grapple.select({ index = 8 })
+	end, "[G]rapple [8]")
 	keymap("n", "<C-9>", function()
-		harpoon:list():select(9)
-	end, "[H]arpoon [9]")
+		grapple.select({ index = 9 })
+	end, "[G]rapple [9]")
 
 	keymap("n", "<C-S-H>", function()
-		harpoon:list():prev()
-	end, "[H]arpoon [P]revious")
+		grapple.cycle_tags("prev")
+	end, "[G]rapple [P]revious")
 	keymap("n", "<C-S-L>", function()
-		harpoon:list():next()
-	end, "[H]arpoon [N]ext")
+		grapple.cycle_tags("next")
+	end, "[G]rapple [N]ext")
+end
+
+M.set_opencode_keys = function()
+	local opencode = require("opencode")
+
+	-- Core actions
+	keymap({ "n", "x" }, "<leader>ia", function()
+		opencode.ask()
+	end, "[I]ntelligence [A]sk")
+	keymap({ "n", "x" }, "<leader>is", function()
+		opencode.select()
+	end, "[I]ntelligence [S]elect action")
+	keymap({ "n", "t" }, "<leader>it", function()
+		opencode.toggle()
+	end, "[I]ntelligence [T]oggle")
+
+	-- Quick prompts with context
+	keymap({ "n", "x" }, "<leader>ie", function()
+		opencode.ask("@this: explain", { submit = true })
+	end, "[I]ntelligence [E]xplain")
+	keymap({ "n", "x" }, "<leader>ir", function()
+		opencode.ask("@this: review for correctness and readability", { submit = true })
+	end, "[I]ntelligence [R]eview")
+	keymap({ "n", "x" }, "<leader>ii", function()
+		opencode.ask("@this: implement", { submit = true })
+	end, "[I]ntelligence [I]mplement")
+	keymap({ "n", "x" }, "<leader>io", function()
+		opencode.ask("@this: optimize for performance and readability", { submit = true })
+	end, "[I]ntelligence [O]ptimize")
+	keymap({ "n", "x" }, "<leader>id", function()
+		opencode.ask("@this: add documentation comments", { submit = true })
+	end, "[I]ntelligence [D]ocument")
+
+	-- Diagnostics
+	keymap("n", "<leader>ix", function()
+		opencode.ask("@diagnostics: explain these diagnostics", { submit = true })
+	end, "[I]ntelligence Diagnostics E[x]plain")
+	keymap("n", "<leader>if", function()
+		opencode.ask("@diagnostics: fix these issues", { submit = true })
+	end, "[I]ntelligence [F]ix diagnostics")
+
+	-- Git
+	keymap("n", "<leader>ig", function()
+		opencode.ask("@diff: review this git diff for correctness and readability", { submit = true })
+	end, "[I]ntelligence [G]it diff review")
+
+	-- Grapple integration (tagged files context)
+	keymap("n", "<leader>ij", function()
+		opencode.ask("@grapple: ", { submit = false })
+	end, "[I]ntelligence Grapple conte[x]t")
+
+	-- Operator for ranges (vim-style)
+	keymap({ "n", "x" }, "go", function()
+		return opencode.operator("@this ")
+	end, "[G]o [O]pencode (operator)", { expr = true })
+	keymap("n", "goo", function()
+		return opencode.operator("@this ") .. "_"
+	end, "[G]o [O]pencode line", { expr = true })
+
+	-- Session navigation
+	keymap("n", "<S-C-u>", function()
+		opencode.command("session.half.page.up")
+	end, "opencode: scroll up")
+	keymap("n", "<S-C-d>", function()
+		opencode.command("session.half.page.down")
+	end, "opencode: scroll down")
 end
 
 M.mini_move_keys = {
@@ -812,6 +851,130 @@ M.set_crates_keys = function(bufnr)
 			vim.lsp.buf.hover()
 		end
 	end, "Show Crate Info", opts)
+end
+
+-- Diffview keys (with Telescope integration for branch/commit selection)
+M.diffview_keys = {
+	-- Quick actions
+	{ "<leader>gdd", "<cmd>DiffviewOpen<cr>", desc = "[G]it [D]iff against index" },
+	{ "<leader>gdh", "<cmd>DiffviewFileHistory %<cr>", desc = "[G]it [D]iff file [H]istory" },
+	{ "<leader>gdH", "<cmd>DiffviewFileHistory<cr>", desc = "[G]it [D]iff repo [H]istory" },
+	{ "<leader>gdq", "<cmd>DiffviewClose<cr>", desc = "[G]it [D]iff [Q]uit" },
+	{ "<leader>gdr", "<cmd>DiffviewRefresh<cr>", desc = "[G]it [D]iff [R]efresh" },
+
+	-- Telescope pickers (defined below, loaded on keypress)
+	{
+		"<leader>gdb",
+		function()
+			require("alex-config.keymaps").diffview_pick_branch()
+		end,
+		desc = "[G]it [D]iff against [B]ranch",
+	},
+	{
+		"<leader>gdc",
+		function()
+			require("alex-config.keymaps").diffview_pick_commit()
+		end,
+		desc = "[G]it [D]iff against [C]ommit",
+	},
+	{
+		"<leader>gdC",
+		function()
+			require("alex-config.keymaps").diffview_pick_commit_range()
+		end,
+		desc = "[G]it [D]iff [C]ommit range",
+	},
+}
+
+-- Telescope picker: select branch → open diffview against it
+M.diffview_pick_branch = function()
+	local actions = require("telescope.actions")
+	local action_state = require("telescope.actions.state")
+
+	require("telescope.builtin").git_branches({
+		prompt_title = "Diff against branch",
+		attach_mappings = function(prompt_bufnr, map)
+			local open_diff = function()
+				local selection = action_state.get_selected_entry()
+				actions.close(prompt_bufnr)
+				if selection then
+					-- Extract branch name (remove remote prefix if present)
+					local branch = selection.value
+					vim.cmd("DiffviewOpen " .. branch)
+				end
+			end
+
+			map("i", "<CR>", open_diff)
+			map("n", "<CR>", open_diff)
+			return true
+		end,
+	})
+end
+
+-- Telescope picker: select commit → open diffview against it
+M.diffview_pick_commit = function()
+	local actions = require("telescope.actions")
+	local action_state = require("telescope.actions.state")
+
+	require("telescope.builtin").git_commits({
+		prompt_title = "Diff against commit",
+		attach_mappings = function(prompt_bufnr, map)
+			local open_diff = function()
+				local selection = action_state.get_selected_entry()
+				actions.close(prompt_bufnr)
+				if selection then
+					vim.cmd("DiffviewOpen " .. selection.value .. "^!")
+				end
+			end
+
+			map("i", "<CR>", open_diff)
+			map("n", "<CR>", open_diff)
+			return true
+		end,
+	})
+end
+
+-- Telescope picker: select two commits → open diffview for range
+M.diffview_pick_commit_range = function()
+	local actions = require("telescope.actions")
+	local action_state = require("telescope.actions.state")
+	local first_commit = nil
+
+	require("telescope.builtin").git_commits({
+		prompt_title = "Select FIRST commit (older)",
+		attach_mappings = function(prompt_bufnr, map)
+			local select_first = function()
+				local selection = action_state.get_selected_entry()
+				actions.close(prompt_bufnr)
+				if selection then
+					first_commit = selection.value
+					-- Now pick second commit
+					vim.defer_fn(function()
+						require("telescope.builtin").git_commits({
+							prompt_title = "Select SECOND commit (newer)",
+							attach_mappings = function(prompt_bufnr2, map2)
+								local select_second = function()
+									local selection2 = action_state.get_selected_entry()
+									actions.close(prompt_bufnr2)
+									if selection2 and first_commit then
+										vim.cmd("DiffviewOpen " .. first_commit .. ".." .. selection2.value)
+									end
+								end
+
+								map2("i", "<CR>", select_second)
+								map2("n", "<CR>", select_second)
+								return true
+							end,
+						})
+					end, 100)
+				end
+			end
+
+			map("i", "<CR>", select_first)
+			map("n", "<CR>", select_first)
+			return true
+		end,
+	})
 end
 
 return M
