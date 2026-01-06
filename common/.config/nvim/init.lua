@@ -16,3 +16,6 @@ end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup("plugins")
+
+-- Set up autocmds (after plugins are loaded for colorscheme access)
+require("alex-config.auto_cmds").set_base_autocmds()

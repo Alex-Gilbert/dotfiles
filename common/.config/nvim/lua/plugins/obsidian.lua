@@ -1,27 +1,9 @@
 return {
-	"epwalsh/obsidian.nvim",
-	version = "*", -- recommended, use latest release instead of latest commit
+	-- Using actively maintained fork with native blink.cmp support
+	"obsidian-nvim/obsidian.nvim",
+	version = "*",
 	lazy = true,
-	cmd = {
-		"ObsidianOpen",
-		"ObsidianNew",
-		"ObsidianQuickSwitch",
-		"ObsidianFollowLink",
-		"ObsidianBacklinks",
-		"ObsidianSearch",
-		"ObsidianLinks",
-		"ObsidianTags",
-		"ObsidianTemplate",
-		"ObsidianToday",
-		"ObsidianYesterday",
-		"ObsidianTomorrow",
-		"ObsidianDailies",
-		"ObsidianPasteImg",
-		"ObsidianTOC",
-		"ObsidianToggleCheckbox",
-		"ObsidianRename",
-		"ObsidianKill",
-	},
+	cmd = { "Obsidian" }, -- New unified command format
 	keys = require("alex-config.keymaps").obsidian_keys,
 	ft = "markdown",
 	dependencies = {
@@ -54,8 +36,9 @@ return {
 			return timestamp .. "-" .. suffix
 		end,
 
+		-- blink.cmp is auto-detected, sources auto-injected
 		completion = {
-			nvim_cmp = true,
+			blink = true,
 			min_chars = 2,
 		},
 
@@ -65,19 +48,10 @@ return {
 			time_format = "%H:%M",
 		},
 
-		---@param url string
-		follow_url_func = function(url)
-			vim.fn.jobstart({ "xdg-open", url }) -- linux
-		end,
-
-		---@param img string
-		follow_img_func = function(img)
-			vim.fn.jobstart({ "xdg-open", img }) -- linux
-		end,
+		-- Use new command style (e.g., "Obsidian backlinks" instead of "ObsidianBacklinks")
+		legacy_commands = false,
 
 		picker = { name = "telescope.nvim" },
-
-		mappings = {},
 	},
 	config = function(_, opts)
 		require("obsidian").setup(opts)
