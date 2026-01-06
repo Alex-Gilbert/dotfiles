@@ -20,8 +20,7 @@ return {
 			{ "williamboman/mason.nvim", config = true }, -- NOTE: Must be loaded before dependants
 			"williamboman/mason-lspconfig.nvim",
 			"WhoIsSethDaniel/mason-tool-installer.nvim",
-			-- Autoformat
-			{ "j-hui/fidget.nvim", opts = {} },
+			-- NOTE: fidget.nvim removed - noice.nvim handles LSP progress
 			-- Completion capabilities (blink.cmp)
 			"saghen/blink.cmp",
 			-- Navic
@@ -183,6 +182,7 @@ return {
 				list = { selection = { preselect = true, auto_insert = true } },
 			},
 
+			-- Note: obsidian.nvim auto-injects its sources for markdown files
 			sources = {
 				default = { "lazydev", "lsp", "path", "snippets", "buffer" },
 				providers = {

@@ -51,6 +51,18 @@ M.init = function()
 
 	keymap("n", "<leader>w", "<cmd>w!<CR>", "Save", { nowait = true, remap = false })
 	keymap("n", "<leader>W", "<cmd>wall!<CR>", "Save All", { nowait = true, remap = false })
+
+	-- Macro execution with visible indicator (instant, but shows what register)
+	keymap("n", "@", function()
+		-- Show brief indicator
+		vim.notify("@", vim.log.levels.INFO, { title = "Macro", timeout = 500 })
+		-- Get register and execute immediately
+		local reg = vim.fn.getcharstr()
+		if reg then
+			local count = vim.v.count1
+			vim.cmd("normal! " .. count .. "@" .. reg)
+		end
+	end, "Execute macro")
 end
 
 M.whichkey_spec = {
@@ -80,6 +92,7 @@ M.whichkey_spec = {
 	{ "<leader>g", group = "[G]it", nowait = true, remap = false },
 	{ "<leader>gd", group = "[G]it [D]iff", nowait = true, remap = false },
 	{ "<leader>x", group = "Swap", nowait = true, remap = false },
+	{ "<leader>m", group = "[M]essages (Noice)", nowait = true, remap = false },
 	{ "gs", group = "Surround", nowait = true, remap = false },
 }
 
@@ -497,68 +510,20 @@ M.set_yank_keys = function()
 end
 
 M.obsidian_keys = {
-	{
-		"<leader>ob",
-		function()
-			vim.cmd.ObsidianBacklinks()
-		end,
-		desc = "[O]bsidian [B]acklinks",
-	},
-
-	{
-		"<leader>ol",
-		function()
-			vim.cmd.ObsidianLink()
-		end,
-		desc = "[O]bsidian [L]ink",
-	},
-
-	{
-		"<leader>on",
-		function()
-			vim.cmd.ObsidianNew()
-		end,
-		desc = "[O]bsidian [N]ew Note",
-	},
-
-	{
-		"<leader>oo",
-		function()
-			vim.cmd.ObsidianSearch()
-		end,
-		desc = "[O]bsidian Search or Create Note",
-	},
-
-	{
-		"<leader>or",
-		function()
-			vim.cmd.ObsidianRename()
-		end,
-		desc = "[O]bsidian [R]ename",
-	},
-
-	{
-		"<leader>os",
-		function()
-			vim.cmd.ObsidianQuickSwitch()
-		end,
-		desc = "[O]bsidian Quick [S]witch",
-	},
-
-	{
-		"<leader>op",
-		function()
-			vim.cmd.ObsidianTemplate()
-		end,
-		desc = "[O]bsidian Insert Tem[p]late",
-	},
-	{ "<leader>od", ":ObsidianToday<CR>", desc = "[O]bsidian: To[d]ay" },
+	{ "<leader>ob", "<cmd>Obsidian backlinks<cr>", desc = "[O]bsidian [B]acklinks" },
+	{ "<leader>ol", "<cmd>Obsidian link<cr>", desc = "[O]bsidian [L]ink" },
+	{ "<leader>on", "<cmd>Obsidian new<cr>", desc = "[O]bsidian [N]ew Note" },
+	{ "<leader>oo", "<cmd>Obsidian search<cr>", desc = "[O]bsidian Search" },
+	{ "<leader>or", "<cmd>Obsidian rename<cr>", desc = "[O]bsidian [R]ename" },
+	{ "<leader>os", "<cmd>Obsidian quick-switch<cr>", desc = "[O]bsidian Quick [S]witch" },
+	{ "<leader>op", "<cmd>Obsidian template<cr>", desc = "[O]bsidian Insert Tem[p]late" },
+	{ "<leader>od", "<cmd>Obsidian today<cr>", desc = "[O]bsidian: To[d]ay" },
 }
 
 M.set_obsidian_keys = function()
 	keymap("n", "gf", function()
 		if require("obsidian").util.cursor_on_markdown_link() then
-			return "<cmd>ObsidianFollowLink<CR>"
+			return "<cmd>Obsidian follow-link<CR>"
 		else
 			return "gf"
 		end
@@ -567,27 +532,6 @@ M.set_obsidian_keys = function()
 	keymap("n", "<leader>otx", function()
 		require("obsidian").util.toggle_checkbox()
 	end, "[O]bsidian [T]ask Done")
-
-	-- keymap("n", "<leader>op", function()
-	-- 	vim.cmd.ProcessNote()
-	-- end, "[O]bsidian [P]rocess Note")
-
-	keymap("n", "<leader>ott", function()
-		vim.cmd.ObsidianCreateTask()
-		vim.cmd.ObsidianTaskID()
-	end, "[O]bsidian [T]ask Create")
-
-	keymap("n", "<leader>oti", function()
-		vim.cmd.ObsidianTaskID()
-	end, "[O]bsidian [T]ask [I]d")
-
-	keymap("n", "<leader>otd", function()
-		vim.cmd.ObsidianTaskDue()
-	end, "[O]bsidian [T]ask [D]ue")
-
-	keymap("n", "<leader>otp", function()
-		vim.cmd.ObsidianTaskPriority()
-	end, "[O]bsidian [T]ask [P]riority")
 end
 
 M.neotest_keys = {
