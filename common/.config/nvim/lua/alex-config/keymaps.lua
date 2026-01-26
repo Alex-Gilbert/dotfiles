@@ -76,7 +76,8 @@ M.whichkey_spec = {
 
 	{ "<leader>c", group = "[C]ode", nowait = true, remap = false },
 
-	{ "<leader>n", group = "Split", nowait = true, remap = false },
+	{ "<leader>n", group = "Split/[N]otify", nowait = true, remap = false },
+	{ "<leader>u", group = "[U]I Toggles", nowait = true, remap = false },
 	{
 		"<leader>ns",
 		"<cmd>clo<CR>",
@@ -107,90 +108,143 @@ M.set_copilot_keys = function()
 	vim.keymap.set("i", "<C-S>", "<Plug>(copilot-accept-word)")
 end
 
-M.set_telescope_keys = function()
-	-- See `:help telescope.builtin`
-	require("telescope").load_extension("project_navigator")
-	local builtin = require("telescope.builtin")
+M.set_snacks_keys = function()
+	local project_nav = require("alex-config.snacks.project_navigator")
 
-	keymap("n", "<leader>pf", builtin.find_files, "[P]roject [F]iles")
-	keymap("n", "<leader>pss", builtin.live_grep, "[P]roject [S]earch Grep")
-	keymap("n", "<leader>psh", builtin.help_tags, "[P]roject [S]earch [H]elp")
-	keymap("n", "<leader>psk", builtin.keymaps, "[P]roject [S]earch [K]eymaps")
-	keymap("n", "<leader>psw", builtin.grep_string, "[P]roject [S]earch current [W]ord")
-	keymap("n", "<leader>pst", builtin.builtin, "[P]roject [S]earch by [G]rep")
-	keymap("n", "<leader>psd", builtin.diagnostics, "[P]roject [S]earch [D]iagnostics")
-	keymap("n", "<leader>psr", builtin.resume, "[P]roject [S]earch [R]esume")
-
+	-- Project search (replaces telescope)
+	keymap("n", "<leader>pf", function()
+		Snacks.picker.files()
+	end, "[P]roject [F]iles")
+	keymap("n", "<leader>pss", function()
+		Snacks.picker.grep()
+	end, "[P]roject [S]earch Grep")
+	keymap("n", "<leader>psh", function()
+		Snacks.picker.help()
+	end, "[P]roject [S]earch [H]elp")
+	keymap("n", "<leader>psk", function()
+		Snacks.picker.keymaps()
+	end, "[P]roject [S]earch [K]eymaps")
+	keymap({ "n", "x" }, "<leader>psw", function()
+		Snacks.picker.grep_word()
+	end, "[P]roject [S]earch current [W]ord")
+	keymap("n", "<leader>pst", function()
+		Snacks.picker()
+	end, "[P]roject [S]earch [T]ypes (all pickers)")
+	keymap("n", "<leader>psd", function()
+		Snacks.picker.diagnostics()
+	end, "[P]roject [S]earch [D]iagnostics")
+	keymap("n", "<leader>psr", function()
+		Snacks.picker.resume()
+	end, "[P]roject [S]earch [R]esume")
 	keymap("n", "<leader>psy", function()
-		vim.cmd.Telescope({ "yank_history" })
-	end, "[P]roject [S]earch [Y]ank")
+		Snacks.picker.registers()
+	end, "[P]roject [S]earch [Y]ank/Registers")
 
 	-- Search hidden files with live grep
 	keymap("n", "<leader>ps.", function()
-		builtin.live_grep({
-			additional_args = function(_opts)
-				return { "--hidden" }
-			end,
-		})
+		Snacks.picker.grep({ hidden = true })
 	end, "[P]roject [S]earch hidden files with live grep")
 
-	-- Slightly advanced example of overriding default behavior and theme
-	vim.keymap.set("n", "<leader>/", function()
-		-- You can pass additional configuration to Telescope to change the theme, layout, etc.
-		builtin.current_buffer_fuzzy_find(require("telescope.themes").get_dropdown({
-			winblend = 10,
-			previewer = false,
-		}))
-	end, { desc = "[/] Fuzzily search in current buffer" })
+	-- Buffer fuzzy find
+	keymap("n", "<leader>/", function()
+		Snacks.picker.lines()
+	end, "[/] Fuzzily search in current buffer")
 
-	-- Telescope project finder
-	-- Key mappings
+	-- Project navigation
 	keymap("n", "<leader>fp", function()
-		require("telescope").extensions.project_navigator.projects({
-			include_worktrees = false,
-		})
+		project_nav.projects({ include_worktrees = false })
 	end, "Find Projects")
 
 	keymap("n", "<leader>fP", function()
-		require("telescope").extensions.project_navigator.projects({
-			include_worktrees = true,
-		})
+		project_nav.projects({ include_worktrees = true })
 	end, "Find Projects & Worktrees")
 
 	keymap("n", "<leader>fw", function()
-		require("telescope").extensions.project_navigator.worktrees()
+		project_nav.worktrees()
 	end, "Find Current Project Worktrees")
+
+	-- Additional useful pickers
+	keymap("n", "<leader>pb", function()
+		Snacks.picker.buffers()
+	end, "[P]roject [B]uffers")
+	keymap("n", "<leader>pr", function()
+		Snacks.picker.recent()
+	end, "[P]roject [R]ecent files")
+	keymap("n", "<leader>pg", function()
+		Snacks.picker.git_files()
+	end, "[P]roject [G]it files")
+
+	-- Snacks features (new)
+	keymap("n", "<leader>z", function()
+		Snacks.zen()
+	end, "[Z]en Mode")
+	keymap("n", "<leader>Z", function()
+		Snacks.zen.zoom()
+	end, "[Z]oom Toggle")
+	keymap("n", "<leader>lg", function()
+		Snacks.lazygit()
+	end, "[L]azy[G]it")
+	keymap({ "n", "v" }, "<leader>gB", function()
+		Snacks.gitbrowse()
+	end, "[G]it [B]rowse")
+	keymap("n", "<leader>bd", function()
+		Snacks.bufdelete()
+	end, "[B]uffer [D]elete")
+	keymap("n", "<leader>.", function()
+		Snacks.scratch()
+	end, "Scratch Buffer")
+	keymap("n", "<leader>S", function()
+		Snacks.scratch.select()
+	end, "Select Scratch Buffer")
+	keymap("n", "<leader>un", "<cmd>Noice dismiss<cr>", "Dismiss All Notifications")
+	keymap("n", "<leader>cR", function()
+		Snacks.rename.rename_file()
+	end, "[C]ode [R]ename File")
+
+	-- Word references navigation
+	keymap({ "n", "t" }, "]]", function()
+		Snacks.words.jump(vim.v.count1)
+	end, "Next Reference")
+	keymap({ "n", "t" }, "[[", function()
+		Snacks.words.jump(-vim.v.count1)
+	end, "Prev Reference")
+
+	-- Terminal
+	keymap("n", "<c-/>", function()
+		Snacks.terminal()
+	end, "Toggle Terminal")
 end
 
 -- Base LSP keymaps that apply to all language servers
 local function set_base_lsp_keys(bufnr, client, overrides)
 	overrides = overrides or {}
 	local lsp_opts = { buffer = bufnr }
-	local telescope = require("telescope.builtin")
 	local lsp = vim.lsp
 
-	-- Navigation keymaps (with overrides support)
-	keymap("n", "gd", overrides.goto_definition or telescope.lsp_definitions, "[G]oto [D]efinition", lsp_opts)
-	keymap("n", "gD", overrides.goto_declaration or lsp.buf.declaration, "[G]oto [D]eclaration", lsp_opts)
-	keymap("n", "gr", overrides.goto_references or telescope.lsp_references, "[G]oto [R]eferences", lsp_opts)
-	keymap(
-		"n",
-		"gI",
-		overrides.goto_implementation or telescope.lsp_implementations,
-		"[G]oto [I]mplementations",
-		lsp_opts
-	)
-	keymap(
-		"n",
-		"<leader>ct",
-		overrides.type_definition or telescope.lsp_type_definitions,
-		"[C]ode Goto [T]ype Definition",
-		lsp_opts
-	)
+	-- Navigation keymaps (with overrides support) - using snacks.picker
+	keymap("n", "gd", overrides.goto_definition or function()
+		Snacks.picker.lsp_definitions()
+	end, "[G]oto [D]efinition", lsp_opts)
+	keymap("n", "gD", overrides.goto_declaration or function()
+		Snacks.picker.lsp_declarations()
+	end, "[G]oto [D]eclaration", lsp_opts)
+	keymap("n", "gr", overrides.goto_references or function()
+		Snacks.picker.lsp_references()
+	end, "[G]oto [R]eferences", lsp_opts)
+	keymap("n", "gI", overrides.goto_implementation or function()
+		Snacks.picker.lsp_implementations()
+	end, "[G]oto [I]mplementations", lsp_opts)
+	keymap("n", "<leader>ct", overrides.type_definition or function()
+		Snacks.picker.lsp_type_definitions()
+	end, "[C]ode Goto [T]ype Definition", lsp_opts)
 
 	-- Document/workspace symbols
-	-- NOTE: <leader>cs is now handled by aerial.nvim (Telescope aerial)
-	keymap("n", "<leader>cS", telescope.lsp_dynamic_workspace_symbols, "[C]ode Workspace [S]ymbols", lsp_opts)
+	keymap("n", "<leader>cs", function()
+		Snacks.picker.lsp_symbols()
+	end, "[C]ode [S]ymbols", lsp_opts)
+	keymap("n", "<leader>cS", function()
+		Snacks.picker.lsp_workspace_symbols()
+	end, "[C]ode Workspace [S]ymbols", lsp_opts)
 
 	-- Actions (with overrides support)
 	keymap("n", "<leader>cr", overrides.rename or lsp.buf.rename, "[C]ode [R]ename", lsp_opts)
@@ -785,7 +839,7 @@ M.set_crates_keys = function(bufnr)
 	end, "Show Crate Info", opts)
 end
 
--- Diffview keys (with Telescope integration for branch/commit selection)
+-- Diffview keys (with Snacks.picker integration for branch/commit selection)
 M.diffview_keys = {
 	-- Quick actions
 	{ "<leader>gdd", "<cmd>DiffviewOpen<cr>", desc = "[G]it [D]iff against index" },
@@ -794,7 +848,7 @@ M.diffview_keys = {
 	{ "<leader>gdq", "<cmd>DiffviewClose<cr>", desc = "[G]it [D]iff [Q]uit" },
 	{ "<leader>gdr", "<cmd>DiffviewRefresh<cr>", desc = "[G]it [D]iff [R]efresh" },
 
-	-- Telescope pickers (defined below, loaded on keypress)
+	-- Snacks pickers (defined below, loaded on keypress)
 	{
 		"<leader>gdb",
 		function()
@@ -832,143 +886,85 @@ M.diffview_keys = {
 	},
 }
 
--- Telescope picker: select branch → diff current state against it
+-- Snacks picker: select branch → diff current state against it
 M.diffview_pick_branch = function()
-	local actions = require("telescope.actions")
-	local action_state = require("telescope.actions.state")
-
-	require("telescope.builtin").git_branches({
-		prompt_title = "Diff current state against branch",
-		attach_mappings = function(prompt_bufnr, map)
-			local open_diff = function()
-				local selection = action_state.get_selected_entry()
-				actions.close(prompt_bufnr)
-				if selection then
-					-- LEFT = selected branch, RIGHT = current working tree
-					local branch = selection.value
-					vim.cmd("DiffviewOpen " .. branch)
-				end
+	Snacks.picker.git_branches({
+		title = "Diff current state against branch",
+		confirm = function(picker, item)
+			picker:close()
+			if item then
+				-- LEFT = selected branch, RIGHT = current working tree
+				vim.cmd("DiffviewOpen " .. item.branch)
 			end
-
-			map("i", "<CR>", open_diff)
-			map("n", "<CR>", open_diff)
-			return true
 		end,
 	})
 end
 
--- Telescope picker: select branch → view what it has vs current HEAD
+-- Snacks picker: select branch → view what it has vs current HEAD
 M.diffview_view_branch = function()
-	local actions = require("telescope.actions")
-	local action_state = require("telescope.actions.state")
-
-	require("telescope.builtin").git_branches({
-		prompt_title = "View branch changes (vs current HEAD)",
-		attach_mappings = function(prompt_bufnr, map)
-			local open_diff = function()
-				local selection = action_state.get_selected_entry()
-				actions.close(prompt_bufnr)
-				if selection then
-					-- Shows what branch has that HEAD doesn't (like a PR diff)
-					local branch = selection.value
-					vim.cmd("DiffviewOpen HEAD..." .. branch)
-				end
+	Snacks.picker.git_branches({
+		title = "View branch changes (vs current HEAD)",
+		confirm = function(picker, item)
+			picker:close()
+			if item then
+				-- Shows what branch has that HEAD doesn't (like a PR diff)
+				vim.cmd("DiffviewOpen HEAD..." .. item.branch)
 			end
-
-			map("i", "<CR>", open_diff)
-			map("n", "<CR>", open_diff)
-			return true
 		end,
 	})
 end
 
--- Telescope picker: select commit → diff current state against it
+-- Snacks picker: select commit → diff current state against it
 M.diffview_pick_commit = function()
-	local actions = require("telescope.actions")
-	local action_state = require("telescope.actions.state")
-
-	require("telescope.builtin").git_commits({
-		prompt_title = "Diff current state against commit",
-		attach_mappings = function(prompt_bufnr, map)
-			local open_diff = function()
-				local selection = action_state.get_selected_entry()
-				actions.close(prompt_bufnr)
-				if selection then
-					-- LEFT = selected commit, RIGHT = current working tree
-					vim.cmd("DiffviewOpen " .. selection.value)
-				end
+	Snacks.picker.git_log({
+		title = "Diff current state against commit",
+		confirm = function(picker, item)
+			picker:close()
+			if item then
+				-- LEFT = selected commit, RIGHT = current working tree
+				vim.cmd("DiffviewOpen " .. item.commit)
 			end
-
-			map("i", "<CR>", open_diff)
-			map("n", "<CR>", open_diff)
-			return true
 		end,
 	})
 end
 
--- Telescope picker: select commit → view what that commit changed
+-- Snacks picker: select commit → view what that commit changed
 M.diffview_view_commit = function()
-	local actions = require("telescope.actions")
-	local action_state = require("telescope.actions.state")
-
-	require("telescope.builtin").git_commits({
-		prompt_title = "View commit changes",
-		attach_mappings = function(prompt_bufnr, map)
-			local open_diff = function()
-				local selection = action_state.get_selected_entry()
-				actions.close(prompt_bufnr)
-				if selection then
-					-- Shows what this commit changed (commit vs its parent)
-					vim.cmd("DiffviewOpen " .. selection.value .. "^!")
-				end
+	Snacks.picker.git_log({
+		title = "View commit changes",
+		confirm = function(picker, item)
+			picker:close()
+			if item then
+				-- Shows what this commit changed (commit vs its parent)
+				vim.cmd("DiffviewOpen " .. item.commit .. "^!")
 			end
-
-			map("i", "<CR>", open_diff)
-			map("n", "<CR>", open_diff)
-			return true
 		end,
 	})
 end
 
--- Telescope picker: select two commits → open diffview for range
+-- Snacks picker: select two commits → open diffview for range
 M.diffview_pick_commit_range = function()
-	local actions = require("telescope.actions")
-	local action_state = require("telescope.actions.state")
 	local first_commit = nil
 
-	require("telescope.builtin").git_commits({
-		prompt_title = "Select FIRST commit (older)",
-		attach_mappings = function(prompt_bufnr, map)
-			local select_first = function()
-				local selection = action_state.get_selected_entry()
-				actions.close(prompt_bufnr)
-				if selection then
-					first_commit = selection.value
-					-- Now pick second commit
-					vim.defer_fn(function()
-						require("telescope.builtin").git_commits({
-							prompt_title = "Select SECOND commit (newer)",
-							attach_mappings = function(prompt_bufnr2, map2)
-								local select_second = function()
-									local selection2 = action_state.get_selected_entry()
-									actions.close(prompt_bufnr2)
-									if selection2 and first_commit then
-										vim.cmd("DiffviewOpen " .. first_commit .. ".." .. selection2.value)
-									end
-								end
-
-								map2("i", "<CR>", select_second)
-								map2("n", "<CR>", select_second)
-								return true
-							end,
-						})
-					end, 100)
-				end
+	Snacks.picker.git_log({
+		title = "Select FIRST commit (older)",
+		confirm = function(picker, item)
+			picker:close()
+			if item then
+				first_commit = item.commit
+				-- Now pick second commit
+				vim.defer_fn(function()
+					Snacks.picker.git_log({
+						title = "Select SECOND commit (newer)",
+						confirm = function(picker2, item2)
+							picker2:close()
+							if item2 and first_commit then
+								vim.cmd("DiffviewOpen " .. first_commit .. ".." .. item2.commit)
+							end
+						end,
+					})
+				end, 100)
 			end
-
-			map("i", "<CR>", select_first)
-			map("n", "<CR>", select_first)
-			return true
 		end,
 	})
 end

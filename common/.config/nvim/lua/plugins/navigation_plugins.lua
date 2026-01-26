@@ -11,47 +11,6 @@ return {
 		end,
 		dependencies = {
 			{ "echasnovski/mini.icons", opts = {} },
-			-- {
-			-- 	"skardyy/neo-img",
-			-- 	build = ":NeoImg Install",
-			-- 	config = function()
-			-- 		require("neo-img").setup({
-			-- 			supported_extensions = {
-			-- 				png = true,
-			-- 				jpg = true,
-			-- 				jpeg = true,
-			-- 				tiff = true,
-			-- 				tif = true,
-			-- 				svg = false,
-			-- 				webp = true,
-			-- 				bmp = true,
-			-- 				gif = true, -- static only
-			-- 				docx = true,
-			-- 				xlsx = true,
-			-- 				pdf = true,
-			-- 				pptx = true,
-			-- 				odg = true,
-			-- 				odp = true,
-			-- 				ods = true,
-			-- 				odt = true,
-			-- 			},
-			--
-			-- 			----- Important ones -----
-			-- 			size = "80%", -- size of the image in percent
-			-- 			center = true, -- rather or not to center the image in the window
-			-- 			----- Important ones -----
-			--
-			-- 			----- Less Important -----
-			-- 			auto_open = true, -- Automatically open images when buffer is loaded
-			-- 			oil_preview = true, -- changes oil preview of images too
-			-- 			backend = "auto", -- auto / kitty / iterm / sixel
-			-- 			resizeMode = "Fit", -- Fit / Stretch / Crop
-			-- 			offset = "2x3", -- that exmp is 2 cells offset x and 3 y.
-			-- 			ttyimg = "local", -- local / global
-			-- 			----- Less Important -----
-			-- 		})
-			-- 	end,
-			-- },
 		},
 	},
 
@@ -70,42 +29,7 @@ return {
 		config = function(_, opts)
 			require("grapple").setup(opts)
 			require("alex-config.keymaps").set_grapple_keys()
-		end,
-	},
-
-	-- Telescope
-	{
-		"nvim-telescope/telescope.nvim",
-		event = "VimEnter",
-		branch = "master",
-		dependencies = {
-			"gbprod/yanky.nvim",
-			"nvim-lua/plenary.nvim",
-			{
-				"nvim-telescope/telescope-fzf-native.nvim",
-
-				build = "make",
-
-				cond = function()
-					return vim.fn.executable("make") == 1
-				end,
-			},
-			{ "nvim-telescope/telescope-ui-select.nvim" },
-			{ "nvim-tree/nvim-web-devicons", enabled = vim.g.have_nerd_font },
-		},
-		config = function()
-			require("telescope").setup({
-				extensions = {
-					["ui-select"] = {
-						require("telescope.themes").get_dropdown(),
-					},
-				},
-			})
-
-			pcall(require("telescope").load_extension, "fzf")
-			pcall(require("telescope").load_extension, "ui-select")
-
-			require("alex-config.keymaps").set_telescope_keys()
+			require("alex-config.keymaps").set_snacks_keys()
 		end,
 	},
 
@@ -116,16 +40,24 @@ return {
 		opts = {},
 	},
 
-	-- Aerial (code outline / symbol navigation)
+	-- Quicker (better quickfix editing)
+	{
+		"stevearc/quicker.nvim",
+		event = "FileType qf",
+		---@module "quicker"
+		---@type quicker.SetupOptions
+		opts = {},
+	},
+
+	-- Aerial (code outline / symbol navigation) - now using snacks for symbols picker
 	{
 		"stevearc/aerial.nvim",
 		dependencies = {
 			"nvim-treesitter/nvim-treesitter",
 			"nvim-tree/nvim-web-devicons",
-			"nvim-telescope/telescope.nvim",
 		},
 		keys = {
-			{ "<leader>cs", "<cmd>Telescope aerial<cr>", desc = "[C]ode [S]ymbols (Aerial)" },
+			-- <leader>cs now handled by snacks.picker.lsp_symbols in LSP keymaps
 			{ "<leader>cn", "<cmd>AerialNavToggle<cr>", desc = "[C]ode [N]av (Aerial)" },
 			{ "]s", "<cmd>AerialNext<cr>", desc = "Next symbol" },
 			{ "[s", "<cmd>AerialPrev<cr>", desc = "Prev symbol" },
@@ -160,22 +92,9 @@ return {
 			close_on_select = true,
 			show_guides = true,
 		},
-		config = function(_, opts)
-			require("aerial").setup(opts)
-
-			-- Configure telescope extension
-			require("telescope").setup({
-				extensions = {
-					aerial = {
-						show_columns = "both",
-						col1_width = 4,
-						col2_width = 30,
-					},
-				},
-			})
-			require("telescope").load_extension("aerial")
-		end,
 	},
+
+	-- Tmux navigation
 	{
 		"christoomey/vim-tmux-navigator",
 		cmd = {

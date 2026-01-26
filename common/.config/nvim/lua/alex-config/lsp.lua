@@ -140,41 +140,6 @@ M.servers = {
 }
 
 -- Servers that are managed outside of Mason (cargo, npm, system packages, etc.)
-M.external_servers = {
-	-- cargotomllsp = {
-	-- 	-- Define how to register this server with lspconfig
-	-- 	setup_config = function()
-	-- 		local configs = require("lspconfig.configs")
-	-- 		if not configs.cargotomllsp then
-	-- 			configs.cargotomllsp = {
-	-- 				default_config = {
-	-- 					cmd = { "cargotomllsp" },
-	-- 					filetypes = { "toml" },
-	-- 					root_dir = function(fname)
-	-- 						local util = require("lspconfig.util")
-	-- 						-- Only attach to Cargo.toml files in Rust projects
-	-- 						local root = util.root_pattern("Cargo.toml")(fname)
-	-- 						if root and fname:match("Cargo%.toml$") then
-	-- 							return root
-	-- 						end
-	-- 						-- Return nil to prevent attachment to other files
-	-- 						return nil
-	-- 					end,
-	-- 					single_file_support = true,
-	-- 					-- Specify server capabilities we expect
-	-- 					server_capabilities = {
-	-- 						completionProvider = true,
-	-- 					},
-	-- 				},
-	-- 			}
-	-- 		end
-	-- 	end,
-	--
-	-- 	single_file_support = true,
-	-- 	on_attach = function(client, bufnr)
-	-- 		client.server_capabilities.documentFormattingProvider = false
-	-- 		client.server_capabilities.documentRangeFormattingProvider = false
-	-- 	end,
-	-- },
-}
+M.external_servers = {}
+
 return M
