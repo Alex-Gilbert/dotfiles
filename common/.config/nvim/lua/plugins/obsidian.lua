@@ -51,7 +51,7 @@ return {
 		-- Use new command style (e.g., "Obsidian backlinks" instead of "ObsidianBacklinks")
 		legacy_commands = false,
 
-		picker = { name = "telescope.nvim" },
+		picker = { name = "snacks.pick" },
 	},
 	config = function(_, opts)
 		require("obsidian").setup(opts)

@@ -142,15 +142,5 @@ return {
 		end,
 	},
 
-	-- Zen Mode
-	{
-		"folke/zen-mode.nvim",
-		opts = {
-			window = {
-				options = {
-					relativenumber = true,
-				},
-			},
-		},
-	},
+	-- Zen Mode now provided by snacks.nvim
 }

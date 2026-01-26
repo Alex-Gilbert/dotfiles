@@ -116,7 +116,7 @@ return {
 			{ "<leader>ml", "<cmd>Noice last<cr>", desc = "[M]essages [L]ast" },
 			{ "<leader>me", "<cmd>Noice errors<cr>", desc = "[M]essages [E]rrors" },
 			{ "<leader>md", "<cmd>Noice dismiss<cr>", desc = "[M]essages [D]ismiss all" },
-			{ "<leader>mt", "<cmd>Noice telescope<cr>", desc = "[M]essages [T]elescope" },
+			{ "<leader>mt", "<cmd>Noice history<cr>", desc = "[M]essages his[T]ory (Noice)" },
 			{
 				"<c-f>",
 				function()
@@ -271,7 +271,6 @@ return {
 		},
 		config = function(_, opts)
 			require("noice").setup(opts)
-			require("telescope").load_extension("noice")
 		end,
 	},
 
