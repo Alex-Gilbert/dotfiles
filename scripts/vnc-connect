@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# --- Configuration ---
+REMOTE_HOST="mini"
+REMOTE_USER="alexserver"
+REMOTE_PORT="5901"  # Port 5901 is usually :1
+LOCAL_PORT="5901"
+
+# 1. Check if the tunnel is already up
+if ! pgrep -f "L $LOCAL_PORT:localhost:$REMOTE_PORT" > /dev/null; then
+    echo "Opening SSH Tunnel..."
+    ssh -L $LOCAL_PORT:localhost:$REMOTE_PORT -N -f $REMOTE_USER@$REMOTE_HOST
+    sleep 1 # Give the tunnel a second to breathe
+fi
+
+# 2. Launch TigerVNC
+# -MenuKey=None prevents F8 from stealing focus
+# -RemoteResize=1 tells the server to match your window size
+vncviewer localhost:$LOCAL_PORT -MenuKey=None -RemoteResize=1
