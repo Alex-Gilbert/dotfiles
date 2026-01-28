@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
-target_pane=$(tmux show-buffer)
+
+# Grab the pane ID from the argument we passed in tmux.conf
+target_pane="$1"
+
+# Run yazi and capture the selection
 selected=$(yazi . --chooser-file=/dev/stdout)
+
+# Only send keys if a selection was actually made
 if [ -n "$selected" ]; then
-    tmux send-keys -t "$target_pane" "$selected"
+    # We use -l to send the literal string (handles spaces/special chars better)
+    tmux send-keys -t "$target_pane" -l "$selected"
 fi

@@ -19,6 +19,20 @@ local function keymap(mode, lhs, rhs, desc, extra_opts)
 	vim.keymap.set(mode, lhs, rhs, options)
 end
 
+-- Wrap a Snacks picker call so the selected file always opens in the current window
+local function picker_in_current_win(picker_fn, picker_opts)
+	local win = vim.api.nvim_get_current_win()
+	picker_opts = picker_opts or {}
+	picker_opts.confirm = function(picker, item)
+		picker:close()
+		vim.api.nvim_set_current_win(win)
+		if item then
+			vim.cmd("edit " .. vim.fn.fnameescape(item.file))
+		end
+	end
+	picker_fn(picker_opts)
+end
+
 M.init = function()
 	-- Remap space as leader key
 	keymap("", "<Space>", "<Nop>", nil, opts)
@@ -113,25 +127,25 @@ M.set_snacks_keys = function()
 
 	-- Project search (replaces telescope)
 	keymap("n", "<leader>pf", function()
-		Snacks.picker.files()
+		picker_in_current_win(Snacks.picker.files)
 	end, "[P]roject [F]iles")
 	keymap("n", "<leader>pss", function()
-		Snacks.picker.grep()
+		picker_in_current_win(Snacks.picker.grep)
 	end, "[P]roject [S]earch Grep")
 	keymap("n", "<leader>psh", function()
-		Snacks.picker.help()
+		picker_in_current_win(Snacks.picker.help)
 	end, "[P]roject [S]earch [H]elp")
 	keymap("n", "<leader>psk", function()
 		Snacks.picker.keymaps()
 	end, "[P]roject [S]earch [K]eymaps")
 	keymap({ "n", "x" }, "<leader>psw", function()
-		Snacks.picker.grep_word()
+		picker_in_current_win(Snacks.picker.grep_word)
 	end, "[P]roject [S]earch current [W]ord")
 	keymap("n", "<leader>pst", function()
 		Snacks.picker()
 	end, "[P]roject [S]earch [T]ypes (all pickers)")
 	keymap("n", "<leader>psd", function()
-		Snacks.picker.diagnostics()
+		picker_in_current_win(Snacks.picker.diagnostics)
 	end, "[P]roject [S]earch [D]iagnostics")
 	keymap("n", "<leader>psr", function()
 		Snacks.picker.resume()
@@ -142,7 +156,7 @@ M.set_snacks_keys = function()
 
 	-- Search hidden files with live grep
 	keymap("n", "<leader>ps.", function()
-		Snacks.picker.grep({ hidden = true })
+		picker_in_current_win(Snacks.picker.grep, { hidden = true })
 	end, "[P]roject [S]earch hidden files with live grep")
 
 	-- Buffer fuzzy find
@@ -165,13 +179,13 @@ M.set_snacks_keys = function()
 
 	-- Additional useful pickers
 	keymap("n", "<leader>pb", function()
-		Snacks.picker.buffers()
+		picker_in_current_win(Snacks.picker.buffers)
 	end, "[P]roject [B]uffers")
 	keymap("n", "<leader>pr", function()
-		Snacks.picker.recent()
+		picker_in_current_win(Snacks.picker.recent)
 	end, "[P]roject [R]ecent files")
 	keymap("n", "<leader>pg", function()
-		Snacks.picker.git_files()
+		picker_in_current_win(Snacks.picker.git_files)
 	end, "[P]roject [G]it files")
 
 	-- Snacks features (new)
@@ -223,27 +237,27 @@ local function set_base_lsp_keys(bufnr, client, overrides)
 
 	-- Navigation keymaps (with overrides support) - using snacks.picker
 	keymap("n", "gd", overrides.goto_definition or function()
-		Snacks.picker.lsp_definitions()
+		picker_in_current_win(Snacks.picker.lsp_definitions)
 	end, "[G]oto [D]efinition", lsp_opts)
 	keymap("n", "gD", overrides.goto_declaration or function()
-		Snacks.picker.lsp_declarations()
+		picker_in_current_win(Snacks.picker.lsp_declarations)
 	end, "[G]oto [D]eclaration", lsp_opts)
 	keymap("n", "gr", overrides.goto_references or function()
-		Snacks.picker.lsp_references()
+		picker_in_current_win(Snacks.picker.lsp_references)
 	end, "[G]oto [R]eferences", lsp_opts)
 	keymap("n", "gI", overrides.goto_implementation or function()
-		Snacks.picker.lsp_implementations()
+		picker_in_current_win(Snacks.picker.lsp_implementations)
 	end, "[G]oto [I]mplementations", lsp_opts)
 	keymap("n", "<leader>ct", overrides.type_definition or function()
-		Snacks.picker.lsp_type_definitions()
+		picker_in_current_win(Snacks.picker.lsp_type_definitions)
 	end, "[C]ode Goto [T]ype Definition", lsp_opts)
 
 	-- Document/workspace symbols
 	keymap("n", "<leader>cs", function()
-		Snacks.picker.lsp_symbols()
+		picker_in_current_win(Snacks.picker.lsp_symbols)
 	end, "[C]ode [S]ymbols", lsp_opts)
 	keymap("n", "<leader>cS", function()
-		Snacks.picker.lsp_workspace_symbols()
+		picker_in_current_win(Snacks.picker.lsp_workspace_symbols)
 	end, "[C]ode Workspace [S]ymbols", lsp_opts)
 
 	-- Actions (with overrides support)
