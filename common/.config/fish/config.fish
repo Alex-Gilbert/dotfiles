@@ -55,6 +55,7 @@ else
 end
 
 # Common environment variables
+set -gx VCPKG_ROOT "$HOME/vcpkg"
 set -gx GAMS_VERSION "46.4"
 
 # Editors
