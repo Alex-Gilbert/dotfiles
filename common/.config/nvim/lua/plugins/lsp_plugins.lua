@@ -201,14 +201,32 @@ return {
 		"mrcjkb/rustaceanvim",
 		version = "^6",
 		lazy = false,
-		config = function()
+		init = function()
 			vim.g.rustaceanvim = {
-				server = {
-					on_attach = function(client, bufnr)
-						require("alex-config.keymaps").set_rust_lsp_keys(bufnr, client)
+				dap = {
+					adapter = function()
+						local mason_registry = require("mason-registry")
+						local codelldb = mason_registry.get_package("codelldb")
+						local extension_path = codelldb:get_install_path() .. "/extension/"
+						local codelldb_path = extension_path .. "adapter/codelldb"
+						local liblldb_path = extension_path .. "lldb/lib/liblldb.dylib"
+
+						local cfg = require("rustaceanvim.config")
+						return cfg.get_codelldb_adapter(codelldb_path, liblldb_path)
 					end,
 				},
 			}
+
+			-- Set up Rust keymaps via LspAttach autocmd
+			vim.api.nvim_create_autocmd("LspAttach", {
+				group = vim.api.nvim_create_augroup("rustaceanvim-lsp-attach", { clear = true }),
+				callback = function(event)
+					local client = vim.lsp.get_client_by_id(event.data.client_id)
+					if client and client.name == "rust-analyzer" then
+						require("alex-config.keymaps").set_rust_lsp_keys(event.buf, client)
+					end
+				end,
+			})
 		end,
 	},
 	{

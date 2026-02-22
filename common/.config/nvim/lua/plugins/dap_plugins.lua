@@ -61,14 +61,15 @@ local M = {
 		end,
 	},
 	{
-
 		"jay-babu/mason-nvim-dap.nvim",
 		dependencies = "mason.nvim",
 		cmd = { "DapInstall", "DapUninstall" },
 		opts = {
 			automatic_setup = true,
 			handlers = {},
-			ensure_installed = {},
+			ensure_installed = {
+				"codelldb", -- Rust/C/C++ debugger
+			},
 		},
 	},
 
@@ -80,13 +81,23 @@ local M = {
 			"nvim-treesitter/nvim-treesitter",
 			"Issafalcon/neotest-dotnet",
 			{
-				"fredrikaverpil/neotest-golang", -- Installation
+				"fredrikaverpil/neotest-golang",
 				dependencies = {
 					"leoluz/nvim-dap-go",
 				},
 			},
+			"rouge8/neotest-rust",
 		},
 		keys = require("alex-config.keymaps").neotest_keys,
+		config = function()
+			require("neotest").setup({
+				adapters = {
+					require("neotest-dotnet"),
+					require("neotest-golang"),
+					require("neotest-rust"),
+				},
+			})
+		end,
 	},
 }
 

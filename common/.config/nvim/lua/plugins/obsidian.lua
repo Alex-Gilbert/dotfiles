@@ -17,7 +17,10 @@ return {
 		"ObsidianToggleCheckbox",
 	},
 	keys = require("alex-config.keymaps").obsidian_keys,
-	ft = "markdown",
+	event = {
+		"BufReadPre " .. vim.fn.expand("~") .. "/.obsidian/alex-vault/**.md",
+		"BufNewFile " .. vim.fn.expand("~") .. "/.obsidian/alex-vault/**.md",
+	},
 	dependencies = {
 		"nvim-lua/plenary.nvim",
 		"nvim-telescope/telescope.nvim",
