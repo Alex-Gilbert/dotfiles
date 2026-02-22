@@ -332,7 +332,6 @@ M.set_rust_lsp_keys = function(bufnr, client)
 	}
 
 	set_base_lsp_keys(bufnr, client, rust_overrides)
-	print("Setting up Rust LSP keys")
 end
 
 M.conform_keys = {
@@ -578,28 +577,30 @@ M.set_yank_keys = function()
 end
 
 M.obsidian_keys = {
-	{ "<leader>ob", "<cmd>Obsidian backlinks<cr>", desc = "[O]bsidian [B]acklinks" },
-	{ "<leader>ol", "<cmd>Obsidian link<cr>", desc = "[O]bsidian [L]ink" },
-	{ "<leader>on", "<cmd>Obsidian new<cr>", desc = "[O]bsidian [N]ew Note" },
-	{ "<leader>oo", "<cmd>Obsidian search<cr>", desc = "[O]bsidian Search" },
-	{ "<leader>or", "<cmd>Obsidian rename<cr>", desc = "[O]bsidian [R]ename" },
-	{ "<leader>os", "<cmd>Obsidian quick-switch<cr>", desc = "[O]bsidian Quick [S]witch" },
-	{ "<leader>op", "<cmd>Obsidian template<cr>", desc = "[O]bsidian Insert Tem[p]late" },
-	{ "<leader>od", "<cmd>Obsidian today<cr>", desc = "[O]bsidian: To[d]ay" },
+	{ "<leader>ob", "<cmd>ObsidianBacklinks<cr>", desc = "[O]bsidian [B]acklinks" },
+	{ "<leader>ol", "<cmd>ObsidianLink<cr>", desc = "[O]bsidian [L]ink" },
+	{ "<leader>on", "<cmd>ObsidianNew<cr>", desc = "[O]bsidian [N]ew Note" },
+	{ "<leader>oo", "<cmd>ObsidianSearch<cr>", desc = "[O]bsidian Search" },
+	{ "<leader>or", "<cmd>ObsidianRename<cr>", desc = "[O]bsidian [R]ename" },
+	{ "<leader>os", "<cmd>ObsidianQuickSwitch<cr>", desc = "[O]bsidian Quick [S]witch" },
+	{ "<leader>op", "<cmd>ObsidianTemplate<cr>", desc = "[O]bsidian Insert Tem[p]late" },
+	{ "<leader>od", "<cmd>ObsidianToday<cr>", desc = "[O]bsidian: To[d]ay" },
 }
 
 M.set_obsidian_keys = function()
 	keymap("n", "gf", function()
 		if require("obsidian").util.cursor_on_markdown_link() then
-			return "<cmd>Obsidian follow-link<CR>"
+			return "<cmd>ObsidianFollowLink<CR>"
 		else
 			return "gf"
 		end
 	end, "[G]o to [F]ile", { noremap = true, expr = true })
 
+	keymap("n", "<leader>ott", "<cmd>ObsTaskCreate<CR><cmd>ObsTaskID<CR>", "[O]bsidian [T]ask Create with ID")
 	keymap("n", "<leader>otx", function()
 		require("obsidian").util.toggle_checkbox()
 	end, "[O]bsidian [T]ask Done")
+	keymap("n", "<leader>otd", "<cmd>ObsTaskDue<CR>", "[O]bsidian [T]ask [D]ue Date")
 end
 
 M.neotest_keys = {
