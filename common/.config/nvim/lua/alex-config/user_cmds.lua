@@ -48,7 +48,7 @@ vim.api.nvim_create_user_command("AddIncludeGuards", function()
 	print("Include guards added.")
 end, { desc = "Add include guards to the current file" })
 
-vim.api.nvim_create_user_command("ObsidianCreateTask", function()
+vim.api.nvim_create_user_command("ObsTaskCreate", function()
 	-- Get the current line
 	local line = vim.api.nvim_get_current_line()
 
@@ -76,7 +76,7 @@ vim.api.nvim_create_user_command("ObsidianCreateTask", function()
 	print("Converted line to task")
 end, { desc = "make a line in an obsidian note a task" })
 
-vim.api.nvim_create_user_command("ObsidianTaskID", function()
+vim.api.nvim_create_user_command("ObsTaskID", function()
 	-- Get the current line
 	local line = vim.api.nvim_get_current_line()
 
@@ -118,7 +118,7 @@ vim.api.nvim_create_user_command("ObsidianTaskID", function()
 	print("Added ID to task: " .. task_id)
 end, { desc = "make a line in an obsidian note a task" })
 
-vim.api.nvim_create_user_command("ObsidianTaskDue", function()
+vim.api.nvim_create_user_command("ObsTaskDue", function()
 	-- Get the current line
 	local line = vim.api.nvim_get_current_line()
 
@@ -182,7 +182,7 @@ vim.api.nvim_create_user_command("ObsidianTaskDue", function()
 	end)
 end, { desc = "Set a due date for an obsidian task" })
 
-vim.api.nvim_create_user_command("ObsidianTaskPriority", function()
+vim.api.nvim_create_user_command("ObsTaskPriority", function()
 	-- Get the current line
 	local line = vim.api.nvim_get_current_line()
 

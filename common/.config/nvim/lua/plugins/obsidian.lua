@@ -3,17 +3,30 @@ return {
 	"obsidian-nvim/obsidian.nvim",
 	version = "*",
 	lazy = true,
-	cmd = { "Obsidian" }, -- New unified command format
+	cmd = {
+		"Obsidian",
+		"ObsidianSearch",
+		"ObsidianNew",
+		"ObsidianToday",
+		"ObsidianBacklinks",
+		"ObsidianLink",
+		"ObsidianRename",
+		"ObsidianQuickSwitch",
+		"ObsidianTemplate",
+		"ObsidianFollowLink",
+		"ObsidianToggleCheckbox",
+	},
 	keys = require("alex-config.keymaps").obsidian_keys,
 	ft = "markdown",
 	dependencies = {
 		"nvim-lua/plenary.nvim",
+		"nvim-telescope/telescope.nvim",
 	},
 	opts = {
 		workspaces = {
 			{
 				name = "personal",
-				path = "~/.obsidian/alex-vault/",
+				path = "~/alex-vault/",
 			},
 		},
 
@@ -51,7 +64,7 @@ return {
 		-- Use new command style (e.g., "Obsidian backlinks" instead of "ObsidianBacklinks")
 		legacy_commands = false,
 
-		picker = { name = "snacks.pick" },
+		picker = { name = "telescope.nvim" },
 	},
 	config = function(_, opts)
 		require("obsidian").setup(opts)
