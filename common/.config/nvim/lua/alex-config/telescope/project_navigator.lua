@@ -1,4 +1,4 @@
--- Project navigation with Snacks.picker
+-- Project navigation with Telescope
 local M = {}
 
 -- Function to get all project names
@@ -41,19 +41,6 @@ local function get_worktrees(project_name)
 	return worktrees
 end
 
--- Convert projects to snacks.picker items
-local function projects_to_items(projects)
-	local items = {}
-	for _, project in ipairs(projects) do
-		items[#items + 1] = {
-			text = project.name,
-			file = project.path,
-			path = project.path,
-		}
-	end
-	return items
-end
-
 -- Projects picker
 M.projects = function(opts)
 	opts = opts or {}
@@ -73,19 +60,41 @@ M.projects = function(opts)
 		end
 	end
 
-	Snacks.picker.pick({
-		title = "Projects" .. (opts.include_worktrees and " & Worktrees" or ""),
-		items = projects_to_items(all_items),
-		format = "file",
-		preview = "directory",
-		confirm = function(picker, item)
-			picker:close()
-			if item then
-				vim.cmd("cd " .. item.path)
-				vim.cmd("edit " .. item.path)
-			end
-		end,
-	})
+	local pickers = require("telescope.pickers")
+	local finders = require("telescope.finders")
+	local conf = require("telescope.config").values
+	local actions = require("telescope.actions")
+	local action_state = require("telescope.actions.state")
+
+	pickers
+		.new({}, {
+			prompt_title = "Projects" .. (opts.include_worktrees and " & Worktrees" or ""),
+			finder = finders.new_table({
+				results = all_items,
+				entry_maker = function(entry)
+					return {
+						value = entry.path,
+						display = entry.name,
+						ordinal = entry.name,
+						path = entry.path,
+					}
+				end,
+			}),
+			sorter = conf.generic_sorter({}),
+			previewer = conf.file_previewer({}),
+			attach_mappings = function(prompt_bufnr, map)
+				actions.select_default:replace(function()
+					actions.close(prompt_bufnr)
+					local selection = action_state.get_selected_entry()
+					if selection then
+						vim.cmd("cd " .. selection.value)
+						vim.cmd("edit " .. selection.value)
+					end
+				end)
+				return true
+			end,
+		})
+		:find()
 end
 
 -- Worktrees picker for current project
@@ -115,29 +124,42 @@ M.worktrees = function(opts)
 		return
 	end
 
-	-- Convert to picker items with simplified display
-	local items = {}
-	for _, wt in ipairs(worktrees) do
-		items[#items + 1] = {
-			text = wt.name:gsub(project_name .. ":", ""),
-			file = wt.path,
-			path = wt.path,
-		}
-	end
+	local pickers = require("telescope.pickers")
+	local finders = require("telescope.finders")
+	local conf = require("telescope.config").values
+	local actions = require("telescope.actions")
+	local action_state = require("telescope.actions.state")
 
-	Snacks.picker.pick({
-		title = project_name .. " Worktrees",
-		items = items,
-		format = "file",
-		preview = "directory",
-		confirm = function(picker, item)
-			picker:close()
-			if item then
-				vim.cmd("cd " .. item.path)
-				vim.cmd("edit " .. item.path)
-			end
-		end,
-	})
+	pickers
+		.new({}, {
+			prompt_title = project_name .. " Worktrees",
+			finder = finders.new_table({
+				results = worktrees,
+				entry_maker = function(entry)
+					local display_name = entry.name:gsub(project_name .. ":", "")
+					return {
+						value = entry.path,
+						display = display_name,
+						ordinal = display_name,
+						path = entry.path,
+					}
+				end,
+			}),
+			sorter = conf.generic_sorter({}),
+			previewer = conf.file_previewer({}),
+			attach_mappings = function(prompt_bufnr, map)
+				actions.select_default:replace(function()
+					actions.close(prompt_bufnr)
+					local selection = action_state.get_selected_entry()
+					if selection then
+						vim.cmd("cd " .. selection.value)
+						vim.cmd("edit " .. selection.value)
+					end
+				end)
+				return true
+			end,
+		})
+		:find()
 end
 
 return M

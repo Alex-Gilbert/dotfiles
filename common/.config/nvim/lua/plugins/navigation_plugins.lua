@@ -1,4 +1,43 @@
 return {
+	-- Telescope
+	{
+		"nvim-telescope/telescope.nvim",
+		event = "VimEnter",
+		branch = "0.1.x",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			{
+				"nvim-telescope/telescope-fzf-native.nvim",
+				build = "make",
+				cond = function()
+					return vim.fn.executable("make") == 1
+				end,
+			},
+			{ "nvim-telescope/telescope-ui-select.nvim" },
+			{ "nvim-tree/nvim-web-devicons" },
+		},
+		config = function()
+			require("telescope").setup({
+				defaults = {
+					mappings = {
+						i = {
+							["<C-j>"] = require("telescope.actions").move_selection_next,
+							["<C-k>"] = require("telescope.actions").move_selection_previous,
+						},
+					},
+				},
+				extensions = {
+					["ui-select"] = {
+						require("telescope.themes").get_dropdown(),
+					},
+				},
+			})
+			pcall(require("telescope").load_extension, "fzf")
+			pcall(require("telescope").load_extension, "ui-select")
+			require("alex-config.keymaps").set_telescope_keys()
+		end,
+	},
+
 	-- Oil
 	{
 		"stevearc/oil.nvim",
@@ -36,7 +75,21 @@ return {
 	-- Trouble
 	{
 		"folke/trouble.nvim",
-		dependencies = { "nvim-tree/nvim-web-devicons" },
+		dependencies = {
+			"nvim-tree/nvim-web-devicons",
+			"folke/todo-comments.nvim",
+		},
+		opts = {},
+		config = function(_, opts)
+			require("trouble").setup(opts)
+			require("alex-config.keymaps").set_trouble_keys()
+		end,
+	},
+
+	-- TODO comments (for Trouble todo view)
+	{
+		"folke/todo-comments.nvim",
+		dependencies = { "nvim-lua/plenary.nvim" },
 		opts = {},
 	},
 
@@ -49,7 +102,7 @@ return {
 		opts = {},
 	},
 
-	-- Aerial (code outline / symbol navigation) - now using snacks for symbols picker
+	-- Aerial (code outline / symbol navigation)
 	{
 		"stevearc/aerial.nvim",
 		dependencies = {
@@ -57,7 +110,7 @@ return {
 			"nvim-tree/nvim-web-devicons",
 		},
 		keys = {
-			-- <leader>cs now handled by snacks.picker.lsp_symbols in LSP keymaps
+			-- <leader>cs now handled by telescope lsp_document_symbols in LSP keymaps
 			{ "<leader>cn", "<cmd>AerialNavToggle<cr>", desc = "[C]ode [N]av (Aerial)" },
 			{ "]s", "<cmd>AerialNext<cr>", desc = "Next symbol" },
 			{ "[s", "<cmd>AerialPrev<cr>", desc = "Prev symbol" },
