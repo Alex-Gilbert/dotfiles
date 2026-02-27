@@ -112,11 +112,51 @@ return {
 			"rcarriga/nvim-notify",
 		},
 		keys = {
-			{ "<leader>mh", "<cmd>Noice history<cr>", desc = "[M]essages [H]istory" },
-			{ "<leader>ml", "<cmd>Noice last<cr>", desc = "[M]essages [L]ast" },
-			{ "<leader>me", "<cmd>Noice errors<cr>", desc = "[M]essages [E]rrors" },
-			{ "<leader>md", "<cmd>Noice dismiss<cr>", desc = "[M]essages [D]ismiss all" },
-			{ "<leader>mt", "<cmd>Noice history<cr>", desc = "[M]essages his[T]ory (Noice)" },
+			{
+				"<leader>mh",
+				function()
+					vim.cmd("Noice history")
+					vim.g.noice_has_unread = false
+					vim.g.noice_seen_count = _G.noice_msg_count and _G.noice_msg_count() or 0
+				end,
+				desc = "[M]essages [H]istory",
+			},
+			{
+				"<leader>ml",
+				function()
+					vim.cmd("Noice last")
+					vim.g.noice_has_unread = false
+					vim.g.noice_seen_count = _G.noice_msg_count and _G.noice_msg_count() or 0
+				end,
+				desc = "[M]essages [L]ast",
+			},
+			{
+				"<leader>me",
+				function()
+					vim.cmd("Noice errors")
+					vim.g.noice_has_unread = false
+					vim.g.noice_seen_count = _G.noice_msg_count and _G.noice_msg_count() or 0
+				end,
+				desc = "[M]essages [E]rrors",
+			},
+			{
+				"<leader>md",
+				function()
+					vim.cmd("Noice dismiss")
+					vim.g.noice_has_unread = false
+					vim.g.noice_seen_count = _G.noice_msg_count and _G.noice_msg_count() or 0
+				end,
+				desc = "[M]essages [D]ismiss all",
+			},
+			{
+				"<leader>mt",
+				function()
+					vim.cmd("Noice history")
+					vim.g.noice_has_unread = false
+					vim.g.noice_seen_count = _G.noice_msg_count and _G.noice_msg_count() or 0
+				end,
+				desc = "[M]essages his[T]ory (Noice)",
+			},
 			{
 				"<c-f>",
 				function()
@@ -157,9 +197,9 @@ return {
 			},
 			messages = {
 				enabled = true,
-				view = "notify",
-				view_error = "notify",
-				view_warn = "notify",
+				view = "mini",
+				view_error = "mini",
+				view_warn = "mini",
 				view_history = "messages",
 				view_search = "virtualtext",
 			},
@@ -170,7 +210,7 @@ return {
 			},
 			notify = {
 				enabled = true,
-				view = "notify",
+				view = "mini",
 			},
 			lsp = {
 				progress = {
@@ -198,7 +238,7 @@ return {
 				},
 				message = {
 					enabled = true,
-					view = "notify",
+					view = "mini",
 				},
 			},
 			presets = {
@@ -209,6 +249,36 @@ return {
 				lsp_doc_border = true, -- border on LSP hover/signature
 			},
 			routes = {
+				-- Skip ltex/ltex_plus messages (spams on every keystroke)
+				{
+					filter = {
+						event = "lsp",
+						kind = "progress",
+						cond = function(message)
+							local client = vim.tbl_get(message.opts, "progress", "client")
+							return client == "ltex" or client == "ltex_plus"
+						end,
+					},
+					opts = { skip = true },
+				},
+				{
+					filter = {
+						event = "lsp",
+						kind = "message",
+						cond = function(message)
+							local client = vim.tbl_get(message.opts, "progress", "client")
+							return client == "ltex" or client == "ltex_plus"
+						end,
+					},
+					opts = { skip = true },
+				},
+				{
+					filter = {
+						event = "notify",
+						find = "ltex",
+					},
+					opts = { skip = true },
+				},
 				-- Skip "written" messages
 				{
 					filter = {

@@ -137,6 +137,8 @@ M.servers = {
 		},
 	},
 	eslint = {},
+
+	ltex_plus = {},
 }
 
 -- Servers that are managed outside of Mason (cargo, npm, system packages, etc.)
