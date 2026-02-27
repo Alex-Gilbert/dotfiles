@@ -14,6 +14,35 @@ local Navic = {
 	update = "CursorMoved",
 }
 
+function _G.noice_msg_count()
+	local ok, manager = pcall(require, "noice.message.manager")
+	if not ok then
+		return 0
+	end
+	local count = 0
+	for _, msg in ipairs(manager.get({})) do
+		if msg.event ~= "msg_showcmd" and msg.event ~= "msg_showmode" then
+			count = count + 1
+		end
+	end
+	return count
+end
+
+local NoiceUnread = {
+	provider = function()
+		local count = _G.noice_msg_count()
+		local seen = vim.g.noice_seen_count or 0
+		if count > seen then
+			vim.g.noice_has_unread = true
+		end
+		if vim.g.noice_has_unread then
+			return " 󰍡 "
+		end
+		return ""
+	end,
+	hl = { fg = utils.get_highlight("DiagnosticWarn").fg },
+}
+
 -- Component for displaying the current file
 local CurrentBuffer = {
 	provider = function()
@@ -145,6 +174,7 @@ M.Statusline = {
 	lib.component.cmd_info(),
 	lib.component.fill(),
 	lib.component.nav(),
+	NoiceUnread,
 	lib.component.mode({ surround = { separator = "right" } }),
 }
 
