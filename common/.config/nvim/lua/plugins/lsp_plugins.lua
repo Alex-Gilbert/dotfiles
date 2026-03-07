@@ -205,11 +205,12 @@ return {
 			vim.g.rustaceanvim = {
 				dap = {
 					adapter = function()
-						local mason_registry = require("mason-registry")
-						local codelldb = mason_registry.get_package("codelldb")
-						local extension_path = codelldb:get_install_path() .. "/extension/"
+						local install_root = require("mason.settings").current.install_root_dir
+						local extension_path = install_root .. "/packages/codelldb/extension/"
 						local codelldb_path = extension_path .. "adapter/codelldb"
-						local liblldb_path = extension_path .. "lldb/lib/liblldb.dylib"
+						local liblldb_path = extension_path
+							.. "lldb/lib/liblldb."
+							.. (vim.fn.has("mac") == 1 and "dylib" or "so")
 
 						local cfg = require("rustaceanvim.config")
 						return cfg.get_codelldb_adapter(codelldb_path, liblldb_path)
