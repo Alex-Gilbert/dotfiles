@@ -14,19 +14,29 @@ if [[ "$REPO_URL" =~ ^git@ ]]; then
   ACCOUNT=$(echo "$REPO_URL" | cut -d ':' -f 2 | cut -d '/' -f 1)
   REPO_NAME=$(basename "$REPO_URL" .git)
   
-  # Modify the URL with prefix
-  MODIFIED_URL=$(echo "$REPO_URL" | sed "s/$HOST/${PREFIX}$HOST/")
+  MODIFIED_URL="$REPO_URL"
+elif [[ "$REPO_URL" =~ ^ssh:// ]]; then
+  # SSH protocol format: ssh://[user@]host/username/repo.git
+  HOST=$(echo "$REPO_URL" | sed -E 's|ssh://(.*@)?([^/]+).*|\2|')
+  ACCOUNT=$(echo "$REPO_URL" | sed -E 's|ssh://[^/]+/([^/]+).*|\1|')
+  REPO_NAME=$(basename "$REPO_URL" .git)
+
+  MODIFIED_URL="$REPO_URL"
 elif [[ "$REPO_URL" =~ ^https?:// ]]; then
   # HTTP format: https://github.com/username/repo.git
   HOST=$(echo "$REPO_URL" | sed -E 's|https?://([^/]+).*|\1|')
   ACCOUNT=$(echo "$REPO_URL" | sed -E 's|https?://[^/]+/([^/]+).*|\1|')
   REPO_NAME=$(basename "$REPO_URL" .git)
   
-  # The url does not need to be modified for https
-  MODIFIED_URL=$(echo "$REPO_URL")
+  MODIFIED_URL="$REPO_URL"
 else
   echo "Unsupported URL format. Please use SSH (git@host:user/repo.git) or HTTPS (https://host/user/repo.git)"
   exit 1
+fi
+
+# Apply prefix only for GitHub hosts
+if [[ "$HOST" == *github* ]]; then
+  MODIFIED_URL=$(echo "$MODIFIED_URL" | sed "s/$HOST/${PREFIX}$HOST/")
 fi
 
 # Create the target directory structure
