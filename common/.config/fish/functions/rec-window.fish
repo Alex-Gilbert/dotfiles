@@ -1,4 +1,4 @@
-function rec-crop --description "Record a selected region of the screen"
+function rec-window --description "Record a specific window (click to select)"
     set -l name $argv[1]
     if test -z "$name"
         set name rec-(date +%Y%m%d-%H%M%S)
@@ -10,18 +10,20 @@ function rec-crop --description "Record a selected region of the screen"
     set -l audio_args (_rec-build-audio-args)
     set -l webcam (rec-pick-webcam)
 
-    echo "Click and drag to select the recording area..."
-    set -l geom (slop -f "%w %h %x %y")
+    echo "Click on the window you want to record..."
+    set -l win_id (xdotool selectwindow)
 
     if test $status -ne 0
         echo "Selection cancelled"
         return 1
     end
 
-    set -l w (echo $geom | awk '{print $1}')
-    set -l h (echo $geom | awk '{print $2}')
-    set -l x (echo $geom | awk '{print $3}')
-    set -l y (echo $geom | awk '{print $4}')
+    # Get window geometry
+    set -l geom (xdotool getwindowgeometry --shell $win_id)
+    set -l x (echo $geom | string match -r 'X=(\d+)' | tail -1)
+    set -l y (echo $geom | string match -r 'Y=(\d+)' | tail -1)
+    set -l w (echo $geom | string match -r 'WIDTH=(\d+)' | tail -1)
+    set -l h (echo $geom | string match -r 'HEIGHT=(\d+)' | tail -1)
 
     # Force even dimensions (ffmpeg requirement)
     set w (math "$w - ($w % 2)")
@@ -29,7 +31,7 @@ function rec-crop --description "Record a selected region of the screen"
 
     set -l webcam_pid (_rec-webcam-start $webcam $webcam_output)
 
-    echo "Recording {$w}x{$h} at offset +{$x}+{$y}"
+    echo "Recording window {$w}x{$h} at +{$x}+{$y}"
     echo "Press q to stop"
 
     ffmpeg -video_size {$w}x{$h} -framerate 60 -f x11grab -i :0.0+{$x},{$y} \
