@@ -7,23 +7,9 @@ function rec --description "Record screen at native 4K with NVENC"
     set -l output ~/Videos/{$name}.mkv
     set -l webcam_output ~/Videos/{$name}-webcam.mkv
 
-    set -l audio_src (rec-pick-audio)
-    set -l audio_args
-    if test -n "$audio_src"
-        set audio_args -f pulse -i $audio_src -af "pan=stereo|c0=c0|c1=c0" -c:a aac -b:a 192k
-    end
-
+    set -l audio_args (_rec-build-audio-args)
     set -l webcam (rec-pick-webcam)
-
-    # Start webcam recording in background
-    set -l webcam_pid ""
-    if test -n "$webcam"
-        ffmpeg -nostdin -f v4l2 -input_format mjpeg -framerate 30 -video_size 1920x1080 -i $webcam \
-            -c:v h264_nvenc -preset p7 -cq 18 -b:v 0 \
-            $webcam_output &
-        set webcam_pid $last_pid
-        echo "Webcam recording started (PID $webcam_pid)"
-    end
+    set -l webcam_pid (_rec-webcam-start $webcam $webcam_output)
 
     echo "Recording to $output"
     echo "Press q to stop"
@@ -33,9 +19,6 @@ function rec --description "Record screen at native 4K with NVENC"
         -c:v h264_nvenc -preset p7 -cq 18 -b:v 0 \
         $output
 
-    if test -n "$webcam_pid"
-        kill -INT $webcam_pid 2>/dev/null
-        wait $webcam_pid 2>/dev/null
-        echo "Webcam saved: $webcam_output"
-    end
+    _rec-webcam-stop $webcam_pid $webcam_output
+    _rec-convert-davinci $output
 end
