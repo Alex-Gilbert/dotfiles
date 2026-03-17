@@ -19,6 +19,8 @@ alias serena='uvx --from git+https://github.com/oraios/serena serena start-mcp-s
 alias kay kubectl
 alias mouse-speed='xinput set-prop 14 "libinput Accel Speed"'
 alias space-check='sudo du -h --max-depth=1 . | sort -h'
+alias vpnup='sudo wg-quick up protonvpn'
+alias vpndown='sudo wg-quick down protonvpn'
 
 # Cross-platform PATH additions
 fish_add_path $HOME/.config/fish/functions
