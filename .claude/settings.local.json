@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bootctl status:*)",
+      "Bash(lsblk:*)",
+      "Bash(pacman:*)",
+      "Bash(chown:*)",
+      "Bash(usermod:*)",
+      "Bash(systemctl enable:*)"
+    ]
+  }
+}
