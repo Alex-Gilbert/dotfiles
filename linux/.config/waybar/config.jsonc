@@ -4,9 +4,10 @@
     "height": 30,
     "spacing": 4,
 
-    "modules-left": ["hyprland/workspaces"],
+    "modules-left": ["sway/workspaces"],
     "modules-center": ["clock"],
     "modules-right": [
+        "custom/kmonad",
         "network",
         "custom/tailscale",
         "cpu",
@@ -18,10 +19,10 @@
         "tray"
     ],
 
-    "hyprland/workspaces": {
+    "sway/workspaces": {
         "format": "{name}",
-        "on-click": "activate",
-        "sort-by-number": true
+        "disable-scroll": true,
+        "all-outputs": true
     },
 
     "clock": {
@@ -37,10 +38,8 @@
     },
 
     "network": {
-        "interface": "enp*",
-        "format": "{ifname}: {ipaddr}",
+        "interface": "wlan0",
         "format-wifi": "{essid} ({signalStrength}%): {ipaddr}",
-        "format-ethernet": "{ifname}: {ipaddr}",
         "format-disconnected": "disconnected",
         "tooltip-format": "{ifname}: {ipaddr}/{cidr}\nGateway: {gwaddr}",
         "max-length": 30
@@ -54,6 +53,15 @@
         "on-click-right": "pkexec tailscale down",
         "tooltip": true,
         "tooltip-format": "Tailscale: {} (click: up, right-click: down)"
+    },
+
+    "custom/kmonad": {
+        "exec": "if systemctl is-active kmonad.service >/dev/null 2>&1; then echo 'VOY'; else echo 'OFF'; fi",
+        "format": "KBD {}",
+        "interval": 5,
+        "on-click": "pkexec systemctl start kmonad.service",
+        "on-click-right": "pkexec systemctl stop kmonad.service",
+        "tooltip-format": "KMonad Voyager (click: start, right-click: stop)"
     },
 
     "cpu": {
