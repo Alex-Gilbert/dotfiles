@@ -1,0 +1,7 @@
+Drop a Nerd Font here named exactly font.ttf to match your i3 setup.
+
+  curl -L -o ~/.termux/font.ttf \
+    https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/JetBrainsMono/Ligatures/Regular/JetBrainsMonoNerdFont-Regular.ttf
+  termux-reload-settings
+
+The .ttf itself is intentionally not committed — keeps the repo light.

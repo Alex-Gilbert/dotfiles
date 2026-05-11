@@ -1,0 +1,8 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# Background pull of latest dotfiles. Triggered via Termux:Tasker, cron, or
+# wired to a Glove80 macro key that runs `am startservice` against Termux:Tasker.
+set -e
+cd "$HOME/dotfiles"
+git pull --ff-only
+./scripts/stow_dotfiles.sh
+termux-reload-settings || true

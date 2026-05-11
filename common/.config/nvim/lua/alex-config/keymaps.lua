@@ -95,6 +95,7 @@ M.whichkey_spec = {
 	{ "<leader>g", group = "[G]it", nowait = true, remap = false },
 	{ "<leader>gd", group = "[G]it [D]iff", nowait = true, remap = false },
 	{ "<leader>d", group = "[D]ebug", nowait = true, remap = false },
+	{ "<leader>G", group = "[G]leam", nowait = true, remap = false },
 	{ "<leader>r", group = "[R]ust", nowait = true, remap = false },
 	{ "<leader>x", group = "Swap", nowait = true, remap = false },
 	{ "<leader>m", group = "[M]essages (Noice)", nowait = true, remap = false },
@@ -516,6 +517,20 @@ M.set_rust_lsp_keys = function(bufnr, client)
 	}
 
 	set_base_lsp_keys(bufnr, client, rust_overrides)
+end
+
+M.set_gleam_keys = function(bufnr)
+	local lsp_opts = { buffer = bufnr }
+
+	keymap("n", "<leader>Gt", function()
+		Snacks.terminal("gleam test", { interactive = false })
+	end, "[G]leam [T]est", lsp_opts)
+	keymap("n", "<leader>Gb", function()
+		Snacks.terminal("gleam build", { interactive = false })
+	end, "[G]leam [B]uild", lsp_opts)
+	keymap("n", "<leader>Gr", function()
+		Snacks.terminal("gleam run", { interactive = false })
+	end, "[G]leam [R]un", lsp_opts)
 end
 
 M.conform_keys = {

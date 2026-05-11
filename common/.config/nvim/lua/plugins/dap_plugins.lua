@@ -69,6 +69,7 @@ local M = {
 			handlers = {},
 			ensure_installed = {
 				"codelldb", -- Rust/C/C++ debugger
+				"elixir", -- Elixir debugger (via elixir-ls)
 			},
 		},
 	},
@@ -86,6 +87,7 @@ local M = {
 					"leoluz/nvim-dap-go",
 				},
 			},
+			"jfpedroza/neotest-elixir",
 			"rouge8/neotest-rust",
 		},
 		keys = require("alex-config.keymaps").neotest_keys,
@@ -93,6 +95,7 @@ local M = {
 			require("neotest").setup({
 				adapters = {
 					require("neotest-dotnet"),
+					require("neotest-elixir"),
 					require("neotest-golang"),
 					require("neotest-rust"),
 				},

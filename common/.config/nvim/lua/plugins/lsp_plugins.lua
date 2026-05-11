@@ -94,7 +94,8 @@ return {
 					end
 				end
 
-				require("lspconfig")[server_name].setup(server_config)
+				vim.lsp.config(server_name, server_config)
+				vim.lsp.enable(server_name)
 			end
 
 			require("mason-lspconfig").setup({
@@ -138,6 +139,8 @@ return {
 				}
 			end,
 			formatters_by_ft = {
+				elixir = { "mix" },
+				gleam = { "gleam" },
 				go = { "goimports", "gofumpt" },
 				lua = { "stylua" },
 				nix = { "nixfmt" },

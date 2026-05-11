@@ -1,5 +1,4 @@
 -- vim.cmd([[colorscheme retrobox]])
-
 require("alex-config.options")
 require("alex-config.user_cmds")
 require("alex-config.keymaps").init()

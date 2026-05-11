@@ -55,14 +55,31 @@ return {
 		dependencies = {
 			"nvim-treesitter/nvim-treesitter-textobjects",
 		},
-		main = "nvim-treesitter.configs", -- Sets main module to use for opts
+		config = function(_, opts)
+			-- Register custom Cook parser
+			local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
+			parser_config.cook = {
+				install_info = {
+					url = vim.fn.expand("~/dev/cook/tree-sitter-cook"),
+					files = { "src/parser.c", "src/scanner.c" },
+					generate_requires_npm = false,
+					requires_generate_from_grammar = false,
+				},
+				filetype = "cook",
+			}
+
+			require("nvim-treesitter.configs").setup(opts)
+		end,
 		-- [[ Configure Treesitter ]] See `:help nvim-treesitter`
 		opts = {
 			ensure_installed = {
 				"bash",
 				"c",
 				"diff",
+				"elixir",
+				"gleam",
 				"go",
+				"heex",
 				"html",
 				"lua",
 				"luadoc",

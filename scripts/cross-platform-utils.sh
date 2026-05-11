@@ -3,13 +3,17 @@
 # Cross-platform utility functions
 # Source this file in your scripts to get portable commands
 
-# Detect OS
+# Detect OS. Termux reports "Linux" via uname, so disambiguate via $PREFIX/$TERMUX_VERSION.
 case "$(uname -s)" in
     Darwin)
         OS_TYPE="macos"
         ;;
     Linux)
-        OS_TYPE="linux"
+        if [ -n "${TERMUX_VERSION:-}" ] || [ "${PREFIX:-}" = "/data/data/com.termux/files/usr" ]; then
+            OS_TYPE="android"
+        else
+            OS_TYPE="linux"
+        fi
         ;;
     *)
         OS_TYPE="unknown"
@@ -112,38 +116,37 @@ portable_date() {
 
 # Function to get number of CPU cores
 get_cpu_cores() {
-    if [[ "$OS_TYPE" == "macos" ]]; then
-        sysctl -n hw.ncpu
-    else
-        nproc
-    fi
+    case "$OS_TYPE" in
+        macos) sysctl -n hw.ncpu ;;
+        *)     nproc ;;
+    esac
 }
 
 # Function to open files/URLs in default application
 portable_open() {
-    if [[ "$OS_TYPE" == "macos" ]]; then
-        open "$@"
-    else
-        xdg-open "$@"
-    fi
+    case "$OS_TYPE" in
+        macos)   open "$@" ;;
+        android) termux-open "$@" ;;
+        *)       xdg-open "$@" ;;
+    esac
 }
 
 # Function to copy to clipboard
 copy_to_clipboard() {
-    if [[ "$OS_TYPE" == "macos" ]]; then
-        pbcopy
-    else
-        xclip -selection clipboard
-    fi
+    case "$OS_TYPE" in
+        macos)   pbcopy ;;
+        android) termux-clipboard-set ;;
+        *)       xclip -selection clipboard ;;
+    esac
 }
 
 # Function to paste from clipboard
 paste_from_clipboard() {
-    if [[ "$OS_TYPE" == "macos" ]]; then
-        pbpaste
-    else
-        xclip -selection clipboard -o
-    fi
+    case "$OS_TYPE" in
+        macos)   pbpaste ;;
+        android) termux-clipboard-get ;;
+        *)       xclip -selection clipboard -o ;;
+    esac
 }
 
 # Export functions so they're available to subshells

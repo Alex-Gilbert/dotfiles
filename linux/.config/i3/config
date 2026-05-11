@@ -40,6 +40,7 @@ bindsym $hyp+b exec thorium-browser
 bindsym $hyp+a exec rofi -show drun
 bindsym $hyp+Tab exec rofi -show window
 bindsym $hyp+e exec kitty -e yazi
+bindsym $hyp+v exec --no-startup-id ~/dotfiles/scripts/clipmenu-paste.sh
 
 # WORKSPACE SWITCHING (numbers)
 bindsym $hyp+1 workspace $ws1

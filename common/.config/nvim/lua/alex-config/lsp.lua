@@ -1,5 +1,3 @@
-local lsp = require("lspconfig")
-
 local M = {}
 
 M.additional_tools = {
@@ -33,11 +31,11 @@ M.servers = {
 			print("Hello From C#")
 		end,
 		filetypes = { "cs" },
-		root_dir = function(startpath)
-			return lsp.util.root_pattern("*.sln")(startpath)
-				or lsp.util.root_pattern("*.csproj")(startpath)
-				or lsp.util.root_pattern("*.fsproj")(startpath)
-				or lsp.util.root_pattern(".git")(startpath)
+		root_dir = function(bufnr, on_dir)
+			local root = vim.fs.root(bufnr, function(name)
+				return name:match("%.sln$") or name:match("%.csproj$") or name:match("%.fsproj$")
+			end)
+			on_dir(root or vim.fs.root(bufnr, ".git"))
 		end,
 		init_options = {
 			AutomaticWorkspaceInit = true,
@@ -139,9 +137,21 @@ M.servers = {
 	eslint = {},
 
 	ltex_plus = {},
+
+	elixirls = {
+		on_attach = function()
+			print("Hello From Elixir")
+		end,
+	},
 }
 
 -- Servers that are managed outside of Mason (cargo, npm, system packages, etc.)
-M.external_servers = {}
+M.external_servers = {
+	gleam = {
+		on_attach = function(client, bufnr)
+			require("alex-config.keymaps").set_gleam_keys(bufnr)
+		end,
+	},
+}
 
 return M
