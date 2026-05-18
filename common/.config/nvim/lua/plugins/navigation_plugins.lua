@@ -38,6 +38,39 @@ return {
 		end,
 	},
 
+	-- FFF (fast fuzzy file finder, Rust-backed)
+	{
+		"dmtrKovalenko/fff.nvim",
+		build = function()
+			require("fff.download").download_or_build_binary()
+		end,
+		opts = {},
+		keys = {
+			{
+				"<leader>pf",
+				function()
+					require("fff").find_files()
+				end,
+				desc = "[P]roject [F]iles (fff)",
+			},
+			{
+				"<leader>pss",
+				function()
+					require("fff").live_grep()
+				end,
+				desc = "[P]roject [S]earch Grep (fff)",
+			},
+			{
+				"<leader>psw",
+				function()
+					require("fff").live_grep({ query = vim.fn.expand("<cword>") })
+				end,
+				mode = { "n", "x" },
+				desc = "[P]roject [S]earch current [W]ord (fff)",
+			},
+		},
+	},
+
 	-- Oil
 	{
 		"stevearc/oil.nvim",

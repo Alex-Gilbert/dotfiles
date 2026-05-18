@@ -130,11 +130,9 @@ M.set_telescope_keys = function()
 	local project_nav = require("alex-config.telescope.project_navigator")
 
 	-- Project search
-	keymap("n", "<leader>pf", builtin.find_files, "[P]roject [F]iles")
-	keymap("n", "<leader>pss", builtin.live_grep, "[P]roject [S]earch Grep")
+	-- <leader>pf, <leader>pss, <leader>psw are owned by fff.nvim (see plugins/navigation_plugins.lua)
 	keymap("n", "<leader>psh", builtin.help_tags, "[P]roject [S]earch [H]elp")
 	keymap("n", "<leader>psk", builtin.keymaps, "[P]roject [S]earch [K]eymaps")
-	keymap({ "n", "x" }, "<leader>psw", builtin.grep_string, "[P]roject [S]earch current [W]ord")
 	keymap("n", "<leader>pst", builtin.builtin, "[P]roject [S]earch [T]ypes (all pickers)")
 	keymap("n", "<leader>psd", builtin.diagnostics, "[P]roject [S]earch [D]iagnostics")
 	keymap("n", "<leader>psr", builtin.resume, "[P]roject [S]earch [R]esume")

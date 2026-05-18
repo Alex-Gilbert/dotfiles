@@ -48,31 +48,14 @@ return {
 		},
 	},
 
-	-- Tree-sitter
-	{ -- Highlight, edit, and navigate code
+	-- Tree-sitter (main branch — the master branch is archived as of 2026)
+	{
 		"nvim-treesitter/nvim-treesitter",
+		branch = "main",
+		lazy = false,
 		build = ":TSUpdate",
-		dependencies = {
-			"nvim-treesitter/nvim-treesitter-textobjects",
-		},
-		config = function(_, opts)
-			-- Register custom Cook parser
-			local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
-			parser_config.cook = {
-				install_info = {
-					url = vim.fn.expand("~/dev/cook/tree-sitter-cook"),
-					files = { "src/parser.c", "src/scanner.c" },
-					generate_requires_npm = false,
-					requires_generate_from_grammar = false,
-				},
-				filetype = "cook",
-			}
-
-			require("nvim-treesitter.configs").setup(opts)
-		end,
-		-- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-		opts = {
-			ensure_installed = {
+		config = function()
+			local ensure = {
 				"bash",
 				"c",
 				"diff",
@@ -88,46 +71,105 @@ return {
 				"query",
 				"vim",
 				"vimdoc",
-			},
-			-- Autoinstall languages that are not installed
-			auto_install = true,
-			highlight = {
-				enable = true,
-				additional_vim_regex_highlighting = { "ruby" },
-			},
-			indent = { enable = true, disable = { "ruby" } },
-			-- Textobjects (used by mini.ai for treesitter-powered text objects)
-			textobjects = {
-				select = { enable = true, lookahead = true },
-				move = {
-					enable = true,
-					goto_next_start = {
-						["]f"] = "@function.outer",
-						["]c"] = "@class.outer",
-						["]a"] = "@parameter.inner",
-					},
-					goto_next_end = {
-						["]F"] = "@function.outer",
-						["]C"] = "@class.outer",
-					},
-					goto_previous_start = {
-						["[f"] = "@function.outer",
-						["[c"] = "@class.outer",
-						["[a"] = "@parameter.inner",
-					},
-					goto_previous_end = {
-						["[F"] = "@function.outer",
-						["[C"] = "@class.outer",
-					},
-				},
-				swap = {
-					enable = true,
-					swap_next = { ["<leader>xp"] = "@parameter.inner" },
-					swap_previous = { ["<leader>xP"] = "@parameter.inner" },
-				},
-			},
-		},
+			}
+
+			require("nvim-treesitter").setup()
+
+			-- Register the custom Cook parser (local checkout) so :TSUpdate picks it up.
+			vim.api.nvim_create_autocmd("User", {
+				pattern = "TSUpdate",
+				callback = function()
+					require("nvim-treesitter.parsers").cook = {
+						install_info = {
+							path = vim.fn.expand("~/dev/cook/tree-sitter-cook"),
+						},
+					}
+				end,
+			})
+			vim.treesitter.language.register("cook", { "cook" })
+
+			require("nvim-treesitter").install(ensure)
+
+			-- Replaces the old config's `highlight`, `indent`, and `auto_install`:
+			-- start treesitter highlighting + folds + indent for any buffer whose
+			-- filetype has an available parser.
+			vim.api.nvim_create_autocmd("FileType", {
+				callback = function(args)
+					local ft = vim.bo[args.buf].filetype
+					if ft == "" then
+						return
+					end
+					local lang = vim.treesitter.language.get_lang(ft) or ft
+					if not pcall(vim.treesitter.language.add, lang) then
+						return
+					end
+					pcall(vim.treesitter.start, args.buf, lang)
+					vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+					vim.wo.foldmethod = "expr"
+					if ft ~= "ruby" then
+						vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+					end
+				end,
+			})
+		end,
 	},
+
+	-- Tree-sitter textobjects (main branch)
+	{
+		"nvim-treesitter/nvim-treesitter-textobjects",
+		branch = "main",
+		dependencies = { "nvim-treesitter/nvim-treesitter" },
+		event = "VeryLazy",
+		config = function()
+			require("nvim-treesitter-textobjects").setup({
+				select = { lookahead = true },
+				move = { set_jumps = true },
+			})
+
+			local move = require("nvim-treesitter-textobjects.move")
+			local swap = require("nvim-treesitter-textobjects.swap")
+			local map = vim.keymap.set
+
+			map({ "n", "x", "o" }, "]f", function()
+				move.goto_next_start("@function.outer", "textobjects")
+			end, { desc = "Next function start" })
+			map({ "n", "x", "o" }, "]c", function()
+				move.goto_next_start("@class.outer", "textobjects")
+			end, { desc = "Next class start" })
+			map({ "n", "x", "o" }, "]a", function()
+				move.goto_next_start("@parameter.inner", "textobjects")
+			end, { desc = "Next parameter start" })
+			map({ "n", "x", "o" }, "]F", function()
+				move.goto_next_end("@function.outer", "textobjects")
+			end, { desc = "Next function end" })
+			map({ "n", "x", "o" }, "]C", function()
+				move.goto_next_end("@class.outer", "textobjects")
+			end, { desc = "Next class end" })
+			map({ "n", "x", "o" }, "[f", function()
+				move.goto_previous_start("@function.outer", "textobjects")
+			end, { desc = "Prev function start" })
+			map({ "n", "x", "o" }, "[c", function()
+				move.goto_previous_start("@class.outer", "textobjects")
+			end, { desc = "Prev class start" })
+			map({ "n", "x", "o" }, "[a", function()
+				move.goto_previous_start("@parameter.inner", "textobjects")
+			end, { desc = "Prev parameter start" })
+			map({ "n", "x", "o" }, "[F", function()
+				move.goto_previous_end("@function.outer", "textobjects")
+			end, { desc = "Prev function end" })
+			map({ "n", "x", "o" }, "[C", function()
+				move.goto_previous_end("@class.outer", "textobjects")
+			end, { desc = "Prev class end" })
+
+			map("n", "<leader>xp", function()
+				swap.swap_next("@parameter.inner")
+			end, { desc = "Swap parameter with next" })
+			map("n", "<leader>xP", function()
+				swap.swap_previous("@parameter.inner")
+			end, { desc = "Swap parameter with previous" })
+		end,
+	},
+
 	{
 		"ravsii/tree-sitter-d2",
 		dependencies = { "nvim-treesitter/nvim-treesitter" },
