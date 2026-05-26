@@ -3,7 +3,7 @@ if set -q PREFIX; and test "$PREFIX" = /data/data/com.termux/files/usr
     exit
 end
 
-set -gx PATH $PATH \
+for dir in \
     $HOME/binaryen-version_123/bin \
     $HOME/.npm-global/bin \
     $HOME/rga-2.11.0.28 \
@@ -15,9 +15,19 @@ set -gx PATH $PATH \
     $HOME/.dotnet/tools \
     $HOME/.local/azure-functions \
     $HOME/dev/defcon/skyshark/target/release
+    if not contains $dir $PATH
+        set -gx PATH $PATH $dir
+    end
+end
 
+# `go env GOBIN` is empty when unset, and an empty string in a fish PATH list
+# resolves to '.' (CWD) — shadowing installed binaries with stale local builds.
+# GOPATH/bin is where `go install` writes when GOBIN is unset, so it's enough.
 if command -q go
-    set -gx PATH $PATH (go env GOBIN) (go env GOPATH)/bin
+    set -l gobin (go env GOPATH)/bin
+    if not contains $gobin $PATH
+        set -gx PATH $PATH $gobin
+    end
 end
 
 set -gx SSH_AUTH_SOCK $XDG_RUNTIME_DIR/ssh-agent.socket

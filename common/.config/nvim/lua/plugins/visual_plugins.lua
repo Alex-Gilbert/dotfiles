@@ -93,15 +93,19 @@ return {
 			vim.o.showtabline = 2
 		end,
 	},
-	-- {
-	-- 	"MeanderingProgrammer/render-markdown.nvim",
-	-- 	-- dependencies = { "nvim-treesitter/nvim-treesitter", "echasnovski/mini.nvim" }, -- if you use the mini.nvim suite
-	-- 	-- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
-	-- 	dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" }, -- if you prefer nvim-web-devicons
-	-- 	---@module 'render-markdown'
-	-- 	---@type render.md.UserConfig
-	-- 	opts = {},
-	-- },
+	{
+		"MeanderingProgrammer/render-markdown.nvim",
+		dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
+		ft = { "markdown", "codecompanion" },
+		cmd = { "RenderMarkdown" },
+		keys = {
+			{ "<leader>um", "<cmd>RenderMarkdown toggle<cr>", desc = "Toggle Render Markdown (global)" },
+			{ "<leader>uM", "<cmd>RenderMarkdown buf_toggle<cr>", desc = "Toggle Render Markdown (buffer)" },
+		},
+		---@module 'render-markdown'
+		---@type render.md.UserConfig
+		opts = {},
+	},
 
 	-- Noice - UI overhaul for cmdline, messages, notifications
 	{

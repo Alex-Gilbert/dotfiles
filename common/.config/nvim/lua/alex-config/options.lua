@@ -51,6 +51,10 @@ opt.wildmode = "longest:full,full" -- Command-line completion mode
 opt.winminwidth = 5 -- Minimum window width
 opt.wrap = false -- Disable line wrap.
 
+-- Treesitter folds are enabled per-filetype in base_plugins.lua; keep them open by default.
+opt.foldlevel = 99
+opt.foldlevelstart = 99
+
 opt.swapfile = false
 opt.backup = false
 opt.undodir = os.getenv("HOME") .. "/.vim/undodir"
