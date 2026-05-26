@@ -80,14 +80,43 @@ cmd-alt-ctrl-shift-m = "mode move"
 
 # ?? Resize mode (no modifiers)
 [mode.resize.binding]
-h = "resize smart -70"
-j = "resize smart +70"
-k = "resize smart -70"
-l = "resize smart +70"
+h = "resize width -70"
+j = "resize height +70"
+k = "resize height -70"
+l = "resize width +70"
 
 enter = "mode main"
 esc   = "mode main"
 r     = "mode main"
+
+# ── Move mode (no modifiers) ─────────────────────────────────────────────────
+[mode.move.binding]
+h = "move left"
+j = "move down"
+k = "move up"
+l = "move right"
+
+shift-h = "join-with left"
+shift-j = "join-with down"
+shift-k = "join-with up"
+shift-l = "join-with right"
+
+1 = ["move-node-to-workspace 1", "mode main"]
+2 = ["move-node-to-workspace 2", "mode main"]
+3 = ["move-node-to-workspace 3", "mode main"]
+4 = ["move-node-to-workspace 4", "mode main"]
+5 = ["move-node-to-workspace 5", "mode main"]
+6 = ["move-node-to-workspace 6", "mode main"]
+7 = ["move-node-to-workspace 7", "mode main"]
+8 = ["move-node-to-workspace 8", "mode main"]
+9 = ["move-node-to-workspace 9", "mode main"]
+0 = ["move-node-to-workspace 10", "mode main"]
+
+tab = "move-workspace-to-monitor --wrap-around next"
+
+enter = "mode main"
+esc   = "mode main"
+m     = "mode main"
 
 [[on-window-detected]]
 if.window-title-regex-substring = "Picture-in-Picture"

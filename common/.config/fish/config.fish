@@ -39,6 +39,7 @@ if test (uname -s) = "Darwin"
         source $HOME/dotfiles/macos/.config/fish/config.fish
     end
     fish_add_path /usr/local/share/dotnet
+    fish_add_path (go env GOPATH)/bin
 end
 
 # Common environment variables
