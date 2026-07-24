@@ -71,3 +71,6 @@ fish_add_path $HOME/.opencode/bin
 # dotenv
 set -g fish_dotenv_enable_yes 1
 
+# cook
+fish_add_path "$HOME/.cook/bin"
+COMPLETE=fish cook | source
