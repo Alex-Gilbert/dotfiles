@@ -3,9 +3,10 @@ if not set -q PREFIX; or test "$PREFIX" != /data/data/com.termux/files/usr
     exit
 end
 
-# Termux PATH (most binaries live under $PREFIX/bin)
-fish_add_path $PREFIX/bin
-fish_add_path $HOME/go/bin
+# Termux PATH (most binaries live under $PREFIX/bin).
+# -g keeps these out of the universal $fish_user_paths — see common/config.fish.
+fish_add_path -g $PREFIX/bin
+fish_add_path -g $HOME/go/bin
 
 # TERM upgrade so colors survive over ssh/mosh sessions
 if test "$TERM" = xterm

@@ -6,7 +6,11 @@
       "Bash(pacman:*)",
       "Bash(chown:*)",
       "Bash(usermod:*)",
-      "Bash(systemctl enable:*)"
+      "Bash(systemctl enable:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(aerospace list-windows *)",
+      "Bash(aerospace --help)"
     ]
   }
 }

@@ -22,25 +22,25 @@ alias space-check='sudo du -h --max-depth=1 . | sort -h'
 alias vpnup='sudo wg-quick up protonvpn'
 alias vpndown='sudo wg-quick down protonvpn'
 
-# Cross-platform PATH additions
-fish_add_path $HOME/.config/fish/functions
-fish_add_path $HOME/dotfiles/scripts
-fish_add_path $HOME/.local/bin
-fish_add_path $HOME/.cargo/bin
-fish_add_path $HOME/.bun/bin
+# Cross-platform PATH additions.
+# -g (global, not universal) on every fish_add_path in this repo is deliberate:
+# bare `fish_add_path` writes to the *universal* $fish_user_paths, which fish
+# persists into fish_variables — a tracked file. That's how macOS paths
+# (/opt/homebrew, /Applications/...) ended up committed and leaking onto Linux.
+# Global entries are rebuilt from these files on every shell start instead.
+fish_add_path -g $HOME/.config/fish/functions
+fish_add_path -g $HOME/dotfiles/scripts
+fish_add_path -g $HOME/.local/bin
+fish_add_path -g $HOME/.cargo/bin
+fish_add_path -g $HOME/.bun/bin
 
 # Platform-specific config: each platform's stow package drops a file into
-# ~/.config/fish/conf.d/ which fish auto-sources. macOS keeps its legacy hook
-# below for back-compat with macos/.config/fish/config.fish.
+# ~/.config/fish/conf.d/, which fish auto-sources. Nothing platform-specific
+# belongs in this file — only one package is ever stowed on a given machine,
+# so each env file guards itself and the others simply aren't present.
 #   - Linux desktop  -> linux/.config/fish/conf.d/linux-env.fish
+#   - macOS          -> macos/.config/fish/conf.d/macos-env.fish
 #   - Termux/Android -> android/.config/fish/conf.d/android-env.fish
-if test (uname -s) = "Darwin"
-    if test -f $HOME/dotfiles/macos/.config/fish/config.fish
-        source $HOME/dotfiles/macos/.config/fish/config.fish
-    end
-    fish_add_path /usr/local/share/dotnet
-    fish_add_path (go env GOPATH)/bin
-end
 
 # Common environment variables
 set -gx GAMS_VERSION "46.4"
@@ -54,7 +54,16 @@ set -gx SSH_AUTH_SOCK "$XDG_RUNTIME_DIR/ssh-agent.socket"
 
 # Zoxide integration
 set -Ux _ZO_EXCLUDE_DIRS "/mnt/*:/run/media/*"
-zoxide init fish --cmd cd | source
+# Cache `zoxide init` output; regenerate when the zoxide binary is newer than the cache.
+set -l _zoxide_bin (command -v zoxide)
+if test -n "$_zoxide_bin"
+    set -l _zoxide_cache $__fish_cache_dir/zoxide-init.fish
+    if not test -f $_zoxide_cache; or test $_zoxide_bin -nt $_zoxide_cache
+        mkdir -p $__fish_cache_dir
+        zoxide init fish --cmd cd >$_zoxide_cache
+    end
+    source $_zoxide_cache
+end
 
 # Disable greeting
 set fish_greeting
@@ -66,11 +75,13 @@ bind -M insert \er 'fzf-history'
 bind -M default \er 'fzf-history'
 
 # opencode
-fish_add_path $HOME/.opencode/bin
+fish_add_path -g $HOME/.opencode/bin
 
 # dotenv
 set -g fish_dotenv_enable_yes 1
 
 # cook
-fish_add_path "$HOME/.cook/bin"
-COMPLETE=fish cook | source
+if test -d $HOME/.cook/bin
+    fish_add_path -g $HOME/.cook/bin
+    COMPLETE=fish cook | source
+end
