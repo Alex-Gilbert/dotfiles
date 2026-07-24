@@ -38,8 +38,14 @@ if test (uname -s) = "Darwin"
     if test -f $HOME/dotfiles/macos/.config/fish/config.fish
         source $HOME/dotfiles/macos/.config/fish/config.fish
     end
-    fish_add_path /usr/local/share/dotnet
-    fish_add_path (go env GOPATH)/bin
+    set -gx DOTNET_ROOT /opt/homebrew/opt/dotnet/libexec
+    fish_add_path --move /opt/homebrew/opt/dotnet/libexec
+    # `go env GOPATH` costs ~160ms; read $GOPATH directly or use the default.
+    if set -q GOPATH
+        fish_add_path $GOPATH/bin
+    else
+        fish_add_path $HOME/go/bin
+    end
 end
 
 # Common environment variables
@@ -54,7 +60,16 @@ set -gx SSH_AUTH_SOCK "$XDG_RUNTIME_DIR/ssh-agent.socket"
 
 # Zoxide integration
 set -Ux _ZO_EXCLUDE_DIRS "/mnt/*:/run/media/*"
-zoxide init fish --cmd cd | source
+# Cache `zoxide init` output; regenerate when the zoxide binary is newer than the cache.
+set -l _zoxide_bin (command -v zoxide)
+if test -n "$_zoxide_bin"
+    set -l _zoxide_cache $__fish_cache_dir/zoxide-init.fish
+    if not test -f $_zoxide_cache; or test $_zoxide_bin -nt $_zoxide_cache
+        mkdir -p $__fish_cache_dir
+        zoxide init fish --cmd cd >$_zoxide_cache
+    end
+    source $_zoxide_cache
+end
 
 # Disable greeting
 set fish_greeting
@@ -71,3 +86,6 @@ fish_add_path $HOME/.opencode/bin
 # dotenv
 set -g fish_dotenv_enable_yes 1
 
+
+# VS Code CLI on PATH
+fish_add_path "/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
