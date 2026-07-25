@@ -58,6 +58,18 @@ common/.config/fish/conf.d/halostatue_fish_docker.fish
 common/.config/fish/completions/docker.fish
 common/.config/fish/completions/docker-compose.fish
 
+# realiserad/fish-ai
+common/.config/fish/functions/_fish_ai_autocomplete.fish
+common/.config/fish/functions/_fish_ai_autocomplete_or_fix.fish
+common/.config/fish/functions/_fish_ai_codify.fish
+common/.config/fish/functions/_fish_ai_codify_or_explain.fish
+common/.config/fish/functions/_fish_ai_explain.fish
+common/.config/fish/functions/_fish_ai_fix.fish
+common/.config/fish/functions/fish_ai_bug_report.fish
+common/.config/fish/functions/fish_ai_put_api_key.fish
+common/.config/fish/functions/fish_ai_switch_context.fish
+common/.config/fish/conf.d/fish_ai.fish
+
 # jorgebucaran/nvm.fish
 common/.config/fish/functions/_nvm_index_update.fish
 common/.config/fish/functions/_nvm_list.fish
