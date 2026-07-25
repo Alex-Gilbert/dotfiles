@@ -1,0 +1,37 @@
+# atuin — shell history in SQLite.
+#
+# Shell integration lives in common/.config/fish/config.fish, which passes
+# --disable-up-arrow and --disable-ai. See the comment there for why.
+
+## Enter runs the selected command immediately. Set to false to put it on the
+## command line for editing instead, requiring a second Enter to run it.
+enter_accept = true
+
+## "auto" derives the search UI's keymap from the shell's, which matters here
+## because config.fish calls fish_vi_key_bindings — without this the search
+## popup would be emacs-mode while the shell around it is vi-mode.
+keymap_mode = "auto"
+
+keymap_cursor = { emacs = "blink-block", vim_insert = "blink-block", vim_normal = "steady-block" }
+
+[sync]
+## Sync v2. Local-only until `atuin login`/`atuin register` is run; nothing
+## leaves the machine before that.
+records = true
+
+[stats]
+
+[keys]
+
+[preview]
+
+[daemon]
+
+[search]
+
+[tmux]
+
+[ui]
+
+[ai]
+enabled = true

@@ -103,6 +103,11 @@ end
 # --disable-up-arrow keeps Up as plain fish prefix-search; atuin owns Ctrl-R
 # only. Alt-R stays bound to fzf-history above, so both are available and
 # nothing that already worked changes.
+#
+# --disable-ai matters here specifically because of vi mode: atuin binds `?`
+# in fish's default (= vi normal) keymap, and on an empty command line that
+# fires `atuin ai inline`, which sends a prompt to Atuin's servers. `?` is
+# too easy to hit in normal mode for that to be an accident worth risking.
 if command -q atuin
-    atuin init fish --disable-up-arrow | source
+    atuin init fish --disable-up-arrow --disable-ai | source
 end
