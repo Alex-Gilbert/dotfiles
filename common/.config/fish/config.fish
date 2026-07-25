@@ -80,18 +80,10 @@ set fish_greeting
 bind -M insert \er 'fzf-history'
 bind -M default \er 'fzf-history'
 
-# `?` asks the local model for a command: type what you want as a comment,
-# press ? in normal mode, get the command. Press it on an existing command to
-# get an explanation instead. Backed by ollama via fish-ai.ini, so nothing
-# leaves the machine.
-#
-# Bound here rather than via fish-ai's keymap_1 because _fish_ai_bind binds its
-# keymaps in BOTH insert and default mode, and `?` has to stay a literal
-# question mark in insert mode (globs, URLs, `test -n`). fish-ai's conf.d runs
-# before config.fish, so this binding lands last and wins.
-#
-# ctrl-space still does autocomplete-or-fix in both modes (fish-ai's keymap_2).
-bind -M default '?' _fish_ai_codify_or_explain
+# `?` opens history search too — vi's own reverse-search key, and easier to
+# recall than Alt-R. Bound in default (= vi normal) mode ONLY: in insert mode
+# `?` has to stay a literal question mark for globs, URLs, and `test -n`.
+bind -M default '?' 'fzf-history'
 
 # opencode
 fish_add_path -g $HOME/.opencode/bin
