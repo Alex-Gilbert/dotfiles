@@ -84,7 +84,6 @@ install_packages() {
         # shellcheck feeds nvim-lint (sh/bash diagnostics).
         shellcheck
         direnv
-        atuin
 
         # GNU tools for compatibility with Linux scripts
         coreutils

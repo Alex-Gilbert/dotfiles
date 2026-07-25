@@ -119,9 +119,6 @@ install_packages() {
         # shellcheck feeds nvim-lint (sh/bash diagnostics).
         shellcheck
         direnv
-        # atuin is in the Arch and Fedora repos but not Debian/Ubuntu's --
-        # on apt, install from https://atuin.sh instead.
-        atuin
     )
 
     case "$pm" in
