@@ -59,9 +59,9 @@ git clone https://github.com/YOUR_USERNAME/dotfiles.git
 This installs core development tools and configures the shell:
 
 ```bash
-# Run the base macOS setup script
+# Detects macOS and runs scripts/setup-macos.sh
 cd ~/dotfiles
-./scripts/setup-macos.sh
+./bootstrap.sh
 ```
 
 This script will:
@@ -76,33 +76,40 @@ This script will:
 
 ### Step 4: Set Up i3-like Window Management
 
-Now configure the tiling window manager and hotkeys:
+Now configure the tiling window manager and hotkeys.
+
+> **Manual step.** `setup-macos.sh` installs kitty but not the window manager.
+> There is no `setup-i3-like.sh` — earlier revisions of this guide referenced
+> one that was never committed. Install the pieces directly:
 
 ```bash
-# Run the i3-like setup with terminal selection
-cd ~/dotfiles/macos
-./setup-i3-like.sh
+brew install --cask nikitabobko/tap/aerospace
+brew install koekeishiya/formulae/skhd
+brew install felixkratz/formulae/borders
+
+brew services start skhd
 ```
 
-During this script, you'll be prompted for:
+The configs themselves come from the `macos` stow package, already linked by
+`bootstrap.sh`: `~/.aerospace.toml`, `~/.config/borders/bordersrc`, and the
+Raycast scripts under `~/.raycast/scripts/`.
 
-1. **Terminal Emulator Choice**:
-   - Option 1: **Kitty** - Classic, feature-rich terminal
-   - Option 2: **Ghostty** - New, fast terminal with native Metal rendering
-   
-2. **Launcher Choice**:
-   - Option 1: **Sol** - Fast, minimal launcher (recommended)
-   - Option 2: **Raycast** - Feature-rich free alternative
-   - Option 3: Skip (use Spotlight)
+Optional extras, to taste:
 
-3. **Optional Applications**:
-   - Thunderbird (email client)
-   - Discord (communication)
-   - Spotify (music)
-   - Visual Studio Code (editor)
+```bash
+# Terminal — kitty is installed by setup-macos.sh; ghostty config also ships
+# in the macos package (~/.config/ghostty/config)
+brew install --cask ghostty
 
-4. **Display Settings**:
-   - Disable "Displays have separate Spaces" (recommended for stability)
+# Launcher
+brew install --cask raycast
+
+# Apps
+brew install --cask thunderbird discord spotify visual-studio-code
+```
+
+Then in **System Settings → Desktop & Dock**, disable *Displays have separate
+Spaces* — AeroSpace is noticeably more stable with it off.
 
 ### Step 5: Grant Required Permissions
 
@@ -284,12 +291,10 @@ aerospace debug-windows
 
 ### Switch Between Terminals
 
-If you want to change your terminal choice later:
-
-```bash
-cd ~/dotfiles/macos
-./switch-terminal.sh
-```
+There is no `switch-terminal.sh` (referenced by earlier revisions of this
+guide, never committed). Both terminals' configs ship in the `macos` package,
+so switching is just changing what the `Alt+T` binding launches — edit the
+`alt-t` entry in `~/.aerospace.toml`, then `aerospace reload-config`.
 
 ## 📁 Configuration Files
 
@@ -367,8 +372,8 @@ ps aux | grep -E "(aerospace|skhd)"
 tail -f /opt/homebrew/var/log/skhd/*
 aerospace debug-windows
 
-# Switch terminals
-~/dotfiles/macos/switch-terminal.sh
+# Re-link configs after pulling dotfiles changes
+~/dotfiles/bootstrap.sh --stow-only
 ```
 
 Enjoy your new i3-like macOS environment! 🎉
