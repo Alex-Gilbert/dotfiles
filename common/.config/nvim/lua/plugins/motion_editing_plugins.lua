@@ -143,4 +143,24 @@ return {
 	},
 
 	-- Zen Mode now provided by snacks.nvim
+
+	-- Undotree: visualise the undo *tree*, not just the linear u/<C-r> chain.
+	-- Recovers edits that undoing-then-typing would otherwise strand on a
+	-- branch you can no longer reach with u alone.
+	--
+	-- Only useful across sessions if `undofile` is set (see options.lua) --
+	-- without it the tree resets every time you close the buffer.
+	{
+		"mbbill/undotree",
+		cmd = { "UndotreeToggle", "UndotreeShow", "UndotreeFocus" },
+		keys = {
+			{ "<leader>U", "<cmd>UndotreeToggle<cr>", desc = "[U]ndo Tree" },
+		},
+		init = function()
+			-- Focus the tree when it opens, so it can be navigated and closed
+			-- without a second window jump.
+			vim.g.undotree_SetFocusWhenToggle = 1
+			vim.g.undotree_WindowLayout = 2
+		end,
+	},
 }

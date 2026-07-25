@@ -148,6 +148,45 @@ return {
 		},
 	},
 
+	-- Linting for filetypes with no language server to do it. conform handles
+	-- formatting; this is the diagnostics half. Mainly here for shellcheck --
+	-- this repo carries ~30 shell scripts that nothing else checks.
+	--
+	-- nvim-lint no-ops silently when a linter binary is absent, so a machine
+	-- without shellcheck/markdownlint installed just gets no diagnostics
+	-- rather than errors on every write.
+	{
+		"mfussenegger/nvim-lint",
+		event = { "BufReadPost", "BufWritePost", "InsertLeave" },
+		config = function()
+			local lint = require("lint")
+
+			lint.linters_by_ft = {
+				sh = { "shellcheck" },
+				bash = { "shellcheck" },
+				markdown = { "markdownlint" },
+			}
+
+			-- fish has its own built-in checker (`fish --no-execute`), which
+			-- nvim-lint ships as the "fish" linter.
+			if vim.fn.executable("fish") == 1 then
+				lint.linters_by_ft.fish = { "fish" }
+			end
+
+			local group = vim.api.nvim_create_augroup("alex-nvim-lint", { clear = true })
+			vim.api.nvim_create_autocmd({ "BufReadPost", "BufWritePost", "InsertLeave" }, {
+				group = group,
+				callback = function()
+					-- Only lint modifiable, on-disk buffers; skips help,
+					-- terminals, and the various plugin scratch windows.
+					if vim.bo.modifiable and vim.bo.buftype == "" then
+						lint.try_lint()
+					end
+				end,
+			})
+		end,
+	},
+
 	{ -- Autocompletion (blink.cmp - faster, modern replacement for nvim-cmp)
 		"saghen/blink.cmp",
 		version = "1.*",

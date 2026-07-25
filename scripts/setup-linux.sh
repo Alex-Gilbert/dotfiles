@@ -113,6 +113,15 @@ install_packages() {
         wget
         curl
         gpg
+        # git-delta backs the pager configured in common/.config/git/config;
+        # without it `git diff` fails to page.
+        git-delta
+        # shellcheck feeds nvim-lint (sh/bash diagnostics).
+        shellcheck
+        direnv
+        # atuin is in the Arch and Fedora repos but not Debian/Ubuntu's --
+        # on apt, install from https://atuin.sh instead.
+        atuin
     )
 
     case "$pm" in

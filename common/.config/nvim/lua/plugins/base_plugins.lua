@@ -1,5 +1,47 @@
 return {
 	-- 'tpope/vim-slueth',
+
+	-- Snacks: QoL suite. keymaps.lua:set_snacks_keys() binds ~11 keys against
+	-- the Snacks global (zen, lazygit, gitbrowse, bufdelete, scratch, rename,
+	-- words, terminal), so this has to be installed and loaded eagerly or
+	-- every one of those keys errors with "attempt to index global 'Snacks'".
+	--
+	-- Only the modules those keymaps actually use are enabled. Deliberately
+	-- left OFF, because something else already owns each of these:
+	--   picker / explorer  -> telescope + fff.nvim
+	--   notifier           -> nvim-notify + noice.nvim
+	--   input              -> noice.nvim
+	--   statuscolumn       -> heirline
+	--   dashboard          -> not used
+	{
+		"folke/snacks.nvim",
+		priority = 1000,
+		lazy = false,
+		---@type snacks.Config
+		opts = {
+			-- Autocmd-driven, so it needs explicit enabling. Backs ]] / [[.
+			words = { enabled = true },
+
+			-- Pure wins: skip expensive setup on huge files, and render the
+			-- file passed on the command line before the rest of startup.
+			bigfile = { enabled = true },
+			quickfile = { enabled = true },
+
+			-- Called on demand from keymaps; enabled here to carry config.
+			zen = { enabled = true },
+			scratch = { enabled = true },
+			terminal = { enabled = true },
+
+			notifier = { enabled = false },
+			picker = { enabled = false },
+			input = { enabled = false },
+			dashboard = { enabled = false },
+			statuscolumn = { enabled = false },
+			indent = { enabled = false },
+			scroll = { enabled = false },
+		},
+	},
+
 	{ -- Useful plugin to show you pending keybinds.
 		"folke/which-key.nvim",
 		event = "VimEnter", -- Sets the loading event to 'VimEnter'

@@ -77,7 +77,15 @@ install_packages() {
         wget
         curl
         gpg
-        
+
+        # git-delta backs the pager configured in common/.config/git/config;
+        # without it `git diff` fails to page.
+        git-delta
+        # shellcheck feeds nvim-lint (sh/bash diagnostics).
+        shellcheck
+        direnv
+        atuin
+
         # GNU tools for compatibility with Linux scripts
         coreutils
         gnu-sed

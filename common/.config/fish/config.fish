@@ -91,3 +91,18 @@ if test -d $HOME/.cook/bin
     fish_add_path -g $HOME/.cook/bin
     COMPLETE=fish cook | source
 end
+
+# direnv — per-directory env, loaded on cd. Keeps project-specific vars out of
+# the global environment instead of every shell paying for every project.
+if command -q direnv
+    direnv hook fish | source
+end
+
+# atuin — SQLite-backed shell history with full-text search.
+#
+# --disable-up-arrow keeps Up as plain fish prefix-search; atuin owns Ctrl-R
+# only. Alt-R stays bound to fzf-history above, so both are available and
+# nothing that already worked changes.
+if command -q atuin
+    atuin init fish --disable-up-arrow | source
+end
