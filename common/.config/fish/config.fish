@@ -22,6 +22,12 @@ alias space-check='sudo du -h --max-depth=1 . | sort -h'
 alias vpnup='sudo wg-quick up protonvpn'
 alias vpndown='sudo wg-quick down protonvpn'
 
+# Claude Code skill suites. Each repo is a plugin dir (.claude-plugin/plugin.json
+# + skills/), so the flag loads the whole set and `git pull` is the update story.
+# Don't copy skills into ~/.claude/skills/ — copies fork silently and go stale.
+abbr ccteam 'claude --plugin-dir ~/dev/alex-team-skills'
+abbr ccmem 'claude --plugin-dir ~/dev/alex-memory'
+
 # Cross-platform PATH additions.
 # -g (global, not universal) on every fish_add_path in this repo is deliberate:
 # bare `fish_add_path` writes to the *universal* $fish_user_paths, which fish
