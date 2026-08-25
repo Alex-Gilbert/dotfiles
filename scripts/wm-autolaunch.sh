@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# wm-autolaunch.sh — pick WM by which GPU the monitor cable is plugged into.
+# wm-autolaunch.sh — pick WM by which GPU has a connected monitor.
 #
-# The cable position IS the mode switch:
-#   monitor on iGPU port (motherboard)  -> sway (wayland, low power, nvidia idle)
-#   monitor on dGPU port (nvidia card)  -> startx / i3 (X11, video editing, gaming)
+# Desktop reality: both cables stay plugged (DP -> nvidia, mobo HDMI -> monitor
+# HDMI-2) and the monitor asserts hotplug on both, so both GPUs read
+# "connected" and the iGPU branch below always wins -> sway. That's the
+# intended default (llama-swap gets all the VRAM). For i3/X11: switch the
+# monitor input to DP, log in on a tty other than tty1, and run startx.
 #
 # Wire it up from a bare tty login (see SETUP-DESKTOP-DUAL-WM.md):
 #   [ "$(tty)" = /dev/tty1 ] && exec ~/dotfiles/scripts/wm-autolaunch.sh

@@ -74,4 +74,3 @@ common/.config/fish/completions/nvm.fish
 linux/custom-aur-packages/*/src/
 linux/custom-aur-packages/*/pkg/
 linux/custom-aur-packages/*/*.pkg.tar.*
-linux/.config/sway/config.d

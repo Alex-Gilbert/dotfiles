@@ -154,6 +154,6 @@ exec mkdir -p ~/Pictures/screenshots
 exec_always autotiling
 
 # ========== PER-HOST ==========
-# outputs, inputs, idle policy, hw keys — see hosts/*.conf
-# each machine symlinks: config.d/00-host.conf -> ../hosts/<host>.conf
-include ~/.config/sway/config.d/*
+# outputs, inputs, idle policy, hw keys — hosts/<hostname>.conf, picked
+# automatically (sway's include does wordexp, so command substitution works)
+include ~/.config/sway/hosts/$(uname -n).conf

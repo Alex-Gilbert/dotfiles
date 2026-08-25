@@ -1,15 +1,17 @@
 # Desktop: dual-WM setup — sway (iGPU) / i3 (nvidia)
 
-The DP cable position is the mode switch:
+Both cables stay plugged: DP → nvidia card, HDMI (mobo/iGPU) → monitor HDMI-2.
+The monitor keeps hotplug asserted on the inactive input, so *both* GPUs always
+report "connected" — cable position can't be the mode switch anymore. The
+switch is now the monitor's input select + which tty you log into:
 
-| cable plugged into | session | use case |
-|---|---|---|
-| motherboard port (iGPU) | sway / wayland | low power, nvidia idles |
-| nvidia card | i3 / X11 | video editing, gaming |
+| want | do |
+|---|---|
+| sway / wayland (llama-swap gets all VRAM) | monitor input → HDMI-2, log in on tty1 — autolaunch defaults to sway |
+| i3 / X11 (video editing, gaming) | monitor input → DP, log in on tty2 (any tty ≠ 1), `startx` |
 
-`scripts/wm-autolaunch.sh` reads `/sys/class/drm/*/status` at login, sees which
-GPU has a connected monitor, and launches the right session. Plug cable, log
-in, done.
+`scripts/wm-autolaunch.sh` still reads `/sys/class/drm/*/status`; with both
+connected it prefers the iGPU, which is the right default.
 
 ## 1. Sync the repo
 
@@ -31,20 +33,24 @@ pacman -S --needed sway swayidle autotiling foot wofi mako waybar grim slurp
 # gtklock is AUR
 ```
 
-## 4. Pick the host config
+## 4. Host config
+
+Nothing to do — the main sway config does
+`include ~/.config/sway/hosts/$(uname -n).conf` (sway includes go through
+wordexp, so command substitution works), and `hosts/cachy-two.conf` exists
+with connector + mode filled in from the EDID: `HDMI-A-2`, 3840x2160@120
+(the monitor's HDMI max; 240 is DP-only). Switch the monitor input to
+HDMI-2, start sway once (`WLR_DRM_DEVICES=/dev/dri/card0 sway` from a tty,
+or via wm-autolaunch), and confirm with `swaymsg -t get_outputs` — if the
+mobo port is only HDMI 2.0 it'll cap at 60Hz; drop the mode line to match.
+
+One-time migration on the laptop after pulling this change:
 
 ```sh
-mkdir -p ~/dotfiles/linux/.config/sway/config.d   # gitignored, per-machine
-ln -sf ../hosts/desktop.conf ~/dotfiles/linux/.config/sway/config.d/00-host.conf
+cd ~/dotfiles
+git mv linux/.config/sway/hosts/laptop.conf "linux/.config/sway/hosts/$(uname -n).conf"
+rm -rf linux/.config/sway/config.d   # old symlink mechanism, no longer read
 ```
-
-Then plug the cable into the mobo port, start sway once (`WLR_DRM_DEVICES=/dev/dri/cardN sway`
-from a tty, or just via wm-autolaunch), run `swaymsg -t get_outputs`, and fill
-in the real connector name + best mode in `linux/.config/sway/hosts/desktop.conf`.
-The iGPU port may not do 4K@240 — take the best mode it lists. Commit it.
-
-(The laptop does the same thing with `hosts/laptop.conf`; that symlink already
-exists there.)
 
 ## 5. Wire up autolaunch
 
@@ -112,8 +118,8 @@ systemctl --user enable --now kmonad
 
 ## Verify checklist
 
-- [ ] cable in mobo port → login → sway comes up, `swaymsg -t get_outputs` shows iGPU connector
+- [ ] monitor input HDMI-2 → tty1 login → sway comes up on HDMI-A-2 (check rate in `swaymsg -t get_outputs`)
 - [ ] under sway: `nvidia-smi` shows no display processes, ~0 MiB baseline — full VRAM for llama-swap
-- [ ] cable in nvidia port → login → i3 comes up at 4K@240
-- [ ] `hosts/desktop.conf` output line filled in + committed
+- [ ] monitor input DP → tty2 login → `startx` → i3 comes up at 4K@240
+- [ ] `hosts/cachy-two.conf` refresh rate confirmed + committed
 - [ ] waybar/mako/wofi/foot all themed & working under sway (kanagawa, same as laptop)
