@@ -142,18 +142,7 @@ client.focused_inactive #223249  #223249  #DCD7BA  #223249   #223249
 client.unfocused        #1F1F28  #1F1F28  #727169  #1F1F28   #1F1F28
 client.urgent           #C34043  #C34043  #DCD7BA  #C34043   #C34043
 
-# ========== OUTPUT ==========
-output eDP-1 scale 1.25
-
-# ========== INPUT ==========
-input type:touchpad {
-    tap enabled
-    natural_scroll enabled
-}
-
-# ========== BRIGHTNESS & VOLUME ==========
-bindsym XF86MonBrightnessDown exec brightnessctl set 5%-
-bindsym XF86MonBrightnessUp exec brightnessctl set 5%+
+# ========== VOLUME ==========
 bindsym XF86AudioRaiseVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
 bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
 bindsym XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
@@ -164,7 +153,7 @@ exec_always killall waybar; exec waybar
 exec mkdir -p ~/Pictures/screenshots
 exec_always autotiling
 
-exec swayidle -w \
-    timeout 300  'gtklock -d' \
-    timeout 900  'systemctl hibernate' \
-    before-sleep 'gtklock -d'
+# ========== PER-HOST ==========
+# outputs, inputs, idle policy, hw keys — see hosts/*.conf
+# each machine symlinks: config.d/00-host.conf -> ../hosts/<host>.conf
+include ~/.config/sway/config.d/*
