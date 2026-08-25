@@ -1,0 +1,170 @@
+# Sway config
+
+focus_follows_mouse no
+
+set $hyp Mod1+Shift+Control+Mod4
+set $altc Mod1+Control
+set $alt Mod1
+set $mod Mod4
+
+font pango:JetBrainsMono Nerd Font 10
+floating_modifier $mod normal
+
+# ========== KEYBINDINGS ==========
+
+# Core
+bindsym $hyp+q kill
+bindsym $hyp+f fullscreen toggle
+bindsym $hyp+g floating toggle
+
+# Focus
+bindsym $hyp+h focus left
+bindsym $hyp+j focus down
+bindsym $hyp+k focus up
+bindsym $hyp+l focus right
+
+# Move
+bindsym $altc+h move left
+bindsym $altc+j move down
+bindsym $altc+k move up
+bindsym $altc+l move right
+
+# Apps
+bindsym $hyp+t exec foot
+bindsym $hyp+b exec firefox
+bindsym $hyp+a exec wofi --show drun
+bindsym $hyp+Tab exec wofi --show window
+bindsym $hyp+e exec foot -e yazi
+
+# Screenshot
+bindsym $hyp+s exec grim -g "$(slurp)" ~/Pictures/screenshots/$(date +%Y%m%d_%H%M%S).png
+
+# System
+bindsym $alt+r reload
+bindsym $alt+q exec swaynag -t warning -m 'Exit sway?' -B 'Yes' 'swaymsg exit'
+bindsym $altc+x exec gtklock -d
+
+# Workspaces
+bindsym $hyp+1 workspace 1
+bindsym $hyp+2 workspace 2
+bindsym $hyp+3 workspace 3
+bindsym $hyp+4 workspace 4
+bindsym $hyp+5 workspace 5
+bindsym $hyp+6 workspace 6
+bindsym $hyp+7 workspace 7
+bindsym $hyp+8 workspace 8
+bindsym $hyp+9 workspace 9
+bindsym $hyp+0 workspace 10
+
+bindsym $altc+1 move container to workspace 1
+bindsym $altc+2 move container to workspace 2
+bindsym $altc+3 move container to workspace 3
+bindsym $altc+4 move container to workspace 4
+bindsym $altc+5 move container to workspace 5
+bindsym $altc+6 move container to workspace 6
+bindsym $altc+7 move container to workspace 7
+bindsym $altc+8 move container to workspace 8
+bindsym $altc+9 move container to workspace 9
+bindsym $altc+0 move container to workspace 10
+
+bindsym $mod+grave workspace back_and_forth
+
+# ========== RESIZE MODE ==========
+mode "resize" {
+    bindsym h resize shrink width 10 px or 10 ppt
+    bindsym j resize grow height 10 px or 10 ppt
+    bindsym k resize shrink height 10 px or 10 ppt
+    bindsym l resize grow width 10 px or 10 ppt
+
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+    bindsym $mod+r mode "default"
+}
+
+# ========== MOVE MODE ==========
+mode "move" {
+    bindsym h move left 30 px
+    bindsym j move down 30 px
+    bindsym k move up 30 px
+    bindsym l move right 30 px
+
+    bindsym shift+h move left 100 px
+    bindsym shift+j move down 100 px
+    bindsym shift+k move up 100 px
+    bindsym shift+l move right 100 px
+
+    bindsym c move position center
+
+    bindsym ctrl+h move position 0 center
+    bindsym ctrl+l move position 100 ppt center
+    bindsym ctrl+k move position center 0
+    bindsym ctrl+j move position center 100 ppt
+
+    bindsym 1 move position 0 0
+    bindsym 2 move position 50 ppt 0
+    bindsym 3 move position 100 ppt 0
+    bindsym 4 move position 0 50 ppt
+    bindsym 5 move position center
+    bindsym 6 move position 100 ppt 50 ppt
+    bindsym 7 move position 0 100 ppt
+    bindsym 8 move position 50 ppt 100 ppt
+    bindsym 9 move position 100 ppt 100 ppt
+
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+    bindsym $mod+shift+m mode "default"
+}
+
+# ========== WINDOW RULES ==========
+
+for_window [app_id="pavucontrol"]       floating enable
+for_window [title="Picture-in-Picture"] floating enable, sticky enable
+for_window [app_id="mpv"]               floating enable, sticky enable
+for_window [window_role="pop-up"]       floating enable
+for_window [window_role="task_dialog"]  floating enable
+for_window [title="Preferences$"]       floating enable
+for_window [app_id="floating-terminal"] floating enable, resize set 800 600, move position center
+
+for_window [floating] move position center
+for_window [urgent=latest] focus
+
+# ========== APPEARANCE ==========
+gaps inner 5
+gaps outer 3
+smart_gaps inverse_outer
+default_border pixel 4
+default_floating_border pixel 4
+hide_edge_borders none
+
+# Kanagawa
+client.focused          #C8C8C8  #1F1F28  #DCD7BA  #C8C8C8   #C8C8C8
+client.focused_inactive #223249  #223249  #DCD7BA  #223249   #223249
+client.unfocused        #1F1F28  #1F1F28  #727169  #1F1F28   #1F1F28
+client.urgent           #C34043  #C34043  #DCD7BA  #C34043   #C34043
+
+# ========== OUTPUT ==========
+output eDP-1 scale 1.25
+
+# ========== INPUT ==========
+input type:touchpad {
+    tap enabled
+    natural_scroll enabled
+}
+
+# ========== BRIGHTNESS & VOLUME ==========
+bindsym XF86MonBrightnessDown exec brightnessctl set 5%-
+bindsym XF86MonBrightnessUp exec brightnessctl set 5%+
+bindsym XF86AudioRaiseVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+bindsym XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+
+# ========== AUTOSTART ==========
+exec_always killall mako; exec mako
+exec_always killall waybar; exec waybar
+exec mkdir -p ~/Pictures/screenshots
+exec_always autotiling
+
+exec swayidle -w \
+    timeout 300  'gtklock -d' \
+    timeout 900  'systemctl hibernate' \
+    before-sleep 'gtklock -d'

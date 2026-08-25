@@ -1,0 +1,44 @@
+window {
+    background: #1F1F28;
+}
+
+#clock-label {
+    font-family: "JetBrainsMono Nerd Font";
+    font-size: 48px;
+    color: #DCD7BA;
+    margin-bottom: 20px;
+}
+
+#body {
+    font-family: "JetBrainsMono Nerd Font";
+}
+
+#input-label {
+    color: #727169;
+    font-size: 14px;
+}
+
+entry {
+    background: #223249;
+    color: #DCD7BA;
+    border: 2px solid #C8C8C8;
+    border-radius: 4px;
+    font-family: "JetBrainsMono Nerd Font";
+    font-size: 16px;
+    padding: 8px 12px;
+    min-width: 300px;
+}
+
+entry:focus {
+    border-color: #C8C8C8;
+}
+
+#unlock-button {
+    background: #223249;
+    color: #DCD7BA;
+    border: 2px solid #C8C8C8;
+    border-radius: 4px;
+    font-family: "JetBrainsMono Nerd Font";
+    font-size: 14px;
+    padding: 6px 16px;
+}

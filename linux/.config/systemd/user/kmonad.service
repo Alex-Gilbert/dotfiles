@@ -1,0 +1,11 @@
+[Unit]
+Description=KMonad Voyager keyboard remapping
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/kmonad %h/.config/kmonad/voyager.kbd
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target
