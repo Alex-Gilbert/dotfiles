@@ -77,18 +77,29 @@ isn't registered; laptop boots sway fine regardless.)
 - The i3 config's `xrandr --output DP-0 --mode 3840x2160 --rate 239.99` line is
   unchanged and applies when the cable is on the nvidia card.
 
-## 7. Optional: nvidia fully asleep under sway
+## 7. nvidia = headless CUDA card under sway (llama-swap)
 
-With no cable on the card and `WLR_DRM_DEVICES` pinned to the iGPU (autolaunch
-does this), the nvidia card can runtime-suspend:
+The point of sway mode: with `WLR_DRM_DEVICES` pinned to the iGPU (autolaunch
+does this), nothing display-related ever opens the nvidia card — llama-swap
+gets ALL the VRAM. CUDA needs no display and no nvidia-drm modeset.
+
+Do enable persistenced so the driver stays initialized on the headless card
+(fast CUDA context creation, no init latency after llama-swap unloads a model):
 
 ```sh
-# /etc/modprobe.d/nvidia-pm.conf
-options nvidia NVreg_DynamicPowerManagement=0x02
+systemctl enable --now nvidia-persistenced
 ```
 
-Check with `cat /sys/bus/pci/devices/<nvidia-bdf>/power/runtime_status` → `suspended`.
-One-off GPU work inside sway still possible via `prime-run <app>` (nvidia-prime pkg).
+Skip `NVreg_DynamicPowerManagement` runtime-suspend: llama-swap unloads idle
+models by design, and a suspended card adds cold-start latency to the next
+inference. Persistenced keeps it warm instead.
+
+Sanity check from sway: `nvidia-smi` should show ~0 MiB used with no models
+loaded — if Xorg or a compositor appears in the process list, something is
+touching the card that shouldn't be.
+
+One-off GPU apps inside sway still possible via `prime-run <app>`
+(nvidia-prime pkg) — they'll compete with llama-swap for VRAM while running.
 
 ## 8. kmonad
 
@@ -102,7 +113,7 @@ systemctl --user enable --now kmonad
 ## Verify checklist
 
 - [ ] cable in mobo port → login → sway comes up, `swaymsg -t get_outputs` shows iGPU connector
-- [ ] `nvidia` runtime_status → `suspended` (if step 7 done)
+- [ ] under sway: `nvidia-smi` shows no display processes, ~0 MiB baseline — full VRAM for llama-swap
 - [ ] cable in nvidia port → login → i3 comes up at 4K@240
 - [ ] `hosts/desktop.conf` output line filled in + committed
 - [ ] waybar/mako/wofi/foot all themed & working under sway (kanagawa, same as laptop)
