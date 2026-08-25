@@ -94,7 +94,7 @@ set -g fish_dotenv_enable_yes 1
 # cook
 if test -d $HOME/.cook/bin
     fish_add_path -g $HOME/.cook/bin
-    COMPLETE=fish cook | source
+    COMPLETE=fish cook 2>/dev/null | source
 end
 
 # direnv — per-directory env, loaded on cd. Keeps project-specific vars out of
