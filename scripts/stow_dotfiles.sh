@@ -13,6 +13,12 @@ echo "Detected OS: $OS"
 create_directories() {
   echo "Creating essential directories..."
   mkdir -p "$HOME/.config" "$HOME/.local/bin" "$HOME/.local/share" "$HOME/.ssh" "$HOME/.aws"
+  # ~/.config/zen is Zen's *profile root*, and common/ ships a user.js into it.
+  # Without this the dir won't exist on a fresh machine, stow will tree-fold and
+  # symlink ~/.config/zen -> the repo, and Zen will write its whole profile
+  # (cookies, history, sqlite) into the git tree. Pre-create so stow links the
+  # single file instead of adopting the directory.
+  mkdir -p "$HOME/.config/zen"
 }
 
 decrypt_and_place() {

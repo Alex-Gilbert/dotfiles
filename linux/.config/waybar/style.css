@@ -1,79 +1,224 @@
-/* Waybar Styling - Kanagawa Theme */
+/* Kanagawa operator console */
+
+@define-color sumi-ink #1f1f28;
+@define-color sumi-ink-1 #16161d;
+@define-color sumi-ink-3 #2a2a37;
+@define-color fuji-white #dcd7ba;
+@define-color fuji-gray #727169;
+@define-color dim-white #c8c093;
+@define-color muted-blue #7e9cd8;
+@define-color muted-green #76946a;
+@define-color muted-yellow #c0a36e;
+@define-color muted-red #c4746e;
+@define-color muted-violet #938aa9;
+@define-color muted-aqua #6a9589;
+@define-color winter-red #43242b;
 
 * {
     font-family: "JetBrainsMono Nerd Font", monospace;
-    font-size: 13px;
+    font-size: 12px;
+    font-weight: 600;
     border: none;
     border-radius: 0;
     min-height: 0;
 }
 
 window#waybar {
-    background-color: #1d2021;
-    color: #ebdbb2;
+    background-color: @sumi-ink-1;
+    color: @fuji-white;
+    border-bottom: 2px solid @sumi-ink-3;
 }
 
 #workspaces button {
-    padding: 0 8px;
-    color: #a89984;
-    background-color: transparent;
+    min-width: 28px;
+    padding: 0 5px;
+    color: @fuji-gray;
+    background: @sumi-ink-1;
+    border-bottom: 2px solid transparent;
 }
 
 #workspaces button:hover {
-    background-color: #3c3836;
+    color: @fuji-white;
+    background: @sumi-ink-3;
+    border-bottom-color: @fuji-gray;
 }
 
+/* sway/workspaces sets .focused; hyprland/workspaces sets .active. This file is
+   shared by both (sway/config and hypr/autostart.conf each launch waybar), so
+   the highlight has to match either. .active alone silently never fired under
+   sway, which is why nothing looked selected. */
+#workspaces button.focused,
 #workspaces button.active {
-    background-color: #458588;
-    color: #ebdbb2;
+    color: @fuji-white;
+    background: @sumi-ink-3;
+    border-bottom-color: @muted-blue;
 }
 
 #workspaces button.urgent {
-    background-color: #cc241d;
-    color: #ebdbb2;
+    color: @sumi-ink-1;
+    background: @dim-white;
+    border-bottom-color: @fuji-white;
 }
 
 #clock,
-#network,
+#privacy,
 #custom-tailscale,
+#custom-kmonad,
+#custom-weather,
+#mpris,
+#custom-cava,
 #cpu,
 #memory,
+#temperature,
+#custom-gpu-usage,
+#disk,
+#custom-updates,
+#custom-printbar,
+#systemd-failed-units,
+#custom-claude-usage,
+#custom-codex-usage,
+#power-profiles-daemon,
+#bluetooth,
 #pulseaudio,
 #backlight,
 #battery,
+#custom-notifications,
 #idle_inhibitor,
-#tray {
-    padding: 0 10px;
-    color: #ebdbb2;
+#tray,
+#custom-power {
+    padding: 0 9px;
+    color: @fuji-white;
+    background: @sumi-ink;
+    border-left: 1px solid @sumi-ink-3;
 }
 
-#network.disconnected {
-    color: #cc241d;
+#custom-power {
+    min-width: 24px;
+    color: @muted-red;
+    background: @winter-red;
+    border-left: 2px solid @muted-red;
 }
 
+#custom-power:hover {
+    color: @fuji-white;
+    background: @sumi-ink-3;
+}
+
+#clock {
+    padding: 0 14px 0 14px;
+    color: @muted-blue;
+    background: @sumi-ink-3;
+    border-left: 2px solid @muted-blue;
+    /* no border-right: weather closes this block, see #custom-weather below */
+}
+
+/* Weather shares the clock's block instead of sitting as its own chip: same
+   raised background, no seam between them, and it carries the right bracket
+   that #clock used to. One time-and-conditions unit. */
+#custom-weather {
+    padding: 0 14px 0 2px;
+    background: @sumi-ink-3;
+    border-left: none;
+    border-right: 2px solid @muted-blue;
+}
+
+#custom-weather,
+#custom-printbar,
+#bluetooth,
+#backlight {
+    color: @muted-blue;
+}
+
+#cpu,
+#custom-updates,
+#power-profiles-daemon {
+    color: @muted-yellow;
+}
+
+#mpris {
+    color: @muted-green;
+}
+
+/* Tighter padding: the visualiser is 12 dense block glyphs, so the usual 9px
+   either side reads as a gap rather than part of the bar. */
+#custom-cava {
+    padding: 0 6px;
+    color: @muted-aqua;
+}
+
+#memory,
+#custom-claude-usage,
+#custom-kmonad {
+    color: @muted-violet;
+}
+
+#temperature,
+#systemd-failed-units,
+#custom-notifications {
+    color: @muted-red;
+}
+
+#custom-gpu-usage,
+#custom-codex-usage,
 #custom-tailscale {
-    color: #83a598;
+    color: @muted-aqua;
 }
 
+#disk,
+#pulseaudio,
+#battery,
+#idle_inhibitor {
+    color: @muted-green;
+}
+
+#bluetooth.disabled,
+#bluetooth.off,
 #pulseaudio.muted {
-    color: #665c54;
+    color: @fuji-gray;
 }
 
-#battery.warning {
-    color: #d79921;
+#privacy-item {
+    color: @sumi-ink-1;
+    background: @fuji-white;
+    padding: 0 6px;
 }
 
-#battery.critical {
-    color: #cc241d;
+#temperature.critical,
+#battery.critical,
+#systemd-failed-units.degraded {
+    color: @sumi-ink-1;
+    background: @fuji-white;
 }
 
+#cpu,
+#memory,
+#temperature,
+#custom-gpu-usage,
+#disk {
+    border-left: none;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+#cpu {
+    border-left: 1px solid @sumi-ink-3;
+    padding-left: 9px;
+}
+
+#disk {
+    padding-right: 9px;
+}
+
+#battery.warning,
 #battery.charging,
 #battery.plugged {
-    color: #98971a;
+    color: @fuji-white;
+    border-bottom: 2px solid @fuji-white;
 }
 
 #idle_inhibitor.activated {
-    color: #d79921;
+    color: @sumi-ink-1;
+    background: @dim-white;
 }
 
 #tray > .passive {
@@ -82,14 +227,16 @@ window#waybar {
 
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
-    background-color: #cc241d;
+    background-color: @fuji-white;
 }
 
 tooltip {
-    background-color: #1d2021;
-    border: 1px solid #458588;
+    background: @sumi-ink;
+    border: 2px solid @dim-white;
+    border-radius: 0;
 }
 
 tooltip label {
-    color: #ebdbb2;
+    color: @fuji-white;
+    padding: 6px;
 }

@@ -1,22 +1,26 @@
 {
     "layer": "top",
     "position": "top",
-    "height": 30,
-    "spacing": 4,
+    "height": 32,
+    "spacing": 0,
 
-    "modules-left": ["sway/workspaces"],
-    "modules-center": ["clock"],
+    "modules-left": ["clock", "custom/weather", "mpris", "custom/cava"],
+    "modules-center": ["sway/workspaces"],
     "modules-right": [
-        "custom/kmonad",
-        "network",
-        "custom/tailscale",
+        "privacy",
         "cpu",
         "memory",
-        "pulseaudio",
-        "backlight",
-        "battery",
-        "idle_inhibitor",
-        "tray"
+        "temperature",
+        "custom/gpu-usage",
+        "disk",
+        "custom/updates",
+        "custom/printbar",
+        "systemd-failed-units",
+        "custom/claude-usage",
+        "custom/codex-usage",
+        "group/controls",
+        "custom/notifications",
+        "custom/power"
     ],
 
     "sway/workspaces": {
@@ -26,66 +30,253 @@
     },
 
     "clock": {
-        "format": "{:%Y-%m-%d %H:%M:%S}",
+        "format": "{:%a %d %b  <b>%H:%M:%S</b>}",
         "interval": 1,
+        "min-length": 22,
+        "max-length": 22,
+        "justify": "center",
         "tooltip-format": "<tt>{calendar}</tt>",
         "calendar": {
             "mode": "month",
             "format": {
-                "today": "<span color='#458588'><b>{}</b></span>"
+                "today": "<span color='#DCD7BA'><b>{}</b></span>"
             }
         }
     },
 
-    "network": {
-        "interface": "wlan0",
-        "format-wifi": "{essid} ({signalStrength}%): {ipaddr}",
-        "format-disconnected": "disconnected",
-        "tooltip-format": "{ifname}: {ipaddr}/{cidr}\nGateway: {gwaddr}",
-        "max-length": 30
-    },
-
     "custom/tailscale": {
-        "exec": "tailscale status --json 2>/dev/null | jq -r '.Self.DNSName // empty' | sed 's/\\.$//'",
-        "format": "󰖂 {}",
+        "exec": "tailscale status --json 2>/dev/null | jq -r '.BackendState // \"off\"'",
+        "format": "󰒍",
         "interval": 30,
+        "min-length": 3,
+        "max-length": 3,
+        "justify": "center",
         "on-click": "pkexec tailscale up",
         "on-click-right": "pkexec tailscale down",
         "tooltip": true,
-        "tooltip-format": "Tailscale: {} (click: up, right-click: down)"
+        "tooltip-format": "Tailscale: {}\nClick: connect  Right: disconnect"
     },
 
     "custom/kmonad": {
         "exec": "if systemctl is-active kmonad.service >/dev/null 2>&1; then echo 'VOY'; else echo 'OFF'; fi",
-        "format": "KBD {}",
+        "format": "󰌌",
         "interval": 5,
+        "min-length": 3,
+        "max-length": 3,
+        "justify": "center",
         "on-click": "pkexec systemctl start kmonad.service",
         "on-click-right": "pkexec systemctl stop kmonad.service",
         "tooltip-format": "KMonad Voyager (click: start, right-click: stop)"
     },
 
+    "group/controls": {
+        "orientation": "inherit",
+        "drawer": {
+            "transition-duration": 150,
+            "transition-left-to-right": false
+        },
+        "modules": [
+            "pulseaudio",
+            "custom/kmonad",
+            "custom/tailscale",
+            "power-profiles-daemon",
+            "bluetooth",
+            "backlight",
+            "battery",
+            "idle_inhibitor",
+            "tray"
+        ]
+    },
+
     "cpu": {
-        "format": "CPU {usage}%",
+        "format": "  {usage}%",
         "interval": 5,
+        "min-length": 8,
+        "max-length": 8,
+        "justify": "right",
         "tooltip": true
     },
 
     "memory": {
-        "format": "MEM {}%",
+        "format": "󰍛  {}%",
         "interval": 10,
+        "min-length": 8,
+        "max-length": 8,
+        "justify": "right",
         "tooltip-format": "{used:0.1f}G / {total:0.1f}G"
     },
 
+    "temperature": {
+        "hwmon-path-abs": "/sys/devices/pci0000:00/0000:00:18.3/hwmon",
+        "input-filename": "temp1_input",
+        "format": "  {temperatureC}°",
+        "critical-threshold": 80,
+        "format-critical": "  {temperatureC}°",
+        "min-length": 8,
+        "max-length": 8,
+        "justify": "right"
+    },
+
+    "custom/gpu-usage": {
+        "exec-if": "command -v gpu-usage-waybar >/dev/null && grep -q '^nvidia ' /proc/modules",
+        "exec": "gpu-usage-waybar --text-format '{gpu_utilization}% {temperature:c}°' || printf '{\"text\":\"offline\",\"tooltip\":\"NVIDIA driver unavailable\"}'",
+        "return-type": "json",
+        "interval": 5,
+        "min-length": 10,
+        "max-length": 10,
+        "justify": "right",
+        "format": "󰾲  {}",
+        "on-click": "foot -a floating-terminal nvtop"
+    },
+
+    "disk": {
+        "path": "/",
+        "interval": 30,
+        "format": "󰋊  {percentage_used}%",
+        "min-length": 8,
+        "max-length": 8,
+        "justify": "right",
+        "tooltip-format": "{used} / {total} used"
+    },
+
+    "custom/weather": {
+        "exec-if": "command -v wttrbar >/dev/null",
+        "exec": "wttrbar --nerd --fahrenheit --mph --hide-conditions --custom-indicator '{ICON} {FeelsLikeF}°'",
+        "return-type": "json",
+        "interval": 1800,
+        "min-length": 8,
+        "max-length": 8,
+        "justify": "center",
+        "tooltip": true
+    },
+
+    "mpris": {
+        "format": "{player_icon} {dynamic}",
+        "format-paused": "{status_icon} <i>{dynamic}</i>",
+        "dynamic-order": ["title", "artist"],
+        "dynamic-len": 38,
+        "player-icons": {
+            "default": "\udb81\ude86",
+            "spotify": "\udb83\udcc7",
+            "firefox": "\udb82\ude39",
+            "zen": "\udb82\ude39"
+        },
+        "status-icons": { "paused": "\udb80\udfe4", "stopped": "\udb81\udcdb" },
+        "tooltip-format": "{player} \u00b7 {status}\n{title}\n{artist}\n{album}",
+        "max-length": 46
+    },
+
+    "custom/cava": {
+        "exec-if": "command -v cava >/dev/null",
+        "exec": "~/dotfiles/scripts/waybar-cava.sh",
+        "max-length": 12,
+        "justify": "center",
+        "tooltip": false
+    },
+
+    "custom/updates": {
+        "exec-if": "command -v waybar-module-pacman-updates >/dev/null",
+        "exec": "waybar-module-pacman-updates --no-zero-output --interval-seconds 5 --network-interval-seconds 300 --tooltip-align-columns 'JetBrainsMono Nerd Font Mono' --max-version-length 12",
+        "return-type": "json",
+        "format": "{icon} {0}",
+        "format-icons": {
+            "has-updates": "󰏔",
+            "updated": ""
+        },
+        "hide-empty-text": true,
+        "min-length": 7,
+        "max-length": 7,
+        "justify": "center",
+        "on-click": "foot -a floating-terminal paru"
+    },
+
+    "custom/printbar": {
+        "exec-if": "command -v printbar >/dev/null",
+        "exec": "printbar office --no-color=bar",
+        "return-type": "json",
+        "interval": 30,
+        "signal": 15,
+        "min-length": 6,
+        "max-length": 6,
+        "justify": "center",
+        "tooltip": true,
+        "on-click": "printbar action ews --printer office",
+        "on-click-right": "printbar action queue --printer office"
+    },
+
+    "systemd-failed-units": {
+        "hide-on-ok": true,
+        "format": "  {nr_failed}",
+        "min-length": 6,
+        "max-length": 6,
+        "justify": "center",
+        "on-click": "foot -a floating-terminal sh -c 'systemctl --failed; systemctl --user --failed; printf \"\\nPress Enter to close\"; read -r'",
+        "tooltip-format": "{nr_failed} failed systemd units\nClick for details"
+    },
+
+    "custom/claude-usage": {
+        "exec": "ai-usagebar --vendor anthropic --icon '󰚩' --format '{weekly_pct}%' --color-low '#DCD7BA' --color-mid '#DCD7BA' --color-high '#DCD7BA' --color-critical '#DCD7BA'",
+        "return-type": "json",
+        "interval": 300,
+        "min-length": 8,
+        "max-length": 8,
+        "justify": "center",
+        "tooltip": true,
+        "on-click": "foot -a floating-terminal ai-usagebar-tui"
+    },
+
+    "custom/codex-usage": {
+        "exec": "ai-usagebar --vendor openai --icon '󱢆' --format '{weekly_pct}%' --color-low '#DCD7BA' --color-mid '#DCD7BA' --color-high '#DCD7BA' --color-critical '#DCD7BA'",
+        "return-type": "json",
+        "interval": 300,
+        "min-length": 8,
+        "max-length": 8,
+        "justify": "center",
+        "tooltip": true,
+        "on-click": "foot -a floating-terminal ai-usagebar-tui"
+    },
+
+    "power-profiles-daemon": {
+        "format": "{icon}",
+        "min-length": 3,
+        "max-length": 3,
+        "justify": "center",
+        "format-icons": {
+            "default": "󰓅",
+            "performance": "󰓅",
+            "balanced": "󰾅",
+            "power-saver": "󰌪"
+        }
+    },
+
+    "bluetooth": {
+        "format-disabled": "󰂲",
+        "format-off": "󰂲",
+        "format-on": "󰂯",
+        "format-connected": "󰂱  {num_connections}",
+        "min-length": 6,
+        "max-length": 6,
+        "justify": "center",
+        "tooltip-format-connected": "{device_enumerate}",
+        "tooltip-format-enumerate-connected": "{device_alias}"
+    },
+
     "pulseaudio": {
-        "format": "VOL {volume}%",
-        "format-muted": "VOL muted",
+        "format": "  {volume}%",
+        "format-muted": "  muted",
+        "min-length": 9,
+        "max-length": 9,
+        "justify": "right",
         "on-click": "pavucontrol",
         "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
         "scroll-step": 5
     },
 
     "backlight": {
-        "format": "BRI {percent}%",
+        "format": "󰃟  {percent}%",
+        "min-length": 9,
+        "max-length": 9,
+        "justify": "right",
         "on-scroll-up": "brightnessctl set +5%",
         "on-scroll-down": "brightnessctl set 5%-"
     },
@@ -95,17 +286,56 @@
             "warning": 30,
             "critical": 15
         },
-        "format": "BAT {capacity}%",
-        "format-charging": "CHG {capacity}%",
-        "format-plugged": "PLG {capacity}%",
+        "format": "{icon}  {capacity}%",
+        "format-charging": "󰂄  {capacity}%",
+        "format-plugged": "󰚥  {capacity}%",
+        "format-icons": ["󰁺", "󰁼", "󰁾", "󰂀", "󰂂", "󰁹"],
+        "min-length": 9,
+        "max-length": 9,
+        "justify": "right",
         "tooltip-format": "{timeTo}"
+    },
+
+    "custom/notifications": {
+        "exec": "swaync-client --subscribe-waybar",
+        "return-type": "json",
+        "format": "{icon}  {0}",
+        "format-icons": {
+            "notification": "󱅫",
+            "none": "󰂜",
+            "dnd-notification": "󰂠",
+            "dnd-none": "󰪓",
+            "inhibited-notification": "󰂛",
+            "inhibited-none": "󰪑",
+            "dnd-inhibited-notification": "󰂛",
+            "dnd-inhibited-none": "󰪑"
+        },
+        "min-length": 7,
+        "max-length": 7,
+        "justify": "center",
+        "on-click": "swaync-client --toggle-panel --skip-wait",
+        "on-click-right": "swaync-client --toggle-dnd --skip-wait",
+        "escape": true,
+        "tooltip-format": "Click: notification center\nRight: do not disturb"
+    },
+
+    "privacy": {
+        "icon-size": 16,
+        "icon-spacing": 8,
+        "modules": [
+            { "type": "screenshare" },
+            { "type": "audio-in" }
+        ]
     },
 
     "idle_inhibitor": {
         "format": "{icon}",
+        "min-length": 3,
+        "max-length": 3,
+        "justify": "center",
         "format-icons": {
-            "activated": "AWAKE",
-            "deactivated": "IDLE"
+            "activated": "󰅶",
+            "deactivated": "󰾪"
         },
         "tooltip-format-activated": "Idle inhibitor: ON",
         "tooltip-format-deactivated": "Idle inhibitor: OFF"
@@ -114,5 +344,11 @@
     "tray": {
         "icon-size": 16,
         "spacing": 8
+    },
+
+    "custom/power": {
+        "format": "",
+        "on-click": "wlogout",
+        "tooltip-format": "Power menu"
     }
 }

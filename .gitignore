@@ -1,6 +1,10 @@
 # Machine-local git identity (email/signing key differ per machine).
 .gitconfig
 
+# Machine-local SSH topology; encrypted keys remain tracked separately.
+linux/.ssh/config
+macos/.ssh/config
+
 # Nushell history is per-machine state.
 .config/nushell/history.sqlite3
 .config/nushell/history.sqlite3-shm

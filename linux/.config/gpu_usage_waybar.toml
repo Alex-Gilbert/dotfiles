@@ -1,0 +1,8 @@
+[general]
+interval = 2000
+
+[tooltip]
+format = """RTX 5090
+GPU: {gpu_utilization}%  VRAM: {mem_used:GiB.1}/{mem_total:GiB.1} ({mem_utilization}%)
+Temperature: {temperature:c}°C  Power: {power:w.0}W  Fan: {fan_speed}%
+Encoder: {encoder_utilization}%  Decoder: {decoder_utilization}%  P-state: {p_state}"""

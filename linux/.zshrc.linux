@@ -4,7 +4,6 @@
 # Put Linux-only configuration here
 
 # Linux-specific environment variables
-export BROWSER='google-chrome-stable'
 
 # X11 specific
 export DISPLAY="${DISPLAY:-:0}"

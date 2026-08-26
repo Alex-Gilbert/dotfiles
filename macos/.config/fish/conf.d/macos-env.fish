@@ -22,3 +22,7 @@ set -l _vscode_bin "/Applications/Visual Studio Code.app/Contents/Resources/app/
 if test -d $_vscode_bin
     fish_add_path -g $_vscode_bin
 end
+
+# Matches the Linux side — see linux-env.fish. `open -a` takes the app name,
+# so this survives the bundle being either Zen.app or Zen Browser.app.
+set -gx BROWSER "open -a Zen"

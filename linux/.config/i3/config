@@ -36,7 +36,7 @@ bindsym $altc+l move right
 
 # APPLICATION LAUNCHERS
 bindsym $hyp+t exec ~/dotfiles/scripts/launch-ftz.sh
-bindsym $hyp+b exec thorium-browser
+bindsym $hyp+b exec zen-browser
 bindsym $hyp+a exec rofi -show drun
 bindsym $hyp+Tab exec rofi -show window
 bindsym $hyp+e exec kitty -e yazi
@@ -177,6 +177,10 @@ for_window [window_role="task_dialog"] floating enable
 for_window [title="Preferences$"] floating enable
 for_window [class="floating-terminal"] floating enable, resize set 800 600, move position center
 
+# Tridactyl's :editor (<C-i> in any text field). Sized in ppt, not px, so it
+# lands the same on the 4K desktop and the 1.25-scaled laptop panel.
+for_window [class="tridactyl-editor"] floating enable, resize set 70 ppt 75 ppt, move position center
+
 # Make ripdrag windows floating
 for_window [class="ripdrag"] floating enable
 for_window [class="ripdrag"] resize set 300 400
@@ -263,3 +267,7 @@ exec --no-startup-id "xss-lock -- i3lock -i /home/alex/.config/i3/lockscreen.png
 # Auto-lock after inactivity
 exec --no-startup-id "xset s 300 300"
 exec --no-startup-id "xset dpms 600 900 1200"
+
+# Park a warm Zen in the scratchpad at login so hyper+b's plain `zen-browser`
+# opens a new window instantly instead of paying Gecko's cold start. Idempotent.
+exec --no-startup-id "~/dotfiles/scripts/zen-warm.sh"

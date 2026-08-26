@@ -7,7 +7,6 @@ set $altc Mod1+Control
 set $alt Mod1
 set $mod Mod4
 
-font pango:JetBrainsMono Nerd Font 10
 floating_modifier $mod normal
 
 # ========== KEYBINDINGS ==========
@@ -31,13 +30,13 @@ bindsym $altc+l move right
 
 # Apps
 bindsym $hyp+t exec foot
-bindsym $hyp+b exec firefox
+bindsym $hyp+b exec zen-browser
 bindsym $hyp+a exec wofi --show drun
 bindsym $hyp+Tab exec wofi --show window
 bindsym $hyp+e exec foot -e yazi
 
 # Screenshot
-bindsym $hyp+s exec grim -g "$(slurp)" ~/Pictures/screenshots/$(date +%Y%m%d_%H%M%S).png
+bindsym $hyp+s exec grim -g "$(slurp)" - | wl-copy
 
 # System
 bindsym $alt+r reload
@@ -125,6 +124,10 @@ for_window [window_role="task_dialog"]  floating enable
 for_window [title="Preferences$"]       floating enable
 for_window [app_id="floating-terminal"] floating enable, resize set 800 600, move position center
 
+# Tridactyl's :editor (<C-i> in any text field). Sized in ppt, not px, so it
+# lands the same on the 4K desktop and the 1.25-scaled laptop panel.
+for_window [app_id="tridactyl-editor"] floating enable, resize set 70 ppt 75 ppt, move position center
+
 for_window [floating] move position center
 for_window [urgent=latest] focus
 
@@ -148,10 +151,13 @@ bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
 bindsym XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
 
 # ========== AUTOSTART ==========
-exec_always killall mako; exec mako
-exec_always killall waybar; exec waybar
-exec mkdir -p ~/Pictures/screenshots
+exec_always "killall -q mako swaync; exec swaync"
+exec_always "killall -q waybar; exec waybar"
 exec_always autotiling
+
+# Park a warm Zen in the scratchpad at login so hyper+b's plain `zen-browser`
+# opens a new window instantly instead of paying Gecko's cold start. Idempotent.
+exec ~/dotfiles/scripts/zen-warm.sh
 
 # ========== PER-HOST ==========
 # outputs, inputs, idle policy, hw keys — hosts/<hostname>.conf, picked

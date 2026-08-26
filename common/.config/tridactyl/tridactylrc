@@ -1,0 +1,72 @@
+" tridactylrc — browser bindings that mirror ~/.config/nvim
+"
+" Tridactyl's rc parser only treats a line STARTING with " as a comment; a
+" trailing one becomes part of the command. So every note lives on its own line.
+"
+" Auto-sourced at startup only when the native messenger is installed
+" (:installnative). Without it, run :source by hand.
+
+" ============================================================================
+" External editor — the reason for going back to Gecko at all
+" ============================================================================
+" <C-i> in any text field hands it to nvim. kitty rather than foot: it's the one
+" terminal present in both the sway and the i3 session. Tridactyl appends the
+" temp filename as the last argument.
+"
+" --class gives the window its own app_id (Wayland) / WM_CLASS (X11) so the WM
+" can float it instead of tiling it into whatever you were reading. The matching
+" for_window rules live in linux/.config/{sway,i3}/config. -e must come last.
+set editorcmd kitty --class tridactyl-editor -e nvim
+
+" ============================================================================
+" Find — nvim <leader>/ (fuzzy in buffer), n/N
+" ============================================================================
+bind <Space>/ fillcmdline find
+bind n findnext 1
+bind N findnext -1
+
+" ============================================================================
+" Tabs as buffers — nvim <leader>p pickers, <leader>bd
+" ============================================================================
+" <leader>pf: fff.nvim find_files -> every tab in every window
+bind <Space>pf fillcmdline taball
+" <leader>pb: telescope buffers -> tabs in this window
+bind <Space>pb fillcmdline tab
+" <leader>pr: telescope oldfiles -> reopen a recently closed tab
+bind <Space>pr fillcmdline undo
+" <leader>bd: Snacks.bufdelete
+bind <Space>bd tabclose
+" <leader>w: save -> the browser's version of keeping it
+bind <Space>w bmark
+
+" ============================================================================
+" Swap — nvim <leader>x group
+" ============================================================================
+bind <Space>xh tabmove -1
+bind <Space>xl tabmove +1
+
+" ============================================================================
+" Search/help — nvim <leader>ps group
+" ============================================================================
+" <leader>psh: telescope help_tags
+bind <Space>psh fillcmdline help
+" <leader>psk: telescope keymaps
+bind <Space>psk fillcmdline_notrail bind
+
+" ============================================================================
+" Reload this file — nvim's config-reload habit
+" ============================================================================
+bind <Space>vr source
+
+" ============================================================================
+" Deliberately NOT rebound
+" ============================================================================
+" ]] and [[ default to `followpage next|prev`, which is a better browser
+" analogue of nvim's next/prev-reference than tab cycling would be. gt/gT
+" already cycle tabs.
+"
+" <C-d>/<C-u> already scroll half a page. nvim recentres after them (zz);
+" a web page has no cursor to centre on, so there is nothing to mirror.
+"
+" Zen's own compact-mode keys are separate from Tridactyl and still work:
+" Ctrl+Alt+S reveals the sidebar, Ctrl+S toggles compact mode.

@@ -20,7 +20,7 @@ it lands on under `$HOME`.
 
 | Package  | Stowed on | Holds |
 |----------|-----------|-------|
-| `common` | every machine | fish, neovim, tmux, kitty, git |
+| `common` | every machine | fish, neovim, tmux, kitty, git, zen, tridactyl |
 | `linux`  | Linux desktop | i3, polybar, X11, Linux-only ssh hosts, AUR packages |
 | `macos`  | macOS | AeroSpace, skhd, borders, wezterm, Raycast scripts |
 | `android`| Termux | Termux-specific env and widget scripts |
@@ -84,5 +84,7 @@ add a language, extend `ensure` in `base_plugins.lua` and re-run the build.
 
 - [SETUP-MAC-INSTRUCTIONS.md](SETUP-MAC-INSTRUCTIONS.md) — AeroSpace/skhd i3-like
   setup, and the Accessibility permissions it needs
+- [SETUP-BROWSER.md](SETUP-BROWSER.md) — why Zen is the one browser, and why
+  a bare `chromium` stays installed as a Claude automation target
 - [ANDROID-SETUP.md](ANDROID-SETUP.md) — Termux as a thin client over
   Tailscale + mosh + tmux

@@ -1,7 +1,7 @@
 pkgname=yazi-fm1-shim
 pkgver=1.0.0
 pkgrel=1
-pkgdesc="FileManager1 D-Bus shim so Chromium/Thorium 'Show in folder' opens Kitty + yazi; plus yazi-as-file-manager desktop entry"
+pkgdesc="FileManager1 D-Bus shim so the browser's 'Show in folder' opens Kitty + yazi; plus yazi-as-file-manager desktop entry"
 arch=('any')
 url='https://example.local/yazi-fm1-shim'
 license=('MIT')

@@ -4,7 +4,6 @@
 # Put macOS-only configuration here
 
 # macOS-specific environment variables
-export BROWSER='open -a "Google Chrome"'
 
 # macOS-specific aliases
 alias showfiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder'
