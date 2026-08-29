@@ -1,0 +1,39 @@
+[opener]
+# Define your openers
+edit = [
+    { run = 'nvim "$@"', block = true },
+]
+extract = [
+    { run = 'unzip "$1" -d "${1%.*}"', desc = "Extract archive", block = true },
+]
+video = [
+    { run = 'vlc "$@"' },
+]
+image = [
+    { run = 'imv "$@"' },
+]
+pdf = [
+    { run = 'okular "$@"' },
+]
+browser = [
+    { run = 'thorium-browser "$@"' },
+]
+smart-edit = [{ run = 'edit-file "$@"' }]
+
+[open]
+# Map file patterns to openers
+rules = [
+    { url ="*.zip", use = ["extract", "reveal"] },  # Extract zip archives
+    { url ="*.rs", use = ["edit", "reveal"] },      # Rust files
+    { url ="*.cpp", use = ["edit", "reveal"] },     # C++ files
+    { url ="*.hpp", use = ["edit", "reveal"] },
+    { url ="*.h", use = ["edit", "reveal"] },
+    { url ="*.c", use = ["edit", "reveal"] },
+    
+    { mime = "text/*", use = ["edit", "reveal"] },
+    { mime = "image/*", use = ["image", "reveal"] },
+    { mime = "video/*", use = ["video", "reveal"] },
+    { mime = "application/pdf", use = ["pdf", "reveal"] },
+    
+    { url ="*/", use = ["edit", "reveal"] },       # Directories
+]

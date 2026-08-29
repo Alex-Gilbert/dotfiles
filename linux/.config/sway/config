@@ -163,3 +163,6 @@ exec ~/dotfiles/scripts/zen-warm.sh
 # outputs, inputs, idle policy, hw keys — hosts/<hostname>.conf, picked
 # automatically (sway's include does wordexp, so command substitution works)
 include ~/.config/sway/hosts/$(uname -n).conf
+
+# portals need these in the dbus/systemd activation env (screen share)
+exec_always dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
