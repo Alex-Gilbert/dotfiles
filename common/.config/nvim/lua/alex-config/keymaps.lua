@@ -97,6 +97,7 @@ M.whichkey_spec = {
 	{ "<leader>gp", group = "[G]it [P]ull requests", nowait = true, remap = false },
 	{ "<leader>d", group = "[D]ebug", nowait = true, remap = false },
 	{ "<leader>G", group = "[G]leam", nowait = true, remap = false },
+	{ "<leader>D", group = "[D]ocker", nowait = true, remap = false },
 	{ "<leader>r", group = "[R]ust", nowait = true, remap = false },
 	{ "<leader>x", group = "Swap", nowait = true, remap = false },
 	{ "<leader>m", group = "[M]essages (Noice)", nowait = true, remap = false },
@@ -1217,5 +1218,17 @@ M.diffview_pick_commit_range = function()
 		end,
 	})
 end
+
+M.dockyard_keys = {
+	{ "<leader>DD", "<cmd>Dockyard<cr>", desc = "[D]ocker [D]ashboard" },
+	{ "<leader>Df", "<cmd>DockyardFloat<cr>", desc = "[D]ocker [F]loat dashboard" },
+	{ "<leader>Db", "<cmd>DockyardBuild<cr>", desc = "[D]ocker [B]uild nearest Dockerfile" },
+	{ "<leader>Du", "<cmd>DockyardRun<cr>", mode = { "n", "v" }, desc = "[D]ocker compose [U]p" },
+	{ "<leader>Do", function() require("alex-config.docker-cp").oil() end, desc = "[D]ocker [O]il into container" },
+	{ "<leader>DO", function() require("alex-config.docker-cp").oil_image() end, desc = "[D]ocker [O]il into image" },
+	{ "<leader>De", function() require("alex-config.docker-cp").browse() end, desc = "[D]ocker [E]xplore container files" },
+	{ "<leader>Dp", function() require("alex-config.docker-cp").pull() end, desc = "[D]ocker [P]ull file to host (docker cp)" },
+	{ "<leader>Ds", function() require("alex-config.docker-cp").shell() end, desc = "[D]ocker [S]hell into container" },
+}
 
 return M

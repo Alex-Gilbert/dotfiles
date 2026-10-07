@@ -78,6 +78,8 @@ return {
 			require("oil").setup({
 				keymaps = require("alex-config.keymaps").oil_keys,
 				use_default_keymaps = false,
+				-- oil-docker://<container>/path, see lua/oil/adapters/docker.lua
+				adapters = { ["oil-docker://"] = "docker" },
 			})
 			require("alex-config.keymaps").set_oil_keys()
 		end,
