@@ -29,10 +29,21 @@ non-primary). Without this the mobo DP port is dead.
 
 ## 3. Packages (sway stack)
 
+Everything the sway config, waybar, and the `scripts/` it binds reach for
+(paru, since a few are AUR):
+
 ```sh
-pacman -S --needed sway swayidle autotiling foot wofi mako waybar grim slurp
-# gtklock is AUR
+paru -S --needed sway swayidle swaync waybar autotiling foot wofi gtklock \
+  brightnessctl wl-clipboard cliphist grim slurp pinta wtype python-evdev \
+  libnotify ffmpeg meson wayland-protocols wf-recorder pavucontrol cava \
+  power-profiles-daemon jq yazi ripdrag ttf-jetbrains-mono-nerd wlogout wttrbar \
+  xdg-desktop-portal-wlr xdg-desktop-portal-gtk \
+  xdg-desktop-portal-termfilechooser-hunkyburrito-git \
+  zen-browser-bin waybar-module-pacman-updates-git ai-usagebar-bin printbar-bin
 ```
+
+`clipboard-type` (hyper+v) reads keyboards via evdev: needs `input` group or a
+uaccess udev rule for the keyboard, or it refuses to run.
 
 ## 4. Host config
 
