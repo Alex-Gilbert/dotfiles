@@ -11,12 +11,10 @@
 // xdg-settings owns the default-browser question. Stop the startup nag.
 user_pref("browser.shell.checkDefaultBrowser", false);
 
-// Restore the previous session. Explicit because the tiling WM keybind means
-// a browser gets relaunched constantly.
-user_pref("browser.startup.page", 3);
+// Start normally instead of reopening every window from the previous session.
+user_pref("browser.startup.page", 1);
 
-// ...but restore tabs lazily, on first click. Without this, startup.page=3
-// reloads every tab at launch and the cold start gets much worse.
+// Load restored tabs lazily when a session is restored manually.
 user_pref("browser.sessionstore.restore_on_demand", true);
 
 // Use the xdg-desktop-portal file picker rather than the bundled GTK one, so
@@ -40,3 +38,6 @@ user_pref("browser.aboutConfig.showWarning", false);
 // Rebind it in Settings -> Keyboard shortcuts; that lands in the profile's
 // zen-keyboard-shortcuts.json, not here.
 user_pref("zen.view.compact.show-sidebar-and-toolbar-on-hover", false);
+
+// Keep each window's tabs independent.
+user_pref("zen.window-sync.enabled", false);

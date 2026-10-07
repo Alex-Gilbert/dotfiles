@@ -185,66 +185,15 @@ next launch. Keep that file to prefs you'd never reach for in the UI, and let
 taste (theme, compact mode, workspaces, extensions) live in the UI where Zen's
 own sync carries it between machines.
 
-## Making hyper+b instant
+## Launching Zen
 
-Gecko's first start is slow; every window after it is nearly free. So one Zen
-instance is warmed at login and parked in the **scratchpad** — the process stays
-resident, nothing sits in the tiling layout — and `hyper+b` is just a plain
-`zen-browser`, which opens a new window in the current workspace, tiled,
-against that already-running process.
+`hyper+b` runs `zen-browser` normally. Zen is not started at login or parked
+in the scratchpad. Window tab syncing is disabled in `user.js`, so each
+window keeps its own tabs. Automatic session restore is disabled so a cold
+launch does not reopen every window from the previous session.
 
-- `sway/config` + `i3/config` autostart: `scripts/zen-warm.sh`
-- `hyper+b` in all four WM configs: `zen-browser`
-
-Measured on this machine: cold start and park **~1.0s**, a new window against
-the warm instance **~220–270ms**. Closing every visible Zen window leaves the
-parked one alive, so the process stays warm all session.
-
-`zen-warm.sh` is idempotent — it exits immediately if any Zen window exists, so
-a WM reload won't spawn a second browser.
-
-Session restore opens **several** windows and they don't all appear at once, so
-the script waits for the window count to settle and then parks every one of
-them. Parking only the first left the rest sitting on the workspace at login,
-which is the exact thing this is meant to prevent. Being broad is safe here:
-`zen-warm.sh` has exited long before you press hyper+b, so windows you open
-later are never touched.
-
-### Headless does not work for this
-
-`zen-browser --headless` genuinely warms the process, but it takes the profile
-and then **silently swallows every later invocation**: they exit 0 and no window
-ever appears. Tested directly — a headless instance plus a second
-`zen-browser <url>` produced zero new windows. It can warm a process; it can
-never become a visible browser. The scratchpad is what actually gives you
-"resident, but nothing on screen".
-
-### Two traps, both hit while building this
-
-**`swaymsg` and `i3-msg` exit 0 even when no window matches the criteria.** So
-the obvious one-liner is silently broken — the fallback never runs:
-
-```sh
-swaymsg '[app_id=zen] focus' || zen-browser    # never launches anything
-```
-
-Window existence has to be read off `-t get_tree`, not the exit code.
-
-**Criteria match *every* matching window, not one.** The first version parked
-the warm instance with `[app_id="(?i)^zen$"] move scratchpad`, which also swept
-the windows you'd actually opened into the scratchpad — they just vanished.
-`zen-warm.sh` therefore captures the con_id of the window it launched and moves
-**that** one, by `[con_id=N]`.
-
-### If it ever goes cold
-
-Killing the parked window (it's in the scratchpad, so this takes deliberate
-effort) drops the last Zen process and the next `hyper+b` pays the full cold
-start. Re-park it without waiting for a re-login:
-
-```sh
-./scripts/zen-warm.sh
-```
+After switching from the old warm-start setup, quit Zen completely and reopen
+it to apply the preference and clear the old hidden windows.
 
 ## Vim keybindings
 
