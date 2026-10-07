@@ -94,6 +94,7 @@ M.whichkey_spec = {
 	{ "<leader>i", group = "Intelligence (AI)", nowait = true, remap = false },
 	{ "<leader>g", group = "[G]it", nowait = true, remap = false },
 	{ "<leader>gd", group = "[G]it [D]iff", nowait = true, remap = false },
+	{ "<leader>gp", group = "[G]it [P]ull requests", nowait = true, remap = false },
 	{ "<leader>d", group = "[D]ebug", nowait = true, remap = false },
 	{ "<leader>G", group = "[G]leam", nowait = true, remap = false },
 	{ "<leader>r", group = "[R]ust", nowait = true, remap = false },
