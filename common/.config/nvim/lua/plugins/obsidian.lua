@@ -1,28 +1,15 @@
 return {
-	-- Using actively maintained fork with native blink.cmp support
+	-- Actively maintained fork
 	"obsidian-nvim/obsidian.nvim",
 	version = "*",
 	lazy = true,
-	cmd = {
-		"Obsidian",
-		"ObsidianSearch",
-		"ObsidianNew",
-		"ObsidianToday",
-		"ObsidianBacklinks",
-		"ObsidianLink",
-		"ObsidianRename",
-		"ObsidianQuickSwitch",
-		"ObsidianTemplate",
-		"ObsidianFollowLink",
-		"ObsidianToggleCheckbox",
-	},
+	cmd = "Obsidian",
 	keys = require("alex-config.keymaps").obsidian_keys,
 	event = {
-		"BufReadPre " .. vim.fn.expand("~") .. "/.obsidian/alex-vault/**.md",
-		"BufNewFile " .. vim.fn.expand("~") .. "/.obsidian/alex-vault/**.md",
+		"BufReadPre " .. vim.fn.expand("~") .. "/alex-vault/**.md",
+		"BufNewFile " .. vim.fn.expand("~") .. "/alex-vault/**.md",
 	},
 	dependencies = {
-		"nvim-lua/plenary.nvim",
 		"nvim-telescope/telescope.nvim",
 	},
 	opts = {
@@ -52,11 +39,12 @@ return {
 			return timestamp .. "-" .. suffix
 		end,
 
-		-- blink.cmp is auto-detected, sources auto-injected
+		-- Completion uses blink.cmp's existing LSP source
 		completion = {
-			blink = true,
 			min_chars = 2,
 		},
+
+		checkbox = { order = { " ", "x" } },
 
 		templates = {
 			folder = "999-TEMPLATES",

@@ -224,7 +224,7 @@ return {
 				list = { selection = { preselect = true, auto_insert = true } },
 			},
 
-			-- Note: obsidian.nvim auto-injects its sources for markdown files
+			-- Obsidian completion uses the LSP source
 			sources = {
 				default = { "lazydev", "lsp", "path", "snippets", "buffer" },
 				providers = {

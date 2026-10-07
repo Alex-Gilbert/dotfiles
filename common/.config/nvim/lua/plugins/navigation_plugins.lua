@@ -191,12 +191,30 @@ return {
 			"TmuxNavigatePrevious",
 			"TmuxNavigatorProcessList",
 		},
-		keys = {
-			{ "<c-h>", "<cmd><C-U>TmuxNavigateLeft<cr>" },
-			{ "<c-j>", "<cmd><C-U>TmuxNavigateDown<cr>" },
-			{ "<c-k>", "<cmd><C-U>TmuxNavigateUp<cr>" },
-			{ "<c-l>", "<cmd><C-U>TmuxNavigateRight<cr>" },
-			{ "<c-\\>", "<cmd><C-U>TmuxNavigatePrevious<cr>" },
-		},
+		init = function()
+			vim.g.tmux_navigator_no_mappings = 1 -- its defaults would clobber the keys below on load
+		end,
+		keys = vim.env.TUIOS_ENV == "1"
+				-- tuios has no navigator hook: move nvim splits, and at the edge
+				-- hand focus to the neighbouring tuios pane.
+				and vim.tbl_map(function(k)
+					return {
+						"<c-" .. k[1] .. ">",
+						function()
+							local win = vim.api.nvim_get_current_win()
+							vim.cmd.wincmd(k[1])
+							if win == vim.api.nvim_get_current_win() then
+								vim.system({ "tuios", "focus-window", "--direction", k[2] })
+							end
+						end,
+					}
+				end, { { "h", "left" }, { "j", "down" }, { "k", "up" }, { "l", "right" } })
+			or {
+				{ "<c-h>", "<cmd><C-U>TmuxNavigateLeft<cr>" },
+				{ "<c-j>", "<cmd><C-U>TmuxNavigateDown<cr>" },
+				{ "<c-k>", "<cmd><C-U>TmuxNavigateUp<cr>" },
+				{ "<c-l>", "<cmd><C-U>TmuxNavigateRight<cr>" },
+				{ "<c-\\>", "<cmd><C-U>TmuxNavigatePrevious<cr>" },
+			},
 	},
 }
