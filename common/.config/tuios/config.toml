@@ -1,0 +1,63 @@
+# tuios trial config. Only overrides live here; every missing line gets
+# tuios's default back (`tuios config reset` into a scratch XDG dir to see them).
+# NOTE: `tuios set-config` and the in-app settings page (leader ,) rewrite this
+# whole file as a full dump. Tweak live, then trim back to overrides here.
+#
+# The tmux map, as close as tuios 0.8 allows:
+#   tmux                         tuios
+#   M-Space prefix               alt+space leader
+#   M-1..9  window               alt+1..9 workspace (default)
+#   M-h/j/k/l split              leader l / j  (terminal mode can't split)
+#   C-h/j/k/l nav (navigator)    alt+h/j/k/l anywhere; C-hjkl in nvim crosses
+#                                into tuios at the edge (navigation_plugins.lua)
+#   M-a z   zoom                 leader z
+#   M-s     scroll to nvim       leader s (scrollback browser) / shift+up
+#   M-x     kill pane            leader x
+#   M-d     detach               leader d
+#   M-g g   choose-tree          leader S
+#   M-v     dictation            hyper+d in sway -> scripts/tuios-dictate
+#   resurrect/continuum          built in: the daemon saves and restores sessions
+#   tmux-thumbs / M-f yazi       rail file tree (leader b), no equivalent picker
+
+[appearance]
+theme = 'kanagawa'
+scrollback_lines = 50000
+dockbar_position = 'bottom'
+# tmux look: one line between panes, no title bars, buttons or scrollbars
+shared_borders = true
+window_title_position = 'hidden'
+hide_window_buttons = true
+hide_scrollbar = true
+# tmux has no modes: clicking or focusing a pane means typing in it
+click_to_type = 'single'
+auto_enter_terminal_on_focus = 'all'
+
+[appearance.sidebar]
+enabled = false  # leader b toggles the rail
+
+[startup]
+start_in_terminal_mode = true
+open_default_window = true
+
+[hooks]
+# ponytail: startup.tiled is ignored on attach in 0.8 (new sessions float at
+# 80x24); force tiling every attach. Drop once upstream fixes it.
+after-attach = ['PATH=$HOME/go/bin:$PATH tuios set-layout --tiling true -s "$TUIOS_SESSION_ID" >/dev/null 2>&1']
+
+[keybindings]
+leader_key = 'alt+space'
+
+[keybindings.global]
+command_palette = []  # ctrl+p back to fish; leader P opens it
+launcher = []         # alt+space is the leader; leader a opens it
+
+[keybindings.terminal_mode]
+terminal_focus_left = ['alt+h']
+terminal_focus_down = ['alt+j']
+terminal_focus_up = ['alt+k']
+terminal_focus_right = ['alt+l']
+
+[keybindings.prefix_mode]
+prefix_split_vertical = ['|', '\', 'l']
+prefix_split_horizontal = ['-', 'j']
+prefix_jump_notif = ['J']

@@ -1,0 +1,8 @@
+#!/bin/sh
+# Toggle ayeaye dictation into the focused tuios pane (sway: hyper+d).
+# ayeaye only speaks tmux; the tuios shim answers its calls in the tuios session.
+# ponytail: records on this machine only (no client pid); phone/SSH dictation stays on tmux M-v.
+PATH=$HOME/go/bin:$HOME/.cargo/bin:$PATH
+s=$(tuios session-info --json | jq -r .session_name) || exit 1
+w=$(tuios get-window --json -s "$s" | jq -r .window_id) || exit 1
+TUIOS_SESSION=$s TUIOS_PANE_ID=$w exec tuios tmux-shim -- sh -c 'exec ayeaye dictate "$TMUX_PANE"'

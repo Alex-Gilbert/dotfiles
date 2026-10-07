@@ -38,6 +38,7 @@ fish_add_path -g $HOME/.config/fish/functions
 fish_add_path -g $HOME/dotfiles/scripts
 fish_add_path -g $HOME/.local/bin
 fish_add_path -g $HOME/.cargo/bin
+fish_add_path -g $HOME/go/bin
 fish_add_path -g $HOME/.bun/bin
 
 # Platform-specific config: each platform's stow package drops a file into
