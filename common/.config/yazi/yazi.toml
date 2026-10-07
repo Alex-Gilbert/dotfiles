@@ -1,39 +1,12 @@
+# Defaults cover edit ($EDITOR), archives (ya pub extract), audio/video (play), fallback (xdg-open).
+# Only override what should NOT go through xdg-open.
 [opener]
-# Define your openers
-edit = [
-    { run = 'nvim "$@"', block = true },
-]
-extract = [
-    { run = 'unzip "$1" -d "${1%.*}"', desc = "Extract archive", block = true },
-]
-video = [
-    { run = 'vlc "$@"' },
-]
-image = [
-    { run = 'imv "$@"' },
-]
-pdf = [
-    { run = 'okular "$@"' },
-]
-browser = [
-    { run = 'thorium-browser "$@"' },
-]
-smart-edit = [{ run = 'edit-file "$@"' }]
+image      = [{ run = 'imv %s', orphan = true, for = "linux" }, { run = 'open %s', for = "macos" }]
+video      = [{ run = 'vlc %s', orphan = true, for = "linux" }, { run = 'open %s', for = "macos" }]
+smart-edit = [{ run = 'edit-file %s' }]
 
 [open]
-# Map file patterns to openers
-rules = [
-    { url ="*.zip", use = ["extract", "reveal"] },  # Extract zip archives
-    { url ="*.rs", use = ["edit", "reveal"] },      # Rust files
-    { url ="*.cpp", use = ["edit", "reveal"] },     # C++ files
-    { url ="*.hpp", use = ["edit", "reveal"] },
-    { url ="*.h", use = ["edit", "reveal"] },
-    { url ="*.c", use = ["edit", "reveal"] },
-    
-    { mime = "text/*", use = ["edit", "reveal"] },
+prepend_rules = [
     { mime = "image/*", use = ["image", "reveal"] },
     { mime = "video/*", use = ["video", "reveal"] },
-    { mime = "application/pdf", use = ["pdf", "reveal"] },
-    
-    { url ="*/", use = ["edit", "reveal"] },       # Directories
 ]

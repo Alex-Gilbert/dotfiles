@@ -1,6 +1,6 @@
 [[mgr.prepend_keymap]]
 on   = ["<C-d>"]
-run  = 'shell -- ripdrag -a -x "$@"'
+run  = 'shell -- ripdrag -a -x %s'
 desc = "Drag hovered/selected files with ripdrag"
 
 [[mgr.prepend_keymap]]
