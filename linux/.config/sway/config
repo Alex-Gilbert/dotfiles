@@ -34,9 +34,15 @@ bindsym $hyp+b exec zen-browser
 bindsym $hyp+a exec wofi --show drun
 bindsym $hyp+Tab exec wofi --show window
 bindsym $hyp+e exec foot -e yazi
+bindsym --release $hyp+v exec ~/dotfiles/scripts/clipboard-type
+bindsym $hyp+d exec ~/dotfiles/scripts/tuios-dictate
 
 # Screenshot
-bindsym $hyp+s exec grim -g "$(slurp)" - | wl-copy
+bindsym $hyp+s exec ~/dotfiles/scripts/screenshot copy
+bindsym $hyp+p exec ~/dotfiles/scripts/screenshot annotate
+bindsym $hyp+r exec ~/dotfiles/scripts/demo-record toggle
+bindsym $hyp+w exec ~/dotfiles/scripts/demo-record toggle --window
+bindsym --no-repeat $hyp+z exec ~/dotfiles/scripts/demo-record zoom
 
 # System
 bindsym $alt+r reload
@@ -151,13 +157,11 @@ bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
 bindsym XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
 
 # ========== AUTOSTART ==========
+exec wl-paste --type text --watch cliphist store
+exec wl-paste --type image --watch cliphist store
 exec_always "killall -q mako swaync; exec swaync"
 exec_always "killall -q waybar; exec waybar"
 exec_always autotiling
-
-# Park a warm Zen in the scratchpad at login so hyper+b's plain `zen-browser`
-# opens a new window instantly instead of paying Gecko's cold start. Idempotent.
-exec ~/dotfiles/scripts/zen-warm.sh
 
 # ========== PER-HOST ==========
 # outputs, inputs, idle policy, hw keys — hosts/<hostname>.conf, picked

@@ -78,3 +78,6 @@ common/.config/fish/completions/nvm.fish
 linux/custom-aur-packages/*/src/
 linux/custom-aur-packages/*/pkg/
 linux/custom-aur-packages/*/*.pkg.tar.*
+
+# Python bytecode from scripts/ and their tests.
+__pycache__/

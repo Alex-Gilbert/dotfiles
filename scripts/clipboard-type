@@ -1,0 +1,91 @@
+#!/usr/bin/python3
+"""Type the clipboard at ~350 WPM; any physical keypress cancels.
+
+Requires python-evdev and readable keyboard devices (the WaytchMe uaccess
+rule already covers the Voyager), plus wl-clipboard/wtype or xclip/xdotool.
+"""
+from contextlib import ExitStack
+import fcntl
+import os
+from pathlib import Path
+import select
+import subprocess
+import sys
+import tempfile
+import time
+
+from evdev import InputDevice, ecodes, list_devices
+
+
+def main():
+    os.environ['PATH'] += ':' + str(Path.home() / '.local/share/clipboard-type/bin')
+    cache = Path(os.environ.get('XDG_CACHE_HOME', Path.home() / '.cache'))
+    cache.mkdir(parents=True, exist_ok=True)
+    with ExitStack() as stack:
+        lock = stack.enter_context((cache / 'clipboard-type.lock').open('a'))
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return 0
+
+        devices = []
+        has_keyboard = False
+        # ponytail: discover keyboards at launch; restart after hot-plugging one.
+        for path in list_devices():
+            try:
+                device = InputDevice(path)
+            except OSError:
+                continue
+            stack.callback(device.close)
+            keys = device.capabilities().get(ecodes.EV_KEY, [])
+            has_keyboard |= ecodes.KEY_A in keys
+            if any(key in ecodes.KEY for key in keys):
+                devices.append(device)
+        if not has_keyboard:
+            raise RuntimeError('No readable keyboard; cannot enable stop-on-keypress. Check keyboard uaccess permissions.')
+
+        wayland = bool(os.environ.get('WAYLAND_DISPLAY'))
+        reader = ['wl-paste', '--no-newline', '--type', 'text'] if wayland else ['xclip', '-selection', 'clipboard', '-out']
+        typer = ['wtype', '-d', '34', '-'] if wayland else ['xdotool', 'type', '--clearmodifiers', '--delay', '34', '--file', '-']
+        with tempfile.TemporaryFile() as clip:
+            subprocess.run(reader, stdout=clip, check=True)
+            if clip.tell() == 0:
+                return 0
+            clip.seek(0)
+            # The binding fires on release; allow the remaining modifiers to lift.
+            deadline = time.monotonic() + 0.3
+            process = None
+            cancelled = False
+            try:
+                while process is None or process.poll() is None:
+                    ready, _, _ = select.select(devices, [], [], 0.01)
+                    if any(event.type == ecodes.EV_KEY and event.code in ecodes.KEY and event.value == 1
+                           for device in ready for event in device.read()):
+                        cancelled = True
+                        break
+                    if process is None and time.monotonic() >= deadline:
+                        process = subprocess.Popen(typer, stdin=clip)
+            finally:
+                if process is not None and process.poll() is None:
+                    process.terminate()
+                    try:
+                        process.wait(timeout=1)
+                    except subprocess.TimeoutExpired:
+                        process.kill()
+                        process.wait()
+            if cancelled:
+                # Keep the release binding from restarting after Hyper+V cancels.
+                while any(device.active_keys() for device in devices):
+                    time.sleep(0.01)
+                time.sleep(0.2)
+                return 0
+            return process.returncode
+
+
+if __name__ == '__main__':
+    try:
+        sys.exit(main())
+    except (OSError, RuntimeError, subprocess.CalledProcessError) as error:
+        print(f'clipboard-type: {error}', file=sys.stderr)
+        subprocess.run(['notify-send', 'Clipboard typing failed', str(error)], check=False)
+        sys.exit(1)

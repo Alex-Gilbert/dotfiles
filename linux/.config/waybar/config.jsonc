@@ -7,6 +7,8 @@
     "modules-left": ["clock", "custom/weather", "mpris", "custom/cava"],
     "modules-center": ["sway/workspaces"],
     "modules-right": [
+        "custom/mic-meter",
+        "custom/recording",
         "privacy",
         "cpu",
         "memory",
@@ -317,6 +319,24 @@
         "on-click-right": "swaync-client --toggle-dnd --skip-wait",
         "escape": true,
         "tooltip-format": "Click: notification center\nRight: do not disturb"
+    },
+
+    "custom/mic-meter": {
+        "exec": "~/dotfiles/scripts/waybar-mic-meter",
+        "return-type": "json",
+        "on-click": "~/dotfiles/scripts/waybar-mic-meter toggle",
+        "min-length": 14,
+        "tooltip": true
+    },
+
+    "custom/recording": {
+        "exec": "~/dotfiles/scripts/demo-record status",
+        "return-type": "json",
+        "interval": 1,
+        "hide-empty-text": true,
+        "on-click": "~/dotfiles/scripts/demo-record stop",
+        "on-click-right": "~/dotfiles/scripts/demo-record zoom",
+        "escape": true
     },
 
     "privacy": {

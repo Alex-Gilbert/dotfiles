@@ -1,0 +1,474 @@
+#!/usr/bin/env python3
+"""Sway capture with toggleable mouse-follow zoom and local demo export."""
+import argparse
+from contextlib import contextmanager
+from datetime import datetime
+import fcntl
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import re
+import shlex
+import signal
+import subprocess
+import sys
+import tempfile
+import time
+
+
+def notify(message, detail=""):
+    print(f"{message}: {detail}", file=sys.stderr)
+    try:
+        subprocess.run(["notify-send", "-t", "1800", "Demo recording", message + "\n" + detail],
+                       check=False, timeout=3)
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+
+
+def write_json(path, data):
+    temporary = path.with_suffix(".tmp")
+    temporary.write_text(json.dumps(data, indent=2) + "\n")
+    temporary.replace(path)
+
+
+def process_token(pid):
+    try:
+        # The command name can contain spaces and parentheses.
+        fields = Path(f"/proc/{pid}/stat").read_text().rsplit(")", 1)[1].split()
+        return fields[19] if fields[0] != "Z" else None
+    except FileNotFoundError:
+        return None
+
+
+def alive(process):
+    return bool(process and process_token(process[0]) == process[1])
+
+
+def stop_process(process):
+    # Open the pidfd before checking identity, so a recycled PID cannot be signalled.
+    try:
+        fd = os.pidfd_open(process[0])
+    except ProcessLookupError:
+        return
+    try:
+        if alive(process):
+            signal.pidfd_send_signal(fd, signal.SIGINT)
+    finally:
+        os.close(fd)
+
+
+def state_path(create=True):
+    base = Path(os.environ.get("XDG_RUNTIME_DIR", Path.home() / ".cache")) / "demo-record"
+    if create:
+        base.mkdir(mode=0o700, parents=True, exist_ok=True)
+    return base / "state.json"
+
+
+@contextmanager
+def locked(path):
+    with path.with_suffix(".lock").open("w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        yield
+
+
+def read_state(path):
+    try:
+        state = json.loads(path.read_text())
+    except FileNotFoundError:
+        return None
+    return state if alive(state.get("owner")) or alive(state.get("recorder")) else None
+
+
+def focused_rect(node):
+    if node.get("focused") and (node.get("app_id") or node.get("window")):
+        return node["rect"]
+    for child in node.get("nodes", []) + node.get("floating_nodes", []):
+        found = focused_rect(child)
+        if found:
+            return found
+
+
+def select_geometry(window):
+    if window:
+        tree = json.loads(subprocess.check_output(["swaymsg", "-t", "get_tree"]))
+        rect = focused_rect(tree)
+        if not rect:
+            raise ValueError("Focus an application window first")
+        area = f"{rect['x']},{rect['y']} {rect['width']}x{rect['height']}"
+    else:
+        result = subprocess.run(["slurp"], capture_output=True, text=True)
+        if result.returncode:
+            return None
+        area = result.stdout.strip()
+    match = re.fullmatch(r"(-?\d+),(-?\d+) (\d+)x(\d+)", area)
+    if not match:
+        raise ValueError("Invalid capture geometry")
+    x, y, width, height = map(int, match.groups())
+    if min(width, height) < 2:
+        raise ValueError("Select an area at least 2×2 pixels")
+    outputs = json.loads(subprocess.check_output(["swaymsg", "-t", "get_outputs"]))
+    for output in outputs:
+        rect = output["rect"]
+        if (output.get("active") and x >= rect["x"] and y >= rect["y"]
+                and x + width <= rect["x"] + rect["width"]
+                and y + height <= rect["y"] + rect["height"]):
+            return area, output
+    raise ValueError("Keep the capture area inside one monitor")
+
+
+def video_info(path):
+    return json.loads(subprocess.check_output([
+        "ffprobe", "-v", "error", "-show_streams", "-show_format", "-of", "json", str(path)]))
+
+
+def cursor_binary():
+    source = Path(__file__).with_name("demo-cursor.c")
+    protocols = Path(subprocess.check_output(
+        ["pkg-config", "--variable=pkgdatadir", "wayland-protocols"], text=True).strip())
+    names = ("ext-image-capture-source", "ext-image-copy-capture", "ext-foreign-toplevel-list")
+    xmls = [protocols / "staging" / name / (name + "-v1.xml") for name in names]
+    key = hashlib.sha256(source.read_bytes() + b"".join(p.read_bytes() for p in xmls)).hexdigest()[:16]
+    cache = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "demo-record" / key
+    cache.mkdir(parents=True, exist_ok=True)
+    binary = cache / "demo-cursor"
+    with locked(cache / "build.json"):
+        if not binary.exists():
+            for xml in xmls:
+                for mode, suffix in (("client-header", ".h"), ("private-code", ".c")):
+                    subprocess.run(["wayland-scanner", mode, str(xml), str(cache / (xml.stem + suffix))], check=True)
+            flags = shlex.split(subprocess.check_output(
+                ["pkg-config", "--cflags", "--libs", "wayland-client"], text=True))
+            subprocess.run(["cc", "-O2", "-Wall", "-Wextra", "-Wno-unused-parameter", "-Werror",
+                            "-I", str(cache), str(source), *map(str, cache.glob("*.c")),
+                            *flags, "-o", str(binary.with_suffix(".tmp"))], check=True)
+            binary.with_suffix(".tmp").replace(binary)
+    return binary
+
+
+def cursor_points(project, metadata):
+    match = re.fullmatch(r"(-?\d+),(-?\d+) (\d+)x(\d+)", metadata["geometry"])
+    if not match:
+        raise ValueError("Invalid project geometry")
+    x, y, width, height = map(int, match.groups())
+    if width < 2 or height < 2:
+        raise ValueError("Invalid project dimensions")
+    output = metadata["output_rect"]
+    scale = float(metadata["output_scale"])
+    if not math.isfinite(scale) or scale <= 0:
+        raise ValueError("Invalid output scale")
+    points = []
+    with (project / "cursor.jsonl").open() as stream:
+        for line in stream:
+            event = json.loads(line)
+            if "time" not in event:
+                continue
+            t = float(event["time"]) - metadata["started"]
+            if not math.isfinite(t) or (points and t < points[-1][0]):
+                raise ValueError("Invalid cursor timestamp")
+            if event.get("leave"):
+                points.append((t, None, None))
+                continue
+            if "x" not in event:
+                continue  # Leaving the monitor holds the last known position.
+            px = (float(event["x"]) / scale + output["x"] - x) / width
+            py = (float(event["y"]) / scale + output["y"] - y) / height
+            if not all(math.isfinite(v) for v in (t, px, py)) or (points and t < points[-1][0]):
+                raise ValueError("Invalid cursor telemetry")
+            points.append((t, px, py))
+    return points
+
+
+def camera_frames(toggles, points, duration, width, height, fps):
+    if any(not math.isfinite(t) or t < 0 or (i and t < toggles[i-1]) for i, t in enumerate(toggles)):
+        raise ValueError("Zoom toggles must be ordered, nonnegative seconds")
+    if not any(p[1] is not None for p in points) and toggles:
+        raise ValueError("No pointer positions captured; cannot render mouse-follow zoom")
+    event = sample = 0
+    enabled = False
+    amount = initial = 0.0
+    transition = -1.0
+    cx = target_x = 0.5
+    cy = target_y = 0.5
+    follow = 1 - math.exp(-1 / (fps * 0.12))
+    for frame in range(math.ceil(duration * fps)):
+        t = frame / fps
+        while event < len(toggles) and toggles[event] <= t:
+            u = min(1, max(0, (toggles[event] - transition) / 0.35))
+            amount = initial + (float(enabled) - initial) * u * u * (3 - 2*u)
+            initial, transition, enabled = amount, toggles[event], not enabled
+            event += 1
+        u = min(1, max(0, (t - transition) / 0.35))
+        amount = initial + (float(enabled) - initial) * u * u * (3 - 2*u)
+        while sample < len(points) and points[sample][0] <= t:
+            _, px, py = points[sample]
+            if px is not None:
+                target_x, target_y = min(1, max(0, px)), min(1, max(0, py))
+            sample += 1
+        cx += (target_x - cx) * follow
+        cy += (target_y - cy) * follow
+        zoom = 1 + 0.5 * amount
+        cw, ch = max(2, round(width / zoom)), max(2, round(height / zoom))
+        # Keep the pointer visible even after a jump; the crop never leaves the footage.
+        cx = min(target_x + cw / width * .45, max(target_x - cw / width * .45, cx))
+        cy = min(target_y + ch / height * .45, max(target_y - ch / height * .45, cy))
+        left = min(width - cw, max(0, round(cx * width - cw / 2)))
+        top = min(height - ch, max(0, round(cy * height - ch / 2)))
+        yield t, cw, ch, left, top
+
+
+def zoom_filter(markers, width, height, fps):
+    zoom, cx, cy = "1", "0.5", "0.5"
+    end = -1
+    # Compatibility for takes recorded before mouse-follow zoom was introduced.
+    for marker in markers:
+        start, x, y = (float(marker[key]) for key in ("time", "x", "y"))
+        if not all(math.isfinite(v) for v in (start, x, y)) or start < 0 or not (0 <= x <= 1 and 0 <= y <= 1):
+            raise ValueError("Markers need a nonnegative time and x/y between 0 and 1")
+        if start < end:
+            raise ValueError("Zoom markers must be ordered and at least three seconds apart")
+        end = start + 3
+        ramp = f"clip(min((ot-{start:.6f})/0.45,({end:.6f}-ot)/0.45),0,1)"
+        zoom += f"+0.5*({ramp})*({ramp})*(3-2*({ramp}))"
+        active = f"between(ot,{start:.6f},{end:.6f})"
+        cx = f"if({active},{x:.6f},{cx})"
+        cy = f"if({active},{y:.6f},{cy})"
+    return (f"zoompan=z='{zoom}':x='clip(iw*({cx})-iw/zoom/2,0,iw-iw/zoom)'"
+            f":y='clip(ih*({cy})-ih/zoom/2,0,ih-ih/zoom)':d=1:s={width}x{height}:fps={fps}")
+
+
+def render(project):
+    project = project.resolve()
+    with locked(project / "render.json"):
+        metadata = json.loads((project / "project.json").read_text())
+        fps = int(metadata["fps"])
+        if fps not in (30, 60):
+            raise ValueError("Project fps must be 30 or 60")
+        info = video_info(project / "raw.mkv")
+        video = next(stream for stream in info["streams"] if stream["codec_type"] == "video")
+        video_start = float(video.get("start_time", 0))
+        scale = min(1792 / video["width"], 952 / video["height"], 1)
+        width = max(2, int(video["width"] * scale) // 2 * 2)
+        height = max(2, int(video["height"] * scale) // 2 * 2)
+        markers = metadata.get("markers", [])
+        effect = (zoom_filter(markers, width, height, fps) if markers
+                  else f"scale={width}:{height}:flags=lanczos")
+        separate_cursor = "zoom_toggles" in metadata
+        if separate_cursor:
+            points = cursor_points(project, metadata)
+            duration = float(info["format"]["duration"]) - video_start
+            sample = 0
+            px = py = None
+            with (project / "camera.cmd").open("w") as commands:
+                for t, cw, ch, x, y in camera_frames(metadata["zoom_toggles"], points, duration,
+                                                   video["width"], video["height"], fps):
+                    while sample < len(points) and points[sample][0] <= t:
+                        _, px, py = points[sample]
+                        sample += 1
+                    pointer_x = round(px * video["width"]) if px is not None and 0 <= px < 1 and 0 <= py < 1 else -10000
+                    pointer_y = round(py * video["height"]) if pointer_x != -10000 else -10000
+                    commands.write(f"{t:.6f} crop@follow w {cw}, crop@follow h {ch}, "
+                                   f"crop@follow x {x}, crop@follow y {y}, "
+                                   f"overlay@pointer x {pointer_x}, overlay@pointer y {pointer_y};\n")
+            effect = ("crop@follow=w=iw:h=ih:x=0:y=0:exact=1,"
+                      f"scale={width}:{height}:flags=lanczos")
+        # A fixed canvas keeps the frame still while the footage zooms inside it.
+        left, top = (1920 - width) // 2, (1080 - height) // 2
+        screen = f"[0:v]setpts=PTS-STARTPTS,fps={fps},setsar=1,{effect}[screen];"
+        if separate_cursor:
+            cursor_scale = metadata["output_scale"]
+            screen = (f"[0:v]setpts=PTS-STARTPTS,fps={fps},setsar=1,sendcmd=f=camera.cmd[raw];"
+                      f"[1:v]format=rgba,scale={round(24*cursor_scale)}:{round(30*cursor_scale)}[cursor];"
+                      "[raw][cursor]overlay@pointer=x=-10000:y=-10000:shortest=1[pointed];"
+                      f"[pointed]{effect}[screen];")
+        graph = (screen +
+                 f"color=c=0x1f1f28:s=1920x1080:r={fps},"
+                 f"drawbox=x={left+10}:y={top+14}:w={width}:h={height}:color=black@0.35:t=fill,"
+                 "gblur=sigma=10[bg];"
+                 f"[bg][screen]overlay=x={left}:y={top}:shortest=1,format=yuv420p[out]")
+        temporary = project / "demo.partial.mp4"
+        notify("Exporting framed demo", str(project))
+        try:
+            with (project / "export.log").open("w") as log:
+                subprocess.run([
+                    "ffmpeg", "-nostdin", "-y", "-v", "warning", "-filter_complex_threads", "2",
+                    "-copyts", "-i", str(project / "raw.mkv"),
+                    *(["-loop", "1", "-framerate", str(fps), "-i", str(Path(__file__).with_name("demo-pointer.svg"))]
+                      if separate_cursor else []), "-filter_complex", graph,
+                    "-map", "[out]", "-map", "0:a?", "-af", f"asetpts=PTS-{video_start}/TB",
+                    "-c:v", "libx264", "-crf", "20", "-preset", "fast", "-threads", "4",
+                    "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", str(temporary)
+                ], stderr=log, check=True, cwd=project)
+            temporary.replace(project / "demo.mp4")
+        finally:
+            temporary.unlink(missing_ok=True)
+        notify("Demo ready — original kept", str(project / "demo.mp4"))
+        print(project / "demo.mp4")
+
+
+def record(args, path):
+    project = None
+    recorder = None
+    tracker = None
+    try:
+        with locked(path):
+            state = read_state(path)
+            if state:
+                if state["phase"] == "recording":
+                    stop_process(state["recorder"])
+                    state["phase"] = "stopping"
+                    write_json(path, state)
+                else:
+                    notify("Recording is " + state["phase"])
+                return
+            selection = select_geometry(args.window)
+            if selection is None:
+                return
+            area, output = selection
+            helper = cursor_binary()
+            backend = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "demo-record/wf-recorder"
+            if not backend.exists():
+                subprocess.run([sys.executable, str(Path(__file__).with_name("build-demo-recorder"))], check=True)
+            directory = Path(os.environ.get("DEMO_RECORD_DIR", Path.home() / "Videos" / "demos"))
+            directory.mkdir(parents=True, exist_ok=True)
+            project = Path(tempfile.mkdtemp(prefix=datetime.now().strftime("%Y-%m-%d_%H-%M-%S-"), dir=directory))
+            metadata = {"fps": args.fps, "geometry": area, "output": output["name"],
+                        "output_rect": output["rect"], "output_scale": output.get("scale", 1),
+                        "audio": args.audio, "zoom_toggles": []}
+            write_json(project / "project.json", metadata)
+            state = {"owner": [os.getpid(), process_token(os.getpid())], "project": str(project),
+                     "phase": "preparing"}
+            write_json(path, state)
+            with (project / "cursor.jsonl").open("w") as cursor, (project / "cursor.log").open("w") as log:
+                tracker = subprocess.Popen([str(helper), output["name"]], stdout=cursor, stderr=log)
+            deadline = time.monotonic() + 5
+            while '"ready":true' not in (project / "cursor.jsonl").read_text():
+                if tracker.poll() is not None or time.monotonic() > deadline:
+                    raise RuntimeError(f"Cursor tracking unavailable; see {project / 'cursor.log'}")
+                time.sleep(.02)
+            notify("Starting in 3 seconds", "Hyper+R stops · Hyper+Z toggles mouse-follow zoom")
+            time.sleep(3)
+            # Request frames even on a static desktop: marker times need a continuous clock.
+            command = [str(backend), "-D", "-o", output["name"], "-g", area, "-r", str(args.fps),
+                       "-c", "libx264", "-p", "crf=18", "-p", "preset=ultrafast",
+                       "-x", "yuv420p", "-F", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+                       "-f", str(project / "raw.mkv")]
+            if args.audio:
+                command.append("--audio=" + args.audio)
+            metadata["started"] = time.monotonic()
+            write_json(project / "project.json", metadata)
+            with (project / "capture.log").open("w") as log:
+                recorder = subprocess.Popen(command, stdout=log, stderr=log, start_new_session=True)
+            # Controls use launch time; export rebases them to the recorder's first frame.
+            state.update(recorder=[recorder.pid, process_token(recorder.pid)],
+                         started=metadata["started"], phase="recording")
+            write_json(path, state)
+        try:
+            while True:
+                try:
+                    result = recorder.wait(timeout=.2)
+                    break
+                except subprocess.TimeoutExpired:
+                    if tracker.poll() is not None:
+                        raise RuntimeError(f"Cursor tracking disconnected; see {project / 'cursor.log'}")
+        except KeyboardInterrupt:
+            stop_process(state["recorder"])
+            result = recorder.wait()
+        if result not in (0, -signal.SIGINT, 128 + signal.SIGINT):
+            raise RuntimeError(f"Capture failed; see {project / 'capture.log'}")
+        if tracker.poll() is not None:
+            raise RuntimeError(f"Cursor tracking failed; see {project / 'cursor.log'}")
+        tracker.terminate()
+        tracker.wait()
+        with locked(path):
+            metadata = json.loads((project / "project.json").read_text())
+            match = re.search(r"demo-record-start ([0-9.]+)", (project / "capture.log").read_text())
+            if not match:
+                raise RuntimeError("Recorder did not report its first-frame clock; original kept")
+            first_frame = float(match[1])
+            offset = first_frame - metadata["started"]
+            metadata["zoom_toggles"] = [max(0, t - offset) for t in metadata["zoom_toggles"]]
+            metadata["started"] = first_frame
+            write_json(project / "project.json", metadata)
+            state["phase"] = "exporting"
+            write_json(path, state)
+        render(project)
+    finally:
+        if project:
+            if tracker and tracker.poll() is None:
+                tracker.terminate()
+                tracker.wait()
+            if recorder and recorder.poll() is None:
+                stop_process([recorder.pid, process_token(recorder.pid)])
+                recorder.wait()
+            with locked(path):
+                if path.exists() and json.loads(path.read_text()).get("project") == str(project):
+                    path.unlink()
+
+
+def control(args, path):
+    with locked(path):
+        state = read_state(path)
+        if not state or state["phase"] != "recording":
+            raise ValueError("No active recording")
+        if args.command == "stop":
+            stop_process(state["recorder"])
+            state["phase"] = "stopping"
+            write_json(path, state)
+            return
+        project_file = Path(state["project"]) / "project.json"
+        metadata = json.loads(project_file.read_text())
+        if "zoom_toggles" not in metadata:
+            raise ValueError("Finish this older take; mouse tracking starts with the next recording")
+        now = time.monotonic() - state["started"]
+        metadata["zoom_toggles"].append(round(now, 6))
+        write_json(project_file, metadata)
+        # No notification during capture: the bar shows FOLLOW ON/OFF.
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    commands = parser.add_subparsers(dest="command", required=True)
+    toggle = commands.add_parser("toggle", help="select a region and record, or stop")
+    toggle.add_argument("--window", action="store_true", help="capture focused window's fixed rectangle")
+    toggle.add_argument("--fps", type=int, choices=(30, 60), default=30)
+    toggle.add_argument("--audio", metavar="SOURCE", help="explicit pactl source name; silent by default")
+    commands.add_parser("stop", help="stop only this tool's recording")
+    commands.add_parser("zoom", aliases=["mark"], help="toggle 1.5× mouse-follow zoom until toggled again")
+    commands.add_parser("status", help="Waybar JSON")
+    export = commands.add_parser("render", help="export again after editing project.json")
+    export.add_argument("project", type=Path)
+    args = parser.parse_args()
+    if args.command == "render":
+        state = read_state(state_path(create=False))
+        if (state and Path(state["project"]).resolve() == args.project.resolve()
+                and state["phase"] != "exporting"):
+            raise ValueError("Stop this recording before rendering it")
+        render(args.project)
+        return
+    path = state_path(create=args.command != "status")
+    if args.command == "status":
+        state = read_state(path)
+        text = ""
+        if state:
+            text = state["phase"].upper()
+            if state["phase"] == "recording":
+                elapsed = int(time.monotonic() - state["started"])
+                metadata = json.loads((Path(state["project"]) / "project.json").read_text())
+                following = len(metadata.get("zoom_toggles", [])) % 2
+                text = f"REC {elapsed // 60:02}:{elapsed % 60:02} · FOLLOW {'ON' if following else 'OFF'}"
+        print(json.dumps({"text": text, "class": state["phase"] if state else "idle",
+                          "tooltip": "Hyper+R / click: stop · Hyper+Z / right-click: toggle mouse-follow zoom" if state else ""}))
+    elif args.command == "toggle":
+        record(args, path)
+    else:
+        control(args, path)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (OSError, ValueError, TypeError, KeyError, RuntimeError, subprocess.SubprocessError, StopIteration) as error:
+        notify("Failed — any original footage is kept", str(error))
+        sys.exit(1)

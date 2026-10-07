@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+"""Build a private wf-recorder: cursor-free frames and a precise first-frame clock."""
+import fcntl
+import os
+from pathlib import Path
+import re
+import subprocess
+import tarfile
+import urllib.request
+
+revision = "c5de47440e8e81c92befb696cb69819cdb3bfe8a"
+cache = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "demo-record" / ("wf-" + revision)
+cache.mkdir(parents=True, exist_ok=True)
+with (cache / "build.lock").open("w") as lock:
+    fcntl.flock(lock, fcntl.LOCK_EX)
+    binary = cache / "build/wf-recorder"
+    if not binary.exists():
+        archive = cache / "source.tar.gz"
+        if not archive.exists():
+            with urllib.request.urlopen("https://codeload.github.com/ammen99/wf-recorder/tar.gz/" + revision, timeout=60) as response:
+                archive.with_suffix(".tmp").write_bytes(response.read())
+            archive.with_suffix(".tmp").replace(archive)
+        with tarfile.open(archive) as source:
+            source.extractall(cache, filter="data")
+        source_dir = cache / ("wf-recorder-" + revision)
+        main = source_dir / "src/main.cpp"
+        code = main.read_text()
+        needle = "screencopy_manager, 1, chosen_output->output"
+        assert code.count(needle) == 2
+        code = code.replace(needle, "screencopy_manager, 0, chosen_output->output")
+        needle = "        if (!drop) {\n"
+        assert code.count(needle) == 1
+        code = code.replace(needle, needle + '''            static bool demo_started = false;
+            if (!demo_started) {
+                fprintf(stderr, "demo-record-start %.9f\\n", buffer.base_usec / 1000000.0);
+                demo_started = true;
+            }
+''')
+        main.write_text(code)
+        # FFmpeg 9 removed the old AVCodec capability arrays used by this release.
+        writer = source_dir / "src/frame-writer.cpp"
+        code = writer.read_text()
+        needle = "static const AVRational US_RATIONAL"
+        code = code.replace(needle, '''template<typename T>
+static const T *demo_codec_config(const AVCodec *codec, AVCodecConfig config) {
+    const void *values = nullptr;
+    if (avcodec_get_supported_config(nullptr, codec, config, 0, &values, nullptr) < 0)
+        return nullptr;
+    return static_cast<const T *>(values);
+}
+
+''' + needle)
+        for field, kind, config in (("pix_fmts", "AVPixelFormat", "PIX_FORMAT"),
+                                    ("sample_fmts", "AVSampleFormat", "SAMPLE_FORMAT"),
+                                    ("ch_layouts", "AVChannelLayout", "CHANNEL_LAYOUT")):
+            code = re.sub(r"codec\s*->\s*" + field,
+                          f"demo_codec_config<{kind}>(codec, AV_CODEC_CONFIG_{config})", code)
+        writer.write_text(code)
+        subprocess.run(["meson", "setup", "--wipe", str(cache / "build"), str(source_dir),
+                        "--buildtype=release"], check=True)
+        subprocess.run(["meson", "compile", "-C", str(cache / "build"), "-j", "4"],
+                       check=True)
+    entry = cache.parent / "wf-recorder"
+    temporary = entry.with_suffix(".tmp")
+    temporary.unlink(missing_ok=True)
+    temporary.symlink_to(binary)
+    temporary.replace(entry)
+    print(entry)

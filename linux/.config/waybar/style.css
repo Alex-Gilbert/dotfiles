@@ -61,6 +61,8 @@ window#waybar {
 }
 
 #clock,
+#custom-mic-meter,
+#custom-recording,
 #privacy,
 #custom-tailscale,
 #custom-kmonad,
@@ -90,6 +92,17 @@ window#waybar {
     color: @fuji-white;
     background: @sumi-ink;
     border-left: 1px solid @sumi-ink-3;
+}
+
+#custom-mic-meter.off { color: @fuji-gray; }
+#custom-mic-meter.low { color: @muted-blue; }
+#custom-mic-meter.good { color: @muted-green; }
+#custom-mic-meter.hot { color: @muted-yellow; }
+#custom-mic-meter.clip { color: @fuji-white; background: @winter-red; }
+
+#custom-recording.recording {
+    color: @fuji-white;
+    background: @winter-red;
 }
 
 #custom-power {
