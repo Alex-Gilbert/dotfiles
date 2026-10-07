@@ -1,0 +1,118 @@
+;; KMonad config: Voyager-style Dvorak for the MacBook built-in keyboard
+;; Mirrors ZSA Voyager layout: Dvorak, home row mods, layer-tap thumbs
+;;
+;; Position-for-position port of voyager.kbd (Razer Blade). Differences:
+;;   - thumbs are the two Cmd keys (the keys beside space on a Mac), so Cmd
+;;     itself is where GUI is on the Voyager: hold Caps, hold `-`
+;;   - top row emits the Mac media keys printed on the caps; F1-F12 live on
+;;     the fkeys layer as on the Voyager
+;;   - no right Ctrl: its bindings (0 / F10) sit on right Option
+;; Keep the layers in sync with voyager.kbd by hand.
+
+(defcfg
+  ;; Product string filter: only the built-in keyboard is grabbed, the real
+  ;; Voyager passes through untouched.
+  input  (iokit-name "Apple Internal Keyboard / Trackpad")
+  ;; `kext` is kmonad's name for the Karabiner virtual keyboard sink, dext included
+  output (kext)
+  fallthrough false
+  allow-cmd false
+)
+
+;; Physical MacBook Pro ANSI layout (Touch ID is not a HID key)
+(defsrc
+  esc   f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12
+  grv   1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab   q    w    e    r    t    y    u    i    o    p    [    ]    \
+  caps  a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft  z    x    c    v    b    n    m    ,    .    /    rsft up
+  fn    lctl lalt lmet           spc            rmet ralt left down rght
+)
+
+;; Aliases for readability
+
+;; Home row mods (tap-hold 200ms tap 200ms hold)
+(defalias
+  ;; Left home row
+  a_esc (tap-hold-next-release 200 esc lmet)    ;; tap=Esc, hold=Cmd
+  a_a   (tap-hold-next-release 200 a (around lctl (around lalt (around lmet lsft))))  ;; tap=A, hold=Hyper
+  a_u   (tap-hold-next-release 200 u lctl)      ;; tap=U, hold=Ctrl
+  a_quo (tap-hold-next-release 200 ' lalt)      ;; tap=', hold=Option
+
+  ;; Right home row
+  a_h   (tap-hold-next-release 200 h rctl)      ;; tap=H, hold=Ctrl
+  a_s   (tap-hold-next-release 200 s (around rctl (around ralt (around rmet rsft))))  ;; tap=S, hold=Hyper
+  a_min (tap-hold-next-release 200 - rmet)       ;; tap=-, hold=Cmd
+  a_z   (tap-hold-next-release 200 z ralt)       ;; tap=Z, hold=Option
+
+  ;; Thumb keys (layer-tap)
+  a_lth (tap-hold-next-release 200 bspc (layer-toggle numbers))   ;; lcmd: tap=Bksp, hold=numbers
+  a_spc (tap-hold-next-release 200 spc  (layer-toggle nav))       ;; spc:  tap=Space, hold=nav
+  a_rth (tap-hold-next-release 200 ret  (layer-toggle symbols))   ;; rcmd: tap=Enter, hold=symbols
+
+  ;; Shifted symbols for top row
+  a_lt  S-,     ;; <
+  a_gt  S-.     ;; >
+  a_lc  S-[     ;; {
+  a_rc  S-]     ;; }
+  a_lp  S-9     ;; (
+  a_rp  S-0     ;; )
+  a_at  S-2     ;; @
+  a_und S--     ;; _
+
+  ;; Layer 2 (numbers) - left side home row mods for one-handed use
+  n_hyp (around lctl (around lalt (around lmet lsft)))  ;; Hyper
+
+  ;; F-keys layer toggle from numbers layer
+  a_fky (tap-hold-next-release 200 lsft (layer-toggle fkeys))
+)
+
+;; Base layer: Dvorak
+(deflayer dvorak
+  esc   brdn brup mctl spot dict dnd  prev pp   next mute vold volu
+  del   [    @a_lt @a_lc @a_lp @a_at @a_und @a_rp @a_rc @a_gt ]  caps XX   del
+  tab   ;    ,    .    p    y    f    g    c    r    l    /    XX   XX
+  @a_esc @a_a o   e    @a_u i    d    @a_h t    n    @a_s @a_min ret
+  lsft  @a_quo q  j    k    x    b    m    w    v    @a_z rsft up
+  fn    lctl lalt @a_lth         @a_spc         @a_rth ralt left down rght
+)
+
+;; Layer 1: Navigation & Media (hold Space)
+(deflayer nav
+  _     _    _    _    _    _    _    _    _    _    _    _    _
+  _     _    _    _    _    _    _    _    _    _    _    _    _    _
+  volu  pp   next XX   XX   XX   XX   home XX   XX   rght XX   XX   XX
+  mute  lmet lalt pgdn pgup XX   XX   left XX   ralt rmet XX   XX
+  lsft  lctl XX   down up   XX   XX   XX   XX   XX   rctl rsft _
+  _     _    _    XX             _              XX   _    _    _    _
+)
+
+;; Layer 2: Numbers (hold left Cmd)
+(deflayer numbers
+  _     _    _    _    _    _    _    _    _    _    _    _    _
+  XX    XX   XX   S-6  S-5  XX   XX   S-3  S-4  XX   XX   XX   XX   XX
+  XX    XX   ,    .    XX   XX   S-6  7    8    9    S-4  S-/  XX   XX
+  _     @n_hyp lalt lsft lctl XX S-8  4    5    6    S-=  @a_und XX
+  @a_fky XX  XX   XX   XX   XX   XX   1    2    3    S-3  XX   _
+  _     _    _    _              0              S-5  0    _    _    _
+)
+
+;; Layer 3: Symbols (hold right Cmd)
+(deflayer symbols
+  _     _    _    _    _    _    _    _    _    _    _    _    _
+  XX    grv  S-/  S-6  S-5  XX   XX   S-3  S-4  XX   XX   XX   XX   XX
+  S-5   S-;  S-1  S-8  /    S-4  XX   XX   XX   XX   XX   XX   XX   XX
+  esc   S-5  S-7  S-=  =    S-grv XX  rctl rsft ralt rmet _    XX
+  \     S-'  S-\  -    \    S-2  XX   XX   XX   XX   XX   XX   _
+  _     _    _    bspc           tab            _    _    _    _    _
+)
+
+;; Layer 4: F-keys (from numbers layer via LShift)
+(deflayer fkeys
+  _     _    _    _    _    _    _    _    _    _    _    _    _
+  XX    XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX
+  XX    XX   XX   XX   XX   XX   XX   f7   f8   f9   XX   XX   XX   XX
+  XX    lmet lalt lsft lctl XX   f12  f4   f5   f6   XX   XX   XX
+  _     XX   XX   XX   XX   XX   XX   f1   f2   f3   XX   XX   _
+  _     _    _    XX             XX             f11  f10  _    _    _
+)

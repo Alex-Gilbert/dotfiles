@@ -282,6 +282,7 @@ main() {
     echo "3. Configure git: git config --global user.email 'your@email.com'"
     echo "4. Set up SSH keys for GitHub"
     echo "5. Open tmux and press Alt+Space, I to install tmux plugins"
+    echo "6. Optional: Voyager layout on the built-in keyboard: install Karabiner-Elements, then scripts/setup-kmonad-macos.sh"
 }
 
 # Run main function
