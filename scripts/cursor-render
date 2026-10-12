@@ -1,0 +1,144 @@
+#!/usr/bin/env python3
+"""cursor-render — draw the virtual cursor from a screen-record session as its own layer.
+
+  cursor-render SESSION_DIR [--size 48]
+
+Reads events.jsonl + video.mkv, writes SESSION_DIR/cursor.mov: same size, 30 fps and
+length as video.mkv, transparent except the cursor (QuickTime Animation, alpha). Put
+it on the track above video.mkv in Kdenlive, both at 0:00, and they line up.
+
+Same feel as WaytchMe's renderer: 80 ms mean takes out hand jitter, motion blur
+streaks along each frame's movement (180-degree shutter), and clicks squash
+(shrink on press, hold through a drag, overshoot on release). Clicks land on the
+exact logged pixel and stay sharp.
+"""
+import argparse
+import bisect
+import functools
+import json
+import math
+import subprocess
+import tempfile
+from pathlib import Path
+
+import numpy as np
+from PIL import Image, ImageDraw
+
+FPS = 30
+ARROW = [(0, 0), (0, .85), (.22, .66), (.36, .98), (.48, .93), (.35, .62), (.62, .62)]
+SMOOTH = 0.08   # seconds each side of the jitter mean
+BLUR = 48       # streak budget each side of the cursor, px; longest streak is 2*BLUR
+PRESS, RELEASE = [(-1, 1), (1, .85)], [(0, .85), (2, 1.06), (4, 1)]  # (frame offset, scale)
+
+p = argparse.ArgumentParser()
+p.add_argument("session", type=Path)
+p.add_argument("--size", type=int, default=48, help="cursor height in video pixels")
+a = p.parse_args()
+
+probe = json.loads(subprocess.check_output([
+    "ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
+    "stream=width,height:format=duration", "-of", "json", str(a.session / "video.mkv")]))
+W, H = probe["streams"][0]["width"], probe["streams"][0]["height"]
+frames = math.ceil(float(probe["format"]["duration"]) * FPS)
+
+events = [json.loads(line) for line in (a.session / "events.jsonl").read_text().splitlines()]
+points = [e for e in events if "x" in e and e["type"] != "wheel"]
+if not points:
+    raise SystemExit("cursor-render: no mouse events in events.jsonl")
+
+# --- path: jitter mean over motion samples; button positions are authoritative ---
+times = [e["t"] for e in points]
+path = []
+for e in points:
+    if e["type"] == "motion":
+        near = [q for q in points[bisect.bisect_left(times, e["t"] - SMOOTH):
+                                  bisect.bisect_right(times, e["t"] + SMOOTH)] if q["type"] == "motion"]
+        path.append((e["t"], sum(q["x"] for q in near) / len(near), sum(q["y"] for q in near) / len(near)))
+    else:
+        path.append((e["t"], e["x"], e["y"]))
+ptimes = [t for t, _, _ in path]
+
+
+def position(t):
+    i = bisect.bisect_right(ptimes, t)
+    if i == 0 or i == len(path):
+        return path[min(i, len(path) - 1)][1:]
+    (t0, x0, y0), (t1, x1, y1) = path[i - 1], path[i]
+    f = (t - t0) / (t1 - t0) if t1 > t0 else 1
+    return x0 + (x1 - x0) * f, y0 + (y1 - y0) * f
+
+
+# --- per-frame clicks and squash keys ---
+click_at, keys = {}, [(0, 1.0)]
+for e in events:
+    if e["type"] == "button":
+        f = max(0, round(e["t"] * FPS))
+        click_at.setdefault(f, (e["x"], e["y"]))
+        keys += [(f + o, s) for o, s in (PRESS if e["state"] == "press" else RELEASE)]
+keys.sort()
+ktimes = [f for f, _ in keys]
+
+
+def squash(frame):
+    i = bisect.bisect_right(ktimes, frame)
+    if i == len(keys):
+        return keys[-1][1]
+    (f0, s0), (f1, s1) = keys[i - 1], keys[i]
+    u = (frame - f0) / (f1 - f0) if f1 > f0 else 1
+    return s0 + (s1 - s0) * u * u * (3 - 2 * u)  # smoothstep, like Blender's eased keys
+
+
+# --- sprite: arrow scaled about its tip, streaked by its motion, on a fixed canvas ---
+SS = 4  # supersample for antialiased edges
+base = Image.new("RGBA", (a.size * SS + 8 * SS,) * 2, (0, 0, 0, 0))
+ImageDraw.Draw(base).polygon([(4 * SS + x * a.size * SS, 4 * SS + y * a.size * SS) for x, y in ARROW],
+                             fill="white", outline="black", width=max(1, a.size // 16) * SS)
+TIP = 4 * SS                       # tip offset inside `base`, supersampled px
+HX = HY = BLUR + 8                 # tip position on the sprite canvas
+CW = CH = HX + BLUR + a.size * 2   # room for the overshoot and the streak
+
+
+@functools.lru_cache(maxsize=1024)
+def sprite(dx, dy, scale100):
+    s = scale100 / 100
+    side = round(base.width * s / SS)
+    img = np.asarray(base.resize((side, side), Image.LANCZOS), np.float32) / 255
+    img[..., :3] *= img[..., 3:]  # premultiply so blurred edges average correctly
+    canvas = np.zeros((CH, CW, 4), np.float32)
+    tip = round(TIP * s / SS)
+    canvas[HY - tip:HY - tip + side, HX - tip:HX - tip + side] = img
+    length = min(math.hypot(dx, dy) * .5, 2 * BLUR)
+    if length >= 1.5:
+        ux, uy = dx / math.hypot(dx, dy), dy / math.hypot(dx, dy)
+        offsets = np.linspace(-length / 2, length / 2, int(length) + 1)
+        canvas = sum(np.roll(canvas, (round(uy * o), round(ux * o)), (0, 1)) for o in offsets) / len(offsets)
+    alpha = canvas[..., 3:]
+    rgb = np.divide(canvas[..., :3], alpha, out=np.zeros_like(canvas[..., :3]), where=alpha > 0)
+    return (np.concatenate((rgb, alpha), 2) * 255 + .5).astype(np.uint8).tobytes()
+
+
+with tempfile.TemporaryDirectory() as tmp:
+    cmds = Path(tmp) / "cmds.txt"
+    plan, prev = [], None
+    for f in range(frames):
+        x, y = click_at.get(f) or position(f / FPS)
+        dx, dy = (0, 0) if f in click_at or prev is None else (x - prev[0], y - prev[1])
+        prev = (x, y)
+        plan.append((round(dx), round(dy), round(squash(f) * 100), round(x) - HX, round(y) - HY))
+    # a hair before each frame's pts, so the move lands on that frame, not the next
+    cmds.write_text("".join(f"{max(0, f / FPS - 1e-4):.4f} overlay@c x {px}, overlay@c y {py};\n"
+                            for f, (_, _, _, px, py) in enumerate(plan)))
+
+    out = a.session / "cursor.mov"
+    ffmpeg = subprocess.Popen([
+        "ffmpeg", "-hide_banner", "-loglevel", "warning", "-stats", "-y",
+        "-f", "lavfi", "-i", f"color=c=black@0:s={W}x{H}:r={FPS},format=rgba",
+        "-f", "rawvideo", "-pix_fmt", "rgba", "-s", f"{CW}x{CH}", "-r", str(FPS), "-i", "-",
+        "-filter_complex", f"[0]sendcmd=f={cmds}[bg];[bg][1]overlay@c=format=rgb:eval=frame:shortest=1",
+        "-frames:v", str(frames), "-c:v", "qtrle", str(out)], stdin=subprocess.PIPE)
+    for dx, dy, s, _, _ in plan:
+        ffmpeg.stdin.write(sprite(dx, dy, s))
+    ffmpeg.stdin.close()
+    if ffmpeg.wait():
+        raise SystemExit("cursor-render: ffmpeg failed")
+print(f"wrote {out}")

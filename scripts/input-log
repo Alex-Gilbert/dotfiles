@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+"""input-log — log X11 key/mouse events for screen-record (SIGTERM stops it).
+
+  input-log SESSION_DIR
+
+Writes SESSION_DIR/events.jsonl as it goes, one event per line with `wall`
+(unix seconds). On exit, reads the video's start from SESSION_DIR/ffmpeg.log and
+adds `t` (seconds into video.mkv) to every line, so agents can seek straight to it.
+
+  {"t": 3.21, "type": "button", "button": "left", "state": "press", "x": 1910, "y": 1033}
+  {"t": 4.02, "type": "wheel", "dy": -1, "x": 1910, "y": 1033}
+  {"t": 5.50, "type": "key", "key": "s", "state": "press", "mods": ["ctrl"]}
+  {"t": 5.51, "type": "motion", "x": 1920, "y": 1040}
+
+x/y are screen pixels == video pixels (x11grab is 1:1). Logs EVERY keystroke,
+passwords included: the file is 0600, don't type secrets while recording.
+"""
+import json
+import os
+import re
+import signal
+import sys
+import time
+from pathlib import Path
+
+from Xlib import X, XK, display
+from Xlib.ext import record
+from Xlib.protocol import rq
+
+MOTION_GAP = 1 / 30  # ponytail: one motion per video frame; raise if agents need finer paths
+BUTTONS = {1: "left", 2: "middle", 3: "right", 8: "back", 9: "forward"}
+WHEEL = {4: (0, 1), 5: (0, -1), 6: (-1, 0), 7: (1, 0)}  # X button -> (dx, dy), up/right positive
+MODS = {X.ShiftMask: "shift", X.ControlMask: "ctrl", X.Mod1Mask: "alt", X.Mod4Mask: "super"}
+
+session = Path(sys.argv[1])
+events = session / "events.jsonl"
+local, rec = display.Display(), display.Display()
+last_motion = 0.0
+
+
+KEYSYM_NAMES = {getattr(XK, n): n[3:] for n in reversed(dir(XK)) if n.startswith("XK_")}  # aliases: first name wins (F12, not L2)
+
+
+def key_name(keycode, state):
+    shifted = local.keycode_to_keysym(keycode, 1) if state & X.ShiftMask else 0
+    sym = shifted or local.keycode_to_keysym(keycode, 0)
+    return KEYSYM_NAMES.get(sym, str(keycode))  # "a", "A", "Return", "BackSpace", "Control_L"
+
+
+def to_event(e, wall):
+    global last_motion
+    xy = {"x": e.root_x, "y": e.root_y}
+    if e.type == X.MotionNotify:
+        if wall - last_motion < MOTION_GAP:
+            return None
+        last_motion = wall
+        return {"type": "motion", **xy}
+    if e.type in (X.ButtonPress, X.ButtonRelease):
+        if e.detail in WHEEL:  # X sends press+release per detent; keep the press
+            dx, dy = WHEEL[e.detail]
+            return {"type": "wheel", "dx": dx, "dy": dy, **xy} if e.type == X.ButtonPress else None
+        state = "press" if e.type == X.ButtonPress else "release"
+        return {"type": "button", "button": BUTTONS.get(e.detail, str(e.detail)), "state": state, **xy}
+    state = "press" if e.type == X.KeyPress else "release"
+    mods = [n for m, n in MODS.items() if e.state & m]  # mods held at the event, before this key
+    return {"type": "key", "key": key_name(e.detail, e.state), "state": state, "mods": mods}
+
+
+def record_events(out):
+    ctx = rec.record_create_context(0, [record.AllClients], [{
+        "core_requests": (0, 0), "core_replies": (0, 0), "ext_requests": (0, 0, 0, 0),
+        "ext_replies": (0, 0, 0, 0), "delivered_events": (0, 0),
+        "device_events": (X.KeyPress, X.MotionNotify), "errors": (0, 0),
+        "client_started": False, "client_died": False}])
+
+    def callback(reply):
+        if reply.category != record.FromServer:
+            return
+        wall, data = time.time(), reply.data
+        while data:
+            e, data = rq.EventField(None).parse_binary_value(data, rec.display, None, None)
+            ev = to_event(e, wall)
+            if ev:
+                out.write(json.dumps({"wall": round(wall, 4), **ev}) + "\n")
+                out.flush()
+
+    rec.record_enable_context(ctx, callback)  # blocks until SIGTERM
+
+
+def add_video_time():
+    log = (session / "ffmpeg.log").read_text(errors="replace")
+    m = re.search(r"Input #0, x11grab.*?start: ([\d.]+)", log, re.S)
+    if not m:
+        sys.exit("input-log: no video start in ffmpeg.log; events.jsonl keeps wall times only")
+    start = float(m.group(1))
+    lines = [json.loads(line) for line in events.read_text().splitlines()]
+    events.write_text("".join(
+        json.dumps({"t": round(e["wall"] - start, 3), **e}) + "\n" for e in lines if e["wall"] >= start))
+
+
+signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
+fd = os.open(events, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+try:
+    with os.fdopen(fd, "w") as out:
+        record_events(out)
+finally:
+    add_video_time()
