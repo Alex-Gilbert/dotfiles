@@ -8,8 +8,8 @@
 # to encode/stall), aresample fills any clock gap instead of skipping. MKV, so a
 # crash still leaves a playable file. Stop with q (or Ctrl-C).
 set -euo pipefail
-dir=${1:-$HOME/Videos/rec-$(date +%F_%H-%M-%S)}
-mkdir -m 700 "$dir"
+dir=${1:-$HOME/Videos/rec/$(date +%F_%H-%M-%S)}   # ~/Videos/rec syncs to archblade (Syncthing)
+mkdir -p "$(dirname "$dir")"; mkdir -m 700 "$dir"
 sink=$(pactl get-default-sink).monitor
 mic=$(pactl get-default-source)
 geo=$(xdpyinfo | awk '/dimensions:/{print $2}')
