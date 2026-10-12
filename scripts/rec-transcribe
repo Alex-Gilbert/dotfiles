@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+"""rec-transcribe — transcribe a screen-record session's mic track (Parakeet on the speech server).
+
+  rec-transcribe SESSION_DIR
+
+Writes SESSION_DIR/transcript.json; times are seconds into video.mkv (the mic is
+audio track 2, which starts with the video):
+  {"model": "parakeet",
+   "sentences": [{"t": 1.2, "end": 2.0, "text": "Mark."}, ...],
+   "words":     [{"t": 1.2, "end": 1.5, "text": "Mark", "confidence": 0.99}, ...]}
+Same server and request as WaytchMe's transcribe.py; WAYTCHME_ASR_URL / _MODEL override.
+"""
+import json
+import os
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+URL = os.environ.get("WAYTCHME_ASR_URL", "https://llama.gilbert.haus")
+MODEL = os.environ.get("WAYTCHME_ASR_MODEL", "parakeet")
+
+session = Path(sys.argv[1])
+with tempfile.TemporaryDirectory() as tmp:
+    clip = f"{tmp}/mic.wav"
+    subprocess.run(["ffmpeg", "-v", "error", "-i", str(session / "video.mkv"), "-map", "0:a:1",
+                    "-ac", "1", "-ar", "16000", clip], check=True)
+    out = subprocess.run(["curl", "-sS", "--fail-with-body", "-m", "3600", f"{URL}/v1/audio/transcriptions",
+                          "-F", f"model={MODEL}", "-F", f"file=@{clip}", "-F", "response_format=verbose_json",
+                          "-F", "timestamp_granularities[]=word", "-F", "max_context=0"],
+                         capture_output=True, text=True)
+if out.returncode:
+    sys.exit(f"rec-transcribe: speech server at {URL} failed: {out.stderr.strip() or out.stdout[:300]}")
+response = json.loads(out.stdout)
+
+sentences, words = [], []
+for seg in response.get("segments", []):
+    if seg["text"].strip():
+        sentences.append({"t": round(seg["start"], 3), "end": round(seg["end"], 3), "text": seg["text"].strip()})
+    for w in seg.get("words") or []:
+        # the server sends sub-word tokens ("pal" + "ette"); a leading space starts a new word
+        if words and not w["word"].startswith(" "):
+            words[-1]["text"] += w["word"]
+            words[-1]["end"] = round(w["end"], 3)
+            words[-1]["confidence"] = min(words[-1]["confidence"], w.get("probability", 1))
+        else:
+            words.append({"t": round(w["start"], 3), "end": round(w["end"], 3), "text": w["word"].strip(),
+                          "confidence": w.get("probability", 1)})
+
+(session / "transcript.json").write_text(json.dumps(
+    {"model": MODEL, "sentences": sentences, "words": words}, indent=1) + "\n")
+print(f"rec-transcribe: {len(words)} words, {len(sentences)} sentences -> {session / 'transcript.json'}")

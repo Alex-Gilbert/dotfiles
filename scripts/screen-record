@@ -3,6 +3,7 @@
 #   video.mkv     track 1 = desktop sound (default sink monitor), track 2 = mic (default source)
 #   events.jsonl  key/mouse events, `t` = seconds into video.mkv (see input-log)
 #   ffmpeg.log
+# then cursor.mov, transcript.json, markers.json, timeline.otio (see the post steps at the end)
 # NVENC so the CPU stays free. Audio-first: big input queues, lossless PCM (nothing
 # to encode/stall), aresample fills any clock gap instead of skipping. MKV, so a
 # crash still leaves a playable file. Stop with q (or Ctrl-C).
@@ -25,4 +26,12 @@ ffmpeg -hide_banner -stats \
   -af aresample=async=1000 -c:a pcm_s24le -ar 48000 \
   "$dir/video.mkv" 2> >(tee "$dir/ffmpeg.log" >&2) || true
 kill "$logger"; wait "$logger" || true
-echo "done: $dir ($(wc -l < "$dir/events.jsonl") input events)"
+echo "recorded: $dir ($(wc -l < "$dir/events.jsonl") input events)"
+
+# post: cursor layer, transcript, spoken Mark:/Delete mark -> Kdenlive markers.
+# Each step is rerunnable by hand; a failure (e.g. speech server down) keeps the recording.
+here=$(dirname "$0")
+for step in cursor-render rec-transcribe rec-markers; do
+    "$here/$step" "$dir" || echo "screen-record: $step failed, rerun: $here/$step $dir" >&2
+done
+echo "Kdenlive: new project ${geo} 30fps, Project > Import > OpenTimelineIO > $dir/timeline.otio"

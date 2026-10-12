@@ -1,0 +1,97 @@
+#!/usr/bin/env python3
+"""rec-markers — turn spoken commands in a session's transcript into Kdenlive markers.
+
+  rec-markers SESSION_DIR
+
+Commands are sentences that START with the keyword (so "mark" mid-sentence is content):
+  "Mark: Adjusting CGRAM."  -> green marker "Adjusting CGRAM" where you said "mark"
+                               (title = rest of the sentence, or the next sentence if
+                               the transcriber split "Mark." off on its own)
+  "Delete mark."            -> red "CUT ▶ <title>" at the last mark, red "◀ CUT" at the end
+                               of the "delete mark" sentence: everything between goes
+                               (also "delete that/the/this mark")
+You do the cutting; these only show where.
+
+Writes SESSION_DIR/markers.json (for agents and tools) and SESSION_DIR/timeline.otio:
+V2 cursor.mov (if rendered) over V1 video.mkv, A1 desktop.wav, A2 mic.wav (both copied
+out of video.mkv on first run), markers on the
+video clip so they ride along when you cut and ripple. In Kdenlive: new project at
+the recording's size and 30 fps, then Project > Import > OpenTimelineIO.
+"""
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+import opentimelineio as otio
+
+FPS = 30
+session = Path(sys.argv[1]).resolve()
+transcript = json.loads((session / "transcript.json").read_text())
+sentences = transcript["sentences"]
+
+
+def words(text):
+    return re.sub(r"[^\w\s]", " ", text.lower()).split()
+
+
+markers, last_mark, skip = [], None, set()
+for i, s in enumerate(sentences):
+    w = words(s["text"])
+    if i in skip or not w:
+        continue
+    if w[0] == "mark":
+        title = re.sub(r"^\W*mark\W*", "", s["text"], flags=re.I).strip(" .,:;!?")
+        if not title and i + 1 < len(sentences):
+            title = sentences[i + 1]["text"].strip(" .,:;!?")
+            skip.add(i + 1)
+        last_mark = {"t": s["t"], "kind": "mark", "title": title or "(untitled)"}
+        markers.append(last_mark)
+    elif w[0] == "delete" and (w[1:2] == ["mark"] or (w[1:2] in (["that"], ["the"], ["this"]) and w[2:3] == ["mark"])):
+        # the CUT start replaces the mark it deletes (Kdenlive keeps one marker per frame anyway)
+        cut = {"t": 0.0, "kind": "cut_start", "title": "CUT ▶ start of recording"}
+        if last_mark:
+            markers.remove(last_mark)
+            cut.update(t=last_mark["t"], title=f"CUT ▶ {last_mark['title']}")
+        markers.append(cut)
+        markers.append({"t": s["end"], "kind": "cut_end", "title": "◀ CUT"})
+        last_mark = None  # a second "delete mark" needs a new mark first
+markers.sort(key=lambda m: m["t"])
+(session / "markers.json").write_text(json.dumps(markers, indent=1) + "\n")
+
+# --- timeline ---
+RT = otio.opentime.RationalTime
+
+
+def clip(name, file):
+    seconds = float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration",
+                                             "-of", "csv=p=0", str(session / file)]))
+    span = otio.opentime.TimeRange(RT(0, FPS), RT(round(seconds * FPS), FPS))
+    return otio.schema.Clip(name=name, source_range=span, media_reference=otio.schema.ExternalReference(
+        target_url=str(session / file), available_range=span))
+
+
+COLOR = {"mark": otio.schema.MarkerColor.GREEN, "cut_start": otio.schema.MarkerColor.RED,
+         "cut_end": otio.schema.MarkerColor.RED}
+video = clip("screen", "video.mkv")
+for m in markers:
+    video.markers.append(otio.schema.Marker(
+        name=m["title"], comment=m["title"], color=COLOR[m["kind"]],
+        marked_range=otio.opentime.TimeRange(RT(round(m["t"] * FPS), FPS), RT(0, FPS))))
+
+tl = otio.schema.Timeline(name=session.name)
+tl.tracks.append(otio.schema.Track(name="Screen", kind="Video", children=[video]))
+if (session / "cursor.mov").exists():
+    tl.tracks.append(otio.schema.Track(name="Cursor", kind="Video", children=[clip("cursor", "cursor.mov")]))
+# OTIO can't pick one of video.mkv's two audio streams, so each gets its own wav (stream copy, no re-encode)
+for name, stream in (("desktop", "0:a:0"), ("mic", "0:a:1")):
+    if not (session / f"{name}.wav").exists():
+        subprocess.run(["ffmpeg", "-v", "error", "-i", str(session / "video.mkv"), "-map", stream,
+                        "-c:a", "copy", str(session / f"{name}.wav")], check=True)
+    tl.tracks.append(otio.schema.Track(name=name.title(), kind="Audio", children=[clip(name, f"{name}.wav")]))
+otio.adapters.write_to_file(tl, str(session / "timeline.otio"))
+
+for m in markers:
+    print(f"{int(m['t'] // 60)}:{m['t'] % 60:05.2f}  {m['title']}")
+print(f"rec-markers: {len(markers)} markers -> {session / 'markers.json'}, {session / 'timeline.otio'}")
