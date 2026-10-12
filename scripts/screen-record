@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# screen-record — 4K30 X11 grab + desktop audio + mic, NVENC so the CPU stays free.
+# Audio-first: big input queues, lossless PCM (nothing to encode/stall), aresample
+# fills any clock gap instead of skipping. MKV, so a crash still leaves a playable file.
+#   track 1 = desktop sound (default sink monitor), track 2 = mic (default source)
+# Stop with q (or Ctrl-C).
+set -euo pipefail
+out=${1:-$HOME/Videos/rec-$(date +%F_%H-%M-%S).mkv}
+sink=$(pactl get-default-sink).monitor
+mic=$(pactl get-default-source)
+geo=$(xdpyinfo | awk '/dimensions:/{print $2}')
+echo "recording $geo -> $out"
+exec ffmpeg -hide_banner -loglevel warning -stats \
+  -thread_queue_size 1024 -f x11grab -framerate 30 -video_size "$geo" -i "${DISPLAY:-:0}" \
+  -thread_queue_size 8192 -f pulse -fragment_size 4096 -i "$sink" \
+  -thread_queue_size 8192 -f pulse -fragment_size 4096 -i "$mic" \
+  -map 0:v -map 1:a -map 2:a \
+  -c:v hevc_nvenc -preset p5 -tune hq -rc vbr -cq 18 -b:v 0 -pix_fmt yuv420p \
+  -af aresample=async=1000 -c:a pcm_s24le -ar 48000 \
+  "$out"

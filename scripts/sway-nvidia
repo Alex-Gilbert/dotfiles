@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# sway-nvidia — sway on the RTX card instead of the iGPU, for smooth 4K screen recording.
+#
+# Same sway config and look as the iGPU day, so takes match the old ones. Move the DP cable
+# to the nvidia card, then from a tty (tty2: tty1's autolaunch would startx):
+#   ~/dotfiles/scripts/sway-nvidia
+# Shares VRAM with llama-swap while it runs; go back by moving the cable and logging in on tty1.
+set -euo pipefail
+card=$(readlink -f /dev/dri/by-path/pci-0000:01:00.0-card)   # wlroots splits on ':', so pass /dev/dri/cardN
+export WLR_DRM_DEVICES=$card GBM_BACKEND=nvidia-drm __GLX_VENDOR_LIBRARY_NAME=nvidia LIBVA_DRIVER_NAME=nvidia
+exec sway --unsupported-gpu
