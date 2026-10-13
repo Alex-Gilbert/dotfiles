@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # screen-record — 4K30 X11 grab (no cursor: cursor-render draws it as its own layer) + desktop audio + mic + key/mouse log, as one session dir:
-#   video.mkv     track 1 = desktop sound (default sink monitor), track 2 = mic (default source)
+#   video.mkv     track 1 = desktop sound (default sink monitor), track 2 = mic (both picked at start)
 #   events.jsonl  key/mouse events, `t` = seconds into video.mkv (see input-log)
 #   ffmpeg.log
 # then cursor.mov, transcript.json, markers.json, timeline.otio (see the post steps at the end)
@@ -9,9 +9,17 @@
 # crash still leaves a playable file. Stop with q (or Ctrl-C).
 set -euo pipefail
 dir=${1:-$HOME/Videos/rec/$(date +%F_%H-%M-%S)}   # ~/Videos/rec syncs to archblade (Syncthing)
+# pick PROMPT DEFAULT CHOICES...: fzf list with the default on top (Enter takes it), Esc aborts; no tty -> default
+pick() {
+    local prompt=$1 def=$2; shift 2
+    [[ -t 0 ]] || { echo "$def"; return; }
+    printf '%s\n' "$def" "$@" | awk '!seen[$0]++' | fzf --height=~15 --reverse --prompt="$prompt> "
+}
+sources=$(pactl list short sources | cut -f2)
+sink=$(pick desktop "$(pactl get-default-sink).monitor" $(grep '\.monitor$' <<<"$sources"))
+mic=$(pick mic "$(pactl get-default-source)" $(grep -v '\.monitor$' <<<"$sources"))
+transcribe=$(pick transcribe yes no)
 mkdir -p "$(dirname "$dir")"; mkdir -m 700 "$dir"
-sink=$(pactl get-default-sink).monitor
-mic=$(pactl get-default-source)
 geo=$(xdpyinfo | awk '/dimensions:/{print $2}')
 echo "recording $geo -> $dir"
 
@@ -29,9 +37,20 @@ kill "$logger"; wait "$logger" || true
 echo "recorded: $dir ($(wc -l < "$dir/events.jsonl") input events)"
 
 # post: cursor layer, transcript, spoken Mark:/Delete mark -> Kdenlive markers.
-# Each step is rerunnable by hand; a failure (e.g. speech server down) keeps the recording.
+# Runs detached (log: post.log, desktop notification when done) so q really ends the
+# recording and the terminal can close. Each step is rerunnable by hand; a failure
+# (e.g. speech server down) keeps the recording.
 here=$(dirname "$0")
-for step in cursor-render rec-transcribe rec-markers; do
-    "$here/$step" "$dir" || echo "screen-record: $step failed, rerun: $here/$step $dir" >&2
-done
-echo "Kdenlive: new project ${geo} 30fps, Project > Import > OpenTimelineIO > $dir/timeline.otio"
+steps=(cursor-render rec-transcribe rec-markers)
+[[ $transcribe == yes ]] || steps=(cursor-render rec-markers)   # rec-markers still writes timeline.otio, just no markers
+(
+    trap '' HUP
+    failed=
+    for step in "${steps[@]}"; do
+        "$here/$step" "$dir" || { failed+=" $step"; echo "screen-record: $step failed, rerun: $here/$step $dir"; }
+    done
+    notify-send "screen-record${failed:+ — failed:$failed}" \
+        "$dir\nKdenlive: new project ${geo} 30fps, File > Import > OpenTimelineIO Import > timeline.otio"
+) >"$dir/post.log" 2>&1 </dev/null &
+disown
+echo "processing in the background (${steps[*]}), you'll get a notification; log: $dir/post.log"

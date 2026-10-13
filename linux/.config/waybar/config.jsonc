@@ -20,6 +20,8 @@
         "systemd-failed-units",
         "custom/claude-usage",
         "custom/codex-usage",
+        "battery",
+        "idle_inhibitor",
         "group/controls",
         "custom/notifications",
         "custom/power"
@@ -84,8 +86,6 @@
             "power-profiles-daemon",
             "bluetooth",
             "backlight",
-            "battery",
-            "idle_inhibitor",
             "tray"
         ]
     },
@@ -289,13 +289,12 @@
             "critical": 15
         },
         "format": "{icon}  {capacity}%",
-        "format-charging": "󰂄  {capacity}%",
+        "format-discharging": "{icon}  {capacity}% {time}",
+        "format-charging": "󰂄  {capacity}% {time}",
         "format-plugged": "󰚥  {capacity}%",
+        "format-time": "{H}:{M:02}",
         "format-icons": ["󰁺", "󰁼", "󰁾", "󰂀", "󰂂", "󰁹"],
-        "min-length": 9,
-        "max-length": 9,
-        "justify": "right",
-        "tooltip-format": "{timeTo}"
+        "tooltip-format": "{timeTo}\n{power:.1f} W, health {health}%, {cycles} cycles"
     },
 
     "custom/notifications": {
@@ -355,10 +354,10 @@
         "justify": "center",
         "format-icons": {
             "activated": "󰅶",
-            "deactivated": "󰾪"
+            "deactivated": "󰒲"
         },
-        "tooltip-format-activated": "Idle inhibitor: ON",
-        "tooltip-format-deactivated": "Idle inhibitor: OFF"
+        "tooltip-format-activated": "Staying awake: idle won't lock or hibernate (closing the lid still does). Click to allow sleep.",
+        "tooltip-format-deactivated": "Sleep on idle: locks at 5 min, archblade hibernates at 15 min (and on lid close). Click to stay awake."
     },
 
     "tray": {

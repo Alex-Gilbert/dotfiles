@@ -16,7 +16,7 @@ Writes SESSION_DIR/markers.json (for agents and tools) and SESSION_DIR/timeline.
 V2 cursor.mov (if rendered) over V1 video.mkv, A1 desktop.wav, A2 mic.wav (both copied
 out of video.mkv on first run), markers on the
 video clip so they ride along when you cut and ripple. In Kdenlive: new project at
-the recording's size and 30 fps, then Project > Import > OpenTimelineIO.
+the recording's size and 30 fps, then File > Import > OpenTimelineIO Import.
 """
 import json
 import re
@@ -28,8 +28,8 @@ import opentimelineio as otio
 
 FPS = 30
 session = Path(sys.argv[1]).resolve()
-transcript = json.loads((session / "transcript.json").read_text())
-sentences = transcript["sentences"]
+transcript = session / "transcript.json"  # absent when screen-record skipped transcription: timeline only
+sentences = json.loads(transcript.read_text())["sentences"] if transcript.exists() else []
 
 
 def words(text):

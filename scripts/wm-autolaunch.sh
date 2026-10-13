@@ -33,6 +33,11 @@ for conn in /sys/class/drm/card*-*/status; do
     fi
 done
 
+# tty login hands sway/startx no XDG_DATA_DIRS; kitty then sets it to only its
+# shell-integration dir, fish never adds the /usr/share default, and Vulkan
+# (icd.d), .desktop files and icons all go missing.
+export XDG_DATA_DIRS="${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+
 if [ -n "$igpu_card" ]; then
     # pin wlroots to the iGPU so it never touches (or wakes) the nvidia card
     export WLR_DRM_DEVICES="$igpu_card"

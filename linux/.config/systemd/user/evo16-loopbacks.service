@@ -1,0 +1,12 @@
+[Unit]
+Description=EVO16 main out + mic 1 loopbacks (archblade; see ~/dotfiles/scripts/evo16-loopbacks)
+After=pipewire.service wireplumber.service
+StartLimitIntervalSec=0
+
+[Service]
+ExecStart=%h/dotfiles/scripts/evo16-loopbacks
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target

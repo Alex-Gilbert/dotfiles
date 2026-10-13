@@ -62,3 +62,8 @@ desc = "Edit"
 on   = [ "i" ]
 run = "plugin searchjump -- autocd"
 desc = "searchjump mode"
+
+[[mgr.prepend_keymap]]
+on   = [ "<C-o>" ]
+run  = 'shell --block -- nvim .'
+desc = "Edit cwd as a buffer in oil.nvim"

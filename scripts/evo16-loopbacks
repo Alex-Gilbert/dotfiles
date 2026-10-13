@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Audient EVO16: friendly devices on top of its 24ch pro-audio nodes (run by evo16-loopbacks.service)
+#   evo16_main_out  stereo sink -> outputs 1-2
+#   evo16_mic1      mono source <- input 1 (vo-record uses it)
+# A loopback exits whenever the EVO16 node goes away (replug, suspend, wireplumber reload);
+# exiting here when either one does lets systemd restart both until the EVO16 is back.
+pw-loopback -n evo16-main-out \
+  --capture-props='node.name=evo16_main_out node.description="EVO16 Main Out (1-2)" media.class=Audio/Sink audio.position=[FL FR]' \
+  --playback-props='target.object=alsa_output.usb-Audient_Audient_EVO16-00.pro-output-0 audio.position=[AUX0 AUX1] stream.dont-remix=true node.passive=true node.dont-fallback=true' &
+pw-loopback -n evo16-mic1 \
+  --capture-props='target.object=alsa_input.usb-Audient_Audient_EVO16-00.pro-input-0 audio.position=[AUX0] stream.dont-remix=true node.passive=true node.dont-fallback=true' \
+  --playback-props='node.name=evo16_mic1 node.description="EVO16 Mic 1" media.class=Audio/Source audio.position=[MONO]' &
+wait -n
