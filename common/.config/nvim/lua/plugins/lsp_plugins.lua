@@ -32,14 +32,29 @@ return {
 				group = vim.api.nvim_create_augroup("kickstart-lsp-attach", { clear = true }),
 				callback = function(event)
 					local client = vim.lsp.get_client_by_id(event.data.client_id)
-					require("alex-config.keymaps").set_lsp_keys(event, client)
+					if not client then
+						return
+					end
+					local keymaps = require("alex-config.keymaps")
+					-- One handler so the Rust overrides (K, <leader>ca) aren't clobbered by the base keys
+					if client.name == "rust-analyzer" then
+						keymaps.set_rust_lsp_keys(event.buf, client)
+					else
+						keymaps.set_lsp_keys(event, client)
+					end
+					if client.name == "gleam" then
+						keymaps.set_gleam_keys(event.buf)
+					end
+					if client.server_capabilities.documentSymbolProvider then
+						require("nvim-navic").attach(client, event.buf)
+					end
 					require("alex-config.auto_cmds").set_lsp_autocmds(event, client)
 				end,
 			})
 
 			-- Change diagnostic symbols in the sign column (gutter)
 			if vim.g.have_nerd_font then
-				local signs = { ERROR = "", WARN = "", INFO = "", HINT = "" }
+				local signs = { ERROR = "", WARN = "", INFO = "", HINT = "" }
 				local diagnostic_signs = {}
 				for type, icon in pairs(signs) do
 					diagnostic_signs[vim.diagnostic.severity[type]] = icon
@@ -47,70 +62,31 @@ return {
 				vim.diagnostic.config({ signs = { text = diagnostic_signs } })
 			end
 
-			-- Set up LSP capabilities (using blink.cmp)
-			local capabilities = require("blink.cmp").get_lsp_capabilities({
-				textDocument = {
-					positionEncoding = "utf-16",
-				},
-			})
+			vim.lsp.config("*", { capabilities = require("blink.cmp").get_lsp_capabilities() })
 
 			local lsp_config = require("alex-config.lsp")
 			local servers = lsp_config.servers
-			local external_servers = lsp_config.external_servers
-
-			-- Run setup_config for all external servers that define it
-			for server_name, server_config in pairs(external_servers) do
-				if type(server_config.setup_config) == "function" then
-					server_config.setup_config()
-				end
-			end
 
 			require("mason").setup()
 
-			-- Only install servers from the main servers table
 			local ensure_installed = vim.tbl_keys(servers or {})
 			vim.list_extend(ensure_installed, lsp_config.additional_tools)
-
-			local navic = require("nvim-navic")
-
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
-			-- Helper function to setup an LSP server
-			local function setup_server(server_name, server_config)
-				server_config = server_config or {}
-				server_config.capabilities =
-					vim.tbl_deep_extend("force", {}, capabilities, server_config.capabilities or {})
-
-				-- Attach Navic to servers that support document symbols
-				local original_on_attach = server_config.on_attach
-
-				server_config.on_attach = function(client, bufnr)
-					if original_on_attach then
-						original_on_attach(client, bufnr)
-					end
-
-					if client.server_capabilities.documentSymbolProvider then
-						navic.attach(client, bufnr)
-					end
-				end
-
+			-- Settings merge over nvim-lspconfig's defaults; mason-lspconfig enables
+			-- every Mason-installed server (it no longer takes per-server handlers).
+			for server_name, server_config in pairs(servers) do
 				vim.lsp.config(server_name, server_config)
-				vim.lsp.enable(server_name)
 			end
-
 			require("mason-lspconfig").setup({
-				automatic_installation = true,
-				ensure_installed = {},
-				handlers = {
-					function(server_name)
-						setup_server(server_name, servers[server_name])
-					end,
-				},
+				-- ltex_plus replaces ltex; both packages are installed
+				automatic_enable = { exclude = { "ltex" } },
 			})
 
-			-- Setup external servers (not managed by Mason)
-			for server_name, server_config in pairs(external_servers) do
-				setup_server(server_name, server_config)
+			-- Servers not managed by Mason
+			for server_name, server_config in pairs(lsp_config.external_servers) do
+				vim.lsp.config(server_name, server_config)
+				vim.lsp.enable(server_name)
 			end
 		end,
 	},
@@ -134,7 +110,7 @@ return {
 				-- 	lsp_format_opt = "fallback"
 				-- end
 				return {
-					timeout_ms = 500,
+					timeout_ms = 1000, -- prettier's cold start can exceed 500ms
 					lsp_format = lsp_format_opt,
 				}
 			end,
@@ -144,7 +120,17 @@ return {
 				go = { "goimports", "gofumpt" },
 				lua = { "stylua" },
 				nix = { "nixfmt" },
+				rust = { "rustfmt" },
+				javascript = { "prettier" },
+				javascriptreact = { "prettier" },
+				typescript = { "prettier" },
+				typescriptreact = { "prettier" },
+				json = { "prettier" },
+				css = { "prettier" },
+				html = { "prettier" },
 			},
+			-- Only format JS/TS where the project opted into prettier; most repos have no config
+			formatters = { prettier = { require_cwd = true } },
 		},
 	},
 
@@ -241,10 +227,15 @@ return {
 
 	{ -- rustaceanvim
 		"mrcjkb/rustaceanvim",
-		version = "^6",
+		version = "^9",
 		lazy = false,
 		init = function()
 			vim.g.rustaceanvim = {
+				server = {
+					default_settings = {
+						["rust-analyzer"] = { check = { command = "clippy" } },
+					},
+				},
 				dap = {
 					adapter = function()
 						local install_root = require("mason.settings").current.install_root_dir
@@ -259,17 +250,6 @@ return {
 					end,
 				},
 			}
-
-			-- Set up Rust keymaps via LspAttach autocmd
-			vim.api.nvim_create_autocmd("LspAttach", {
-				group = vim.api.nvim_create_augroup("rustaceanvim-lsp-attach", { clear = true }),
-				callback = function(event)
-					local client = vim.lsp.get_client_by_id(event.data.client_id)
-					if client and client.name == "rust-analyzer" then
-						require("alex-config.keymaps").set_rust_lsp_keys(event.buf, client)
-					end
-				end,
-			})
 		end,
 	},
 	{

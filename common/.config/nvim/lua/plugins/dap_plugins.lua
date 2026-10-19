@@ -49,6 +49,35 @@ local M = {
 
 			vim.fn.sign_define("DapLogPoint", { text = "◆", texthl = "DapLogPointColor", linehl = "", numhl = "" })
 
+			-- JS/TS via js-debug-adapter (Mason). Node 24 runs .ts directly; .vscode/launch.json is also read.
+			dap.adapters["pwa-node"] = {
+				type = "server",
+				host = "localhost",
+				port = "${port}",
+				executable = { command = "js-debug-adapter", args = { "${port}" } },
+			}
+			local skip = { "<node_internals>/**", "**/node_modules/**" }
+			for _, ft in ipairs({ "javascript", "javascriptreact", "typescript", "typescriptreact" }) do
+				dap.configurations[ft] = {
+					{
+						type = "pwa-node",
+						request = "launch",
+						name = "Launch current file (node)",
+						program = "${file}",
+						cwd = "${workspaceFolder}",
+						skipFiles = skip,
+					},
+					{
+						type = "pwa-node",
+						request = "attach",
+						name = "Attach to process (node --inspect)",
+						processId = require("dap.utils").pick_process,
+						cwd = "${workspaceFolder}",
+						skipFiles = skip,
+					},
+				}
+			end
+
 			dap.listeners.after.event_initialized["dapui_config"] = function()
 				dapui.open()
 			end
@@ -88,7 +117,7 @@ local M = {
 				},
 			},
 			"jfpedroza/neotest-elixir",
-			"rouge8/neotest-rust",
+			"marilari88/neotest-vitest",
 		},
 		keys = require("alex-config.keymaps").neotest_keys,
 		config = function()
@@ -97,7 +126,8 @@ local M = {
 					require("neotest-dotnet"),
 					require("neotest-elixir"),
 					require("neotest-golang"),
-					require("neotest-rust"),
+					require("rustaceanvim.neotest"),
+					require("neotest-vitest"),
 				},
 			})
 		end,

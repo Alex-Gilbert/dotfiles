@@ -81,6 +81,8 @@ bindsym $altc+x exec "i3lock -i /home/alex/.config/i3/lockscreen.png && systemct
 bindsym $hyp+w exec ~/dotfiles/scripts/canvas-mode.sh toggle
 
 # ========== RESIZE MODE ==========
+bindsym $mod+r mode "resize"
+bindsym $mod+shift+m mode "move"
 mode "resize" {
     bindsym h resize shrink width 10 px or 10 ppt
     bindsym j resize grow height 10 px or 10 ppt
@@ -267,3 +269,7 @@ exec --no-startup-id "xss-lock -- i3lock -i /home/alex/.config/i3/lockscreen.png
 # Auto-lock after inactivity
 exec --no-startup-id "xset s 300 300"
 exec --no-startup-id "xset dpms 600 900 1200"
+
+# >>> TEMP ppu.toys video — delete this block when done
+bindsym $hyp+period exec --no-startup-id ~/.config/i3/ppu-ripdrag.sh
+# <<< TEMP ppu.toys video

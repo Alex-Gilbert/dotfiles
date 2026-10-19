@@ -135,7 +135,7 @@ return {
 			require("nvim-treesitter").setup()
 
 			local cook_dir = vim.fn.expand("~/dev/cook/tree-sitter-cook")
-			if vim.fn.isdirectory(cook_dir) then
+			if vim.fn.isdirectory(cook_dir) == 1 then
 				vim.api.nvim_create_autocmd("User", {
 					pattern = "TSUpdate",
 					callback = function()

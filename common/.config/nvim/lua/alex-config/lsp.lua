@@ -1,5 +1,30 @@
 local M = {}
 
+-- TS 7 (native Go compiler) ships no tsserver.js, so ts_ls can't serve it; its own
+-- `tsc --lsp` can. Pick the server per project by the installed typescript major.
+local function ts_major(root)
+	local ok, lines = pcall(vim.fn.readfile, root .. "/node_modules/typescript/package.json")
+	local version = ok and vim.json.decode(table.concat(lines, "\n")).version
+	return tonumber(version and version:match("^(%d+)")) or 0
+end
+
+-- shortcut: reads the nearest node_modules only, so a monorepo package that hoists
+-- typescript to the root falls to ts_ls; walk further up if that bites.
+local function ts_gate(name, want_native)
+	-- each vim.lsp.config[name] read reloads lsp/<name>.lua; tsc's root_dir and cmd
+	-- share a binary cache, so both must come from the same load
+	local base = vim.lsp.config[name]
+	return {
+		cmd = base.cmd,
+		root_dir = function(bufnr, on_dir)
+			local root = vim.fs.root(bufnr, "node_modules")
+			if ((root and ts_major(root) or 0) >= 7) == want_native then
+				base.root_dir(bufnr, on_dir)
+			end
+		end,
+	}
+end
+
 M.additional_tools = {
 	"stylua", -- Lua formatter
 	"delve", -- Go debugger
@@ -27,9 +52,6 @@ M.servers = {
 	},
 
 	csharp_ls = {
-		on_attach = function()
-			print("Hello From C#")
-		end,
 		filetypes = { "cs" },
 		root_dir = function(bufnr, on_dir)
 			local root = vim.fs.root(bufnr, function(name)
@@ -43,9 +65,6 @@ M.servers = {
 	},
 
 	pylsp = {
-		on_attach = function()
-			print("Hello From Python")
-		end,
 		settings = {
 			pylsp = {
 				plugins = {
@@ -63,9 +82,6 @@ M.servers = {
 
 	-- Add Go language server
 	gopls = {
-		on_attach = function()
-			print("Hello From Go")
-		end,
 		settings = {
 			gopls = {
 				gofumpt = true, -- Use gofumpt for formatting
@@ -103,7 +119,8 @@ M.servers = {
 		},
 	},
 	ts_ls = {
-		-- TypeScript Language Server
+		-- TypeScript Language Server (TS <= 6 projects)
+		root_dir = ts_gate("ts_ls", false).root_dir,
 		init_options = {
 			preferences = {
 				disableSuggestions = true,
@@ -138,20 +155,14 @@ M.servers = {
 
 	ltex_plus = {},
 
-	elixirls = {
-		on_attach = function()
-			print("Hello From Elixir")
-		end,
-	},
+	elixirls = {},
 }
 
 -- Servers that are managed outside of Mason (cargo, npm, system packages, etc.)
 M.external_servers = {
-	gleam = {
-		on_attach = function(client, bufnr)
-			require("alex-config.keymaps").set_gleam_keys(bufnr)
-		end,
-	},
+	gleam = {},
+	-- TS 7 projects: the project's own tsc is the language server
+	tsc = ts_gate("tsc", true),
 }
 
 return M

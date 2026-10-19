@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+"""rec-combine — join screen-record sessions end to end into one Kdenlive timeline.
+
+  rec-combine OUT.otio ITEM ITEM...
+
+An ITEM is a session dir, or any other video file (a phone clip, a rendered card), optionally
+trimmed: clip.mov@22 (from 22 s), clip.mov@22-29.5 (seconds). A file goes on Screen with its
+own sound on Desktop.
+
+Reads each session's timeline.otio (from rec-markers) and plays everything back to back, raw,
+in the order given: same tracks (Screen, Cursor, Desktop, Mic), each session's spoken markers
+still on its own clips. A track one item lacks (no cursor.mov) gets a gap there, so the
+items stay lined up. Import like a single session: new project at the recording's size
+and 30 fps, then File > Import > OpenTimelineIO Import.
+"""
+import copy
+import subprocess
+import sys
+from pathlib import Path
+
+import opentimelineio as otio
+
+FPS = 30
+RT, TR = otio.opentime.RationalTime, otio.opentime.TimeRange
+
+
+def file_timeline(arg):
+    path, _, span = arg.partition("@")
+    path = Path(path).resolve()
+    length = float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration",
+                                            "-of", "csv=p=0", str(path)]))
+    a, _, b = span.partition("-")
+    a, b = float(a or 0), float(b or length)
+    rng = TR(RT(round(a * FPS), FPS), RT(round((b - a) * FPS), FPS))
+    tl = otio.schema.Timeline(name=path.name)
+    for name, kind in (("Screen", "Video"), ("Desktop", "Audio")):
+        ref = otio.schema.ExternalReference(target_url=str(path), available_range=TR(RT(0, FPS), RT(round(length * FPS), FPS)))
+        tl.tracks.append(otio.schema.Track(name=name, kind=kind, children=[
+            otio.schema.Clip(name=path.stem, source_range=rng, media_reference=ref)]))
+    return path, tl
+
+
+out, items = Path(sys.argv[1]), sys.argv[2:]
+if not items:
+    sys.exit(__doc__)
+sessions, timelines = [], []
+for arg in items:
+    if Path(arg).is_dir():
+        sessions.append(Path(arg).resolve())
+        timelines.append(otio.adapters.read_from_file(str(sessions[-1] / "timeline.otio")))
+    else:
+        path, tl = file_timeline(arg)
+        sessions.append(path)
+        timelines.append(tl)
+
+combined = otio.schema.Timeline(name=out.stem)
+tracks = {}   # name -> combined track, in the order the tracks first appear
+for tl in timelines:
+    for t in tl.tracks:
+        if t.name not in tracks:
+            tracks[t.name] = otio.schema.Track(name=t.name, kind=t.kind)
+for tl in timelines:
+    have = {t.name: t for t in tl.tracks}
+    length = tl.duration()
+    for name, track in tracks.items():
+        src = have.get(name)
+        for item in (src or []):
+            track.append(copy.deepcopy(item))
+        pad = length - (src.duration() if src else otio.opentime.RationalTime(0, length.rate))
+        if pad.value > 0:   # shorter or missing track: keep the next session lined up
+            track.append(otio.schema.Gap(source_range=otio.opentime.TimeRange(duration=pad)))
+combined.tracks.extend(tracks.values())
+otio.adapters.write_to_file(combined, str(out))
+
+t = 0.0
+for s, tl in zip(sessions, timelines):
+    print(f"{int(t // 60)}:{t % 60:05.2f}  {s.name}")
+    t += tl.duration().to_seconds()
+print(f"rec-combine: {len(sessions)} items, {int(t // 60)}:{t % 60:05.2f} -> {out}")
