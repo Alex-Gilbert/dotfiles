@@ -54,6 +54,8 @@ paneru.setup {
   options = {
     focus_follows_mouse = false,
     mouse_follows_focus = true,
+    auto_center = true,
+    animation_speed = 35.0, -- higher = faster; 8 is slow, very high or unset = no animation
   },
   padding = { top = 5, bottom = 5, left = 5, right = 5 },
   windows = {
