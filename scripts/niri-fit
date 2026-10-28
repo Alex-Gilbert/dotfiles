@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+"""Per-workspace "fit" mode for niri, matching Paneru's Hyper-m on macOS.
+
+  niri-fit toggle   (Hyper+M) fit the focused workspace's columns to the screen
+                    and stop auto-centering there; again to bring centering back
+  niri-fit watch    (spawned at startup) follow workspace switches and turn
+                    centering off only while a fitted workspace is focused
+
+niri's center-focused-column is global, so `watch` flips it by writing
+~/.local/state/niri/center.kdl, which config.kdl includes. Fitting is one-shot:
+new windows are not refitted. Workspace ids only last one niri session, so
+`watch` starts with nothing fitted.
+"""
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+STATE = Path.home() / ".local/state/niri"
+FITTED = STATE / "fitted.json"
+CENTER = STATE / "center.kdl"
+CENTER_OFF = 'layout { center-focused-column "never"; }\n'
+
+
+def niri(*args):
+    return subprocess.run(["niri", "msg", *args], check=True, capture_output=True, text=True).stdout
+
+
+def query(what):
+    return json.loads(niri("--json", what))
+
+
+def fitted():
+    try:
+        return set(json.loads(FITTED.read_text()))
+    except (FileNotFoundError, ValueError):
+        return set()
+
+
+def save(ids):
+    STATE.mkdir(parents=True, exist_ok=True)
+    FITTED.write_text(json.dumps(sorted(ids)))
+
+
+def apply(workspace_id):
+    # Only touch center.kdl when it changes: every write makes niri reload its config.
+    if workspace_id in fitted():
+        if not CENTER.exists() or CENTER.read_text() != CENTER_OFF:
+            STATE.mkdir(parents=True, exist_ok=True)
+            CENTER.write_text(CENTER_OFF)
+    else:
+        CENTER.unlink(missing_ok=True)
+
+
+def focused_workspace():
+    return next(w["id"] for w in query("workspaces") if w["is_focused"])
+
+
+def fit(workspace_id):
+    columns = sorted({w["layout"]["pos_in_scrolling_layout"][0] for w in query("windows")
+                      if w["workspace_id"] == workspace_id and not w["is_floating"]
+                      and w["layout"].get("pos_in_scrolling_layout")})
+    if not columns:
+        return 0
+    focused = query("focused-window")
+    # set-column-width only acts on the focused column, so visit each one
+    for column in columns:
+        niri("action", "focus-column", str(column))
+        niri("action", "set-column-width", f"{100 / len(columns):.4f}%")
+    if focused:
+        niri("action", "focus-window", "--id", str(focused["id"]))
+    return len(columns)
+
+
+def notify(message):
+    subprocess.run(["notify-send", "-t", "1000", message], check=False)
+
+
+def toggle():
+    workspace = focused_workspace()
+    ids = fitted()
+    if workspace in ids:
+        ids.discard(workspace)
+        save(ids)
+        notify("auto-center")
+    else:
+        ids.add(workspace)
+        save(ids)
+        notify(f"fit {fit(workspace)}")
+    apply(workspace)
+
+
+def watch():
+    save(set())
+    apply(focused_workspace())
+    stream = subprocess.Popen(["niri", "msg", "--json", "event-stream"],
+                              stdout=subprocess.PIPE, text=True)
+    for line in stream.stdout:
+        activated = json.loads(line).get("WorkspaceActivated")
+        if activated and activated["focused"]:
+            apply(activated["id"])
+
+
+if __name__ == "__main__":
+    {"toggle": toggle, "watch": watch}[sys.argv[1]]()

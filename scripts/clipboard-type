@@ -52,7 +52,10 @@ def main():
             if clip.tell() == 0:
                 return 0
             clip.seek(0)
-            # The binding fires on release; allow the remaining modifiers to lift.
+            # niri binds fire on press (sway's on release): wait for Hyper+V to lift.
+            while any(device.active_keys() for device in devices):
+                time.sleep(0.01)
+            # Allow the remaining modifiers to lift.
             deadline = time.monotonic() + 0.3
             process = None
             cancelled = False

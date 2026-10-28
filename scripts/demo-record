@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sway capture with toggleable mouse-follow zoom and local demo export."""
+"""Sway/niri capture with toggleable mouse-follow zoom and local demo export."""
 import argparse
 from contextlib import contextmanager
 from datetime import datetime
@@ -90,10 +90,36 @@ def focused_rect(node):
             return found
 
 
+def niri_msg(*args):
+    return json.loads(subprocess.check_output(["niri", "msg", "--json", *args]))
+
+
+def active_outputs():
+    if not os.environ.get("NIRI_SOCKET"):
+        return json.loads(subprocess.check_output(["swaymsg", "-t", "get_outputs"]))
+    return [{"name": name, "active": True, "scale": output["logical"]["scale"],
+             "rect": {key: output["logical"][key] for key in ("x", "y", "width", "height")}}
+            for name, output in niri_msg("outputs").items() if output.get("logical")]
+
+
+def focused_window_rect():
+    if not os.environ.get("NIRI_SOCKET"):
+        return focused_rect(json.loads(subprocess.check_output(["swaymsg", "-t", "get_tree"])))
+    window = niri_msg("focused-window")
+    layout = (window or {}).get("layout") or {}
+    if not layout.get("tile_pos_in_workspace_view"):
+        return None
+    workspace = next(w for w in niri_msg("workspaces") if w["id"] == window["workspace_id"])
+    output = next(o["rect"] for o in active_outputs() if o["name"] == workspace["output"])
+    (tile_x, tile_y), (offset_x, offset_y) = layout["tile_pos_in_workspace_view"], layout["window_offset_in_tile"]
+    width, height = layout["window_size"]
+    return {"x": round(output["x"] + tile_x + offset_x), "y": round(output["y"] + tile_y + offset_y),
+            "width": width, "height": height}
+
+
 def select_geometry(window):
     if window:
-        tree = json.loads(subprocess.check_output(["swaymsg", "-t", "get_tree"]))
-        rect = focused_rect(tree)
+        rect = focused_window_rect()
         if not rect:
             raise ValueError("Focus an application window first")
         area = f"{rect['x']},{rect['y']} {rect['width']}x{rect['height']}"
@@ -108,8 +134,7 @@ def select_geometry(window):
     x, y, width, height = map(int, match.groups())
     if min(width, height) < 2:
         raise ValueError("Select an area at least 2×2 pixels")
-    outputs = json.loads(subprocess.check_output(["swaymsg", "-t", "get_outputs"]))
-    for output in outputs:
+    for output in active_outputs():
         rect = output["rect"]
         if (output.get("active") and x >= rect["x"] and y >= rect["y"]
                 and x + width <= rect["x"] + rect["width"]

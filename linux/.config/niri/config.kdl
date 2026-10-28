@@ -1,0 +1,183 @@
+// niri — ported from sway/config, keys kept in step with macos paneru/init.lua.
+// Hot-reloads on save. Check with: niri validate
+// Hyper = Ctrl+Alt+Shift+Super (kmonad). niri has no modes, so the sway
+// resize/move modes became direct chords; floating windows move with Super+drag.
+
+input {
+    touchpad {
+        tap
+        natural-scroll
+    }
+}
+
+// Per host: outputs that aren't connected are ignored, so both live here.
+output "eDP-1" { scale 1.25; } // archblade
+// cachy-two: mobo DP lands on DP-4/5/6 depending on port
+output "DP-4" { mode "3840x2160@240"; scale 1.5; }
+output "DP-5" { mode "3840x2160@240"; scale 1.5; }
+output "DP-6" { mode "3840x2160@240"; scale 1.5; }
+
+layout {
+    gaps 5
+    center-focused-column "always" // = paneru auto_center
+    default-column-width { proportion 0.5; }
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+        proportion 1.0
+    }
+    focus-ring { off; }
+    // Kanagawa, as in sway's client.* colours
+    border {
+        width 4
+        active-color "#C8C8C8"
+        inactive-color "#1F1F28"
+        urgent-color "#C34043"
+    }
+}
+
+animations {
+    slowdown 0.5 // short slides, like paneru's animation_speed
+}
+
+prefer-no-csd
+hotkey-overlay { skip-at-startup; }
+screenshot-path null // ~/dotfiles/scripts/screenshot owns screenshots
+
+// Written by scripts/wm-autolaunch.sh on the desktop: render on the iGPU,
+// ignore the nvidia card so llama-swap keeps all the VRAM.
+include optional=true "~/.local/state/niri/gpu.kdl"
+
+// scripts/niri-fit writes this while a fitted workspace (Hyper+M) is focused,
+// turning auto-center off there only. After layout{}, since includes override
+// what comes before them.
+include optional=true "~/.local/state/niri/center.kdl"
+
+spawn-sh-at-startup "wl-paste --type text --watch cliphist store"
+spawn-sh-at-startup "wl-paste --type image --watch cliphist store"
+spawn-at-startup "swaync"
+spawn-at-startup "waybar"
+spawn-sh-at-startup "~/dotfiles/scripts/niri-fit watch"
+spawn-sh-at-startup r#"
+    case "$(uname -n)" in
+        archblade) exec swayidle -w timeout 300 'gtklock -d' timeout 900 'systemctl hibernate' before-sleep 'gtklock -d' ;;
+        *)         exec swayidle -w timeout 600 'gtklock -d' before-sleep 'gtklock -d' ;;
+    esac
+"#
+
+// ========== WINDOW RULES ==========
+window-rule {
+    match app-id="pavucontrol"
+    match app-id="mpv"
+    match title="Picture-in-Picture"
+    match title="Preferences$"
+    open-floating true
+}
+window-rule {
+    match app-id="floating-terminal"
+    open-floating true
+    default-column-width { fixed 800; }
+    default-window-height { fixed 600; }
+}
+// Tridactyl's :editor (<C-i> in any text field)
+window-rule {
+    match app-id="tridactyl-editor"
+    open-floating true
+    default-column-width { proportion 0.7; }
+    default-window-height { proportion 0.75; }
+}
+
+binds {
+    // Core
+    Ctrl+Alt+Shift+Super+Q repeat=false { close-window; }
+    Ctrl+Alt+Shift+Super+F { maximize-column; } // full width, like paneru
+    Ctrl+Alt+F { fullscreen-window; }
+    Ctrl+Alt+Shift+Super+G { toggle-window-floating; }
+    Ctrl+Alt+Shift+Super+C { center-column; }
+    // Fit this workspace's columns to the screen and stop centering here; again to undo
+    Ctrl+Alt+Shift+Super+M repeat=false { spawn-sh "~/dotfiles/scripts/niri-fit toggle"; }
+    Super+R { switch-preset-column-width; }
+    Super+Shift+R { switch-preset-column-width-back; }
+    Super+W { toggle-column-tabbed-display; }
+    Super+Shift+Slash { show-hotkey-overlay; }
+
+    // Focus (j/k fall through to the workspace above/below, like a vertical strip)
+    Ctrl+Alt+Shift+Super+H { focus-column-left; }
+    Ctrl+Alt+Shift+Super+J { focus-window-or-workspace-down; }
+    Ctrl+Alt+Shift+Super+K { focus-window-or-workspace-up; }
+    Ctrl+Alt+Shift+Super+L { focus-column-right; }
+
+    // Move
+    Ctrl+Alt+H { move-column-left; }
+    Ctrl+Alt+J { move-window-down-or-to-workspace-down; }
+    Ctrl+Alt+K { move-window-up-or-to-workspace-up; }
+    Ctrl+Alt+L { move-column-right; }
+
+    // Join: pull a window into / push it out of the neighbouring column (vertical split)
+    Alt+Shift+H { consume-or-expel-window-left; }
+    Alt+Shift+L { consume-or-expel-window-right; }
+    Alt+Shift+K { consume-window-into-column; }
+    Alt+Shift+J { expel-window-from-column; }
+
+    // Resize (was resize mode)
+    Ctrl+Alt+Shift+H { set-column-width "-10%"; }
+    Ctrl+Alt+Shift+L { set-column-width "+10%"; }
+    Ctrl+Alt+Shift+J { set-window-height "+10%"; }
+    Ctrl+Alt+Shift+K { set-window-height "-10%"; }
+
+    // Apps
+    Ctrl+Alt+Shift+Super+T { spawn "foot"; }
+    Ctrl+Alt+Shift+Super+B { spawn "firefox"; }
+    Ctrl+Alt+Shift+Super+A { spawn "wofi" "--show" "drun"; }
+    Ctrl+Alt+Shift+Super+Tab { spawn "wofi" "--show" "window"; }
+    Ctrl+Alt+Shift+Super+E { spawn "foot" "-e" "yazi"; }
+    Ctrl+Alt+Shift+Super+V repeat=false { spawn-sh "~/dotfiles/scripts/clipboard-type"; }
+    Ctrl+Alt+Shift+Super+D { spawn-sh "~/dotfiles/scripts/tuios-dictate"; }
+
+    // Screenshot / recording
+    Ctrl+Alt+Shift+Super+S { spawn-sh "~/dotfiles/scripts/screenshot copy"; }
+    Ctrl+Alt+Shift+Super+P { spawn-sh "~/dotfiles/scripts/screenshot annotate"; }
+    Ctrl+Alt+Shift+Super+R { spawn-sh "~/dotfiles/scripts/demo-record toggle"; }
+    Ctrl+Alt+Shift+Super+W { spawn-sh "~/dotfiles/scripts/demo-record toggle --window"; }
+    Ctrl+Alt+Shift+Super+Z repeat=false { spawn-sh "~/dotfiles/scripts/demo-record zoom"; }
+
+    // Desktop recording: real 1080p pixels, then back (cachy-two)
+    Ctrl+Alt+Shift+Super+F9 { spawn-sh "for o in DP-4 DP-5 DP-6; do niri msg output $o mode 1920x1080@60; niri msg output $o scale 1; done"; }
+    Ctrl+Alt+Shift+Super+F10 { spawn-sh "for o in DP-4 DP-5 DP-6; do niri msg output $o mode 3840x2160@240; niri msg output $o scale 1.5; done"; }
+
+    // System
+    Alt+Q { quit; } // niri asks for confirmation
+    Ctrl+Alt+X { spawn "gtklock" "-d"; }
+
+    // Workspaces (alt-ctrl-N sends without following, like sway)
+    Ctrl+Alt+Shift+Super+1 { focus-workspace 1; }
+    Ctrl+Alt+Shift+Super+2 { focus-workspace 2; }
+    Ctrl+Alt+Shift+Super+3 { focus-workspace 3; }
+    Ctrl+Alt+Shift+Super+4 { focus-workspace 4; }
+    Ctrl+Alt+Shift+Super+5 { focus-workspace 5; }
+    Ctrl+Alt+Shift+Super+6 { focus-workspace 6; }
+    Ctrl+Alt+Shift+Super+7 { focus-workspace 7; }
+    Ctrl+Alt+Shift+Super+8 { focus-workspace 8; }
+    Ctrl+Alt+Shift+Super+9 { focus-workspace 9; }
+    Ctrl+Alt+Shift+Super+0 { focus-workspace 10; }
+    Ctrl+Alt+1 { move-column-to-workspace 1 focus=false; }
+    Ctrl+Alt+2 { move-column-to-workspace 2 focus=false; }
+    Ctrl+Alt+3 { move-column-to-workspace 3 focus=false; }
+    Ctrl+Alt+4 { move-column-to-workspace 4 focus=false; }
+    Ctrl+Alt+5 { move-column-to-workspace 5 focus=false; }
+    Ctrl+Alt+6 { move-column-to-workspace 6 focus=false; }
+    Ctrl+Alt+7 { move-column-to-workspace 7 focus=false; }
+    Ctrl+Alt+8 { move-column-to-workspace 8 focus=false; }
+    Ctrl+Alt+9 { move-column-to-workspace 9 focus=false; }
+    Ctrl+Alt+0 { move-column-to-workspace 10 focus=false; }
+    Super+Grave { focus-workspace-previous; }
+    Super+O repeat=false { toggle-overview; }
+
+    // Media / hardware
+    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"; }
+    XF86AudioMute allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; }
+    XF86MonBrightnessUp allow-when-locked=true { spawn "brightnessctl" "set" "5%+"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "set" "5%-"; }
+}

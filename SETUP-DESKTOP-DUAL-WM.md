@@ -39,7 +39,10 @@ paru -S --needed sway swayidle swaync waybar autotiling foot wofi gtklock \
   power-profiles-daemon jq yazi ripdrag ttf-jetbrains-mono-nerd wlogout wttrbar \
   xdg-desktop-portal-wlr xdg-desktop-portal-gtk \
   xdg-desktop-portal-termfilechooser-hunkyburrito-git \
-  zen-browser-bin waybar-module-pacman-updates-git ai-usagebar-bin printbar-bin
+  firefox google-chrome waybar-module-pacman-updates-git ai-usagebar-bin printbar-bin
+
+# niri (preferred: wm-autolaunch.sh starts it over sway when installed)
+paru -S --needed niri xwayland-satellite xdg-desktop-portal-gnome
 ```
 
 `clipboard-type` (hyper+v) reads keyboards via evdev: needs `input` group or a

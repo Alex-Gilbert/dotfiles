@@ -47,6 +47,15 @@ elif name == "swaymsg":
         print(json.dumps([{"name": "TEST", "active": True, "rect": rect}]))
     else:
         print(json.dumps({"nodes": [{"focused": True, "app_id": "test", "rect": rect}]}))
+elif name == "niri":
+    print(json.dumps({
+        "outputs": {"TEST": {"logical": {"x": 100, "y": 0, "width": 640, "height": 360, "scale": 1.5}},
+                    "OFF": {"logical": None}},
+        "workspaces": [{"id": 7, "output": "TEST"}],
+        "focused-window": {"workspace_id": 7, "layout": {
+            "tile_pos_in_workspace_view": [10.0, 20.0], "window_offset_in_tile": [4.0, 4.0],
+            "window_size": [300, 200]}},
+    }[sys.argv[-1]]))
 elif name == "wf-recorder":
     if os.environ.get("FAIL_CAPTURE"): sys.exit(2)
     print("demo-record-start", time.monotonic(), file=sys.stderr, flush=True)
@@ -69,8 +78,16 @@ elif name == "demo-cursor":
         time.sleep(0.03)
 ''')
     mock.chmod(0o755)
-    for name in ("slurp", "swaymsg", "wf-recorder", "notify-send", "cc"):
+    for name in ("slurp", "swaymsg", "niri", "wf-recorder", "notify-send", "cc"):
         (binaries / name).symlink_to(mock)
+
+    # niri: window rect is output origin + tile position + offset inside the tile
+    saved_env = dict(os.environ)
+    os.environ.update(PATH=f"{binaries}:{os.environ['PATH']}", NIRI_SOCKET="test")
+    assert demo.focused_window_rect() == {"x": 114, "y": 24, "width": 300, "height": 200}
+    assert [o["name"] for o in demo.active_outputs()] == ["TEST"]
+    os.environ.clear()
+    os.environ.update(saved_env)
     env = dict(os.environ, PATH=f"{binaries}:{os.environ['PATH']}",
                XDG_RUNTIME_DIR=str(root / "runtime"), DEMO_RECORD_DIR=str(root / "demos"),
                XDG_CACHE_HOME=str(root / "cache"),

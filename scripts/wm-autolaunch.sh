@@ -16,6 +16,7 @@ if [ -n "${WAYLAND_DISPLAY:-}" ] || [ -n "${DISPLAY:-}" ]; then
 fi
 
 igpu_card=""    # /dev/dri/cardN of a non-nvidia card with a connected monitor
+igpu_render=""  # its /dev/dri/renderDN
 nvidia_connected=0
 
 for conn in /sys/class/drm/card*-*/status; do
@@ -30,6 +31,7 @@ for conn in /sys/class/drm/card*-*/status; do
         nvidia_connected=1
     else
         igpu_card="/dev/dri/$card"          # amdgpu / i915 / xe
+        igpu_render="/dev/dri/$(basename /sys/class/drm/"$card"/device/drm/renderD*)"
     fi
 done
 
@@ -39,6 +41,22 @@ done
 export XDG_DATA_DIRS="${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 
 if [ -n "$igpu_card" ]; then
+    if command -v niri-session >/dev/null; then
+        # niri ignores WLR_DRM_DEVICES; its config includes this file instead
+        # to render on the iGPU and never open (or wake) the nvidia card
+        mkdir -p ~/.local/state/niri
+        {
+            echo "debug {"
+            echo "    render-drm-device \"$igpu_render\""
+            for render in /sys/class/drm/renderD*; do
+                if [ "$(basename "$(readlink "$render/device/driver")")" = nvidia ]; then
+                    echo "    ignore-drm-device \"/dev/dri/$(basename "$render")\""
+                fi
+            done
+            echo "}"
+        } > ~/.local/state/niri/gpu.kdl
+        exec niri-session
+    fi
     # pin wlroots to the iGPU so it never touches (or wakes) the nvidia card
     export WLR_DRM_DEVICES="$igpu_card"
     exec sway

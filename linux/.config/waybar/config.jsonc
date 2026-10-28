@@ -5,7 +5,7 @@
     "spacing": 0,
 
     "modules-left": ["clock", "custom/weather", "mpris", "custom/cava"],
-    "modules-center": ["sway/workspaces"],
+    "modules-center": ["sway/workspaces", "niri/workspaces"],
     "modules-right": [
         "custom/mic-meter",
         "custom/recording",
@@ -30,6 +30,12 @@
     "sway/workspaces": {
         "format": "{name}",
         "disable-scroll": true,
+        "all-outputs": true
+    },
+
+    // Only one of the two loads; waybar disables the other compositor's module.
+    "niri/workspaces": {
+        "format": "{index}",
         "all-outputs": true
     },
 
@@ -160,8 +166,7 @@
         "player-icons": {
             "default": "\udb81\ude86",
             "spotify": "\udb83\udcc7",
-            "firefox": "\udb82\ude39",
-            "zen": "\udb82\ude39"
+            "firefox": "\udb82\ude39"
         },
         "status-icons": { "paused": "\udb80\udfe4", "stopped": "\udb81\udcdb" },
         "tooltip-format": "{player} \u00b7 {status}\n{title}\n{artist}\n{album}",
