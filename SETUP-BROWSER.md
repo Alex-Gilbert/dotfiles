@@ -26,7 +26,8 @@ personal Gmail sit side by side. Install **Firefox Multi-Account Containers**
 
 - **Move a tab between them:** right-click the tab → *Reopen in Container*.
 - **Always open a site in one:** container menu → *Always open this site in…*
-  (e.g. the work Google Workspace domain → `Work`).
+  Only for sites that belong to one side (work Slack, Linear). Not Gmail:
+  both accounts are `mail.google.com`, so it can only pick one container.
 - `user.js` pins `privacy.userContext.enabled` so containers stay on.
 - Firefox Sync installs the add-on on every machine. To carry the containers
   themselves, turn on *Sync* in the add-on's own settings (it's opt-in); then
