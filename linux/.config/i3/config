@@ -36,7 +36,7 @@ bindsym $altc+l move right
 
 # APPLICATION LAUNCHERS
 bindsym $hyp+t exec ~/dotfiles/scripts/launch-ftz.sh
-bindsym $hyp+b exec zen-browser
+bindsym $hyp+b exec firefox
 bindsym $hyp+a exec rofi -show drun
 bindsym $hyp+Tab exec rofi -show window
 bindsym $hyp+e exec kitty -e yazi

@@ -32,6 +32,6 @@ end
 
 set -gx SSH_AUTH_SOCK $XDG_RUNTIME_DIR/ssh-agent.socket
 
-# One browser everywhere: zen-browser is what the WM keybinds launch and what
+# One browser everywhere: firefox is what the WM keybinds launch and what
 # xdg-open resolves to, so anything reading $BROWSER agrees with both.
-set -gx BROWSER zen-browser
+set -gx BROWSER firefox

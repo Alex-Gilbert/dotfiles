@@ -67,6 +67,3 @@ bind <Space>vr source
 "
 " <C-d>/<C-u> already scroll half a page. nvim recentres after them (zz);
 " a web page has no cursor to centre on, so there is nothing to mirror.
-"
-" Zen's own compact-mode keys are separate from Tridactyl and still work:
-" Ctrl+Alt+S reveals the sidebar, Ctrl+S toggles compact mode.

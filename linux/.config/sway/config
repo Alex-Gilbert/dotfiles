@@ -30,7 +30,7 @@ bindsym $altc+l move right
 
 # Apps
 bindsym $hyp+t exec foot
-bindsym $hyp+b exec zen-browser
+bindsym $hyp+b exec firefox
 bindsym $hyp+a exec wofi --show drun
 bindsym $hyp+Tab exec wofi --show window
 bindsym $hyp+e exec foot -e yazi

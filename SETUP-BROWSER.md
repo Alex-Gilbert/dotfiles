@@ -1,199 +1,88 @@
-# One browser: Zen
+# One browser: Firefox (plus Chrome, for Claude only)
 
-Five browsers were installed and four configs disagreed about which one was
-the browser — sway said `firefox`, i3/hypr/sxhkd said `thorium-browser`,
-`xdg-settings` said `brave`, and the (dead, unsourced) zshrc files said
-`google-chrome`. Now everything says `zen-browser`.
+Every machine runs the same browser with the same config: **Firefox**. Hyper+b
+opens it everywhere (Paneru on macOS; niri, sway, i3, hypr and sxhkd on Linux)
+and `$BROWSER` agrees. The only other browser is **Google Chrome**, kept purely
+as the target for Claude in Chrome.
 
-## Why Zen
+## Why Firefox
 
-- **It's Gecko, so the config is a file.** `user.js` is plain text that lives
-  in this repo and reproduces on a new machine. Chromium-family prefs are a
-  JSON blob the browser rewrites underneath you; there is no version-control
-  story there, which is the whole reason four configs drifted apart.
-- **Thorium had to go regardless.** Project lead unavailable; the M150→M151
-  bump shipped Aug 2026 as beta builds on a *collaborator's fork*, with the
-  main repo carrying a notification and no binaries. Historically it has gone
-  9 months between releases. Unpatched Chromium is not a daily driver.
-- **Zen tracks Firefox within days.** 1.21.15b (Aug 19 2026) is the Firefox
-  154 engine with MFSA2026-74, 60+ CVEs; the release before it absorbed
-  Mozilla's 44-CVE advisory four days after Mozilla shipped it.
-- **Figma officially supports Firefox.** `scripts/open_figma.sh` only existed
-  to spoof a Chrome UA past Thorium's unrecognised one. Deleted.
+- **It's Gecko, so the config is a file.** `common/.config/firefox/user.js` is
+  plain text in this repo. Chromium-family prefs are a JSON blob the browser
+  rewrites underneath you, which is why the old multi-browser setup drifted.
+- **It's on every device.** Desktop and Android, one Mozilla account: Firefox
+  Sync carries bookmarks, passwords, open tabs and add-ons everywhere.
+- **Upstream, not a fork.** Zen (the previous pick) is Firefox with a new UI;
+  the prefs and Tridactyl setup carry over unchanged, minus one more project to
+  wait on for security releases.
+- **Tridactyl's `:editor`** (below) has no Chromium equivalent.
 
-## What `chromium` is still doing here
+## Work and personal: containers
 
-`claude-in-chrome` is Chrome/Edge, with Claude Code also detecting the
-extension in other Chromium browsers. Firefox and Safari are not supported and
-not planned. So bare `chromium` (145M profile, official repos, gets patched
-with the rest of the system) stays installed **as an automation target only** —
-no logins, no bookmarks, not bound to a key. It is a tool, not a browser.
+One window, colour-coded tabs, separate cookies per container, so work and
+personal Gmail sit side by side. Install **Firefox Multi-Account Containers**
+(addons.mozilla.org/firefox/addon/multi-account-containers/), then make a
+`Work` and a `Personal` container and sign each into its Gmail.
 
-## Linux
+- **Move a tab between them:** right-click the tab → *Reopen in Container*.
+- **Always open a site in one:** container menu → *Always open this site in…*
+  (e.g. the work Google Workspace domain → `Work`).
+- `user.js` pins `privacy.userContext.enabled` so containers stay on.
+- Firefox Sync installs the add-on on every machine. To carry the containers
+  themselves, turn on *Sync* in the add-on's own settings (it's opt-in); then
+  it's once per Mozilla account, not once per machine.
 
-Order matters: Zen imports from the Chromium profiles, so import *before* the
-purge.
+## Setup (every machine)
 
-```sh
-paru -S zen-browser-bin
-```
-
-1. Launch it once (`zen-browser`) and let it create its profile.
-2. Import bookmarks/passwords from Chrome and Thorium while they still exist.
-3. Link the repo's prefs into the profile. Zen's profile root is
-   `~/.config/zen` (XDG — *not* `~/.zen`, despite what most guides say), and it
-   names the profile directory randomly, so this is a one-time step per machine
-   rather than a stow target. `about:profiles` shows the exact path if you want
-   to confirm. Filtering on `prefs.js` skips the stub profiles Zen pre-creates
-   but never runs:
-
-   ```fish
-   for d in ~/.config/zen/*/
-       test -f $d/prefs.js; and ln -sfn ~/.config/zen/user.js $d/user.js
-   end
-   ```
-
-4. Make it the system default:
+1. Install:
+   - macOS: `brew install --cask firefox`
+   - Linux: `paru -S --needed firefox`
+2. Launch Firefox once so it creates its profile, sign into the Mozilla
+   account, and let Sync pull add-ons (Multi-Account Containers, Tridactyl).
+3. `./scripts/stow_dotfiles.sh` (puts `user.js` at `~/.config/firefox/user.js`),
+   then link it into the profile. Firefox names profile dirs randomly, so this
+   is a script, not a stow target; re-run it after making a new profile:
 
    ```sh
-   xdg-settings set default-web-browser zen.desktop
+   ./scripts/firefox-link-prefs.sh
    ```
 
-5. Restart Zen so `user.js` applies, confirm the imports landed, then purge:
+4. Make it the default browser:
+   - macOS: Firefox → Settings → *Make Default*.
+   - Linux: `xdg-settings set default-web-browser firefox.desktop`
+5. Restart Firefox so `user.js` applies.
 
-   ```sh
-   paru -Rns brave-bin google-chrome thorium-browser-bin firefox
-   rm -rf ~/.config/google-chrome ~/.config/BraveSoftware ~/.config/thorium ~/.mozilla
-   ```
+To change a pref for every machine, edit `common/.config/firefox/user.js`.
+Anything listed there is frozen (it is re-applied over `prefs.js` at every
+start), so keep it to prefs you'd never reach for in Settings.
 
-   Nothing on the system depends on any of them (checked). That's ~8.8G back.
+## Chrome: Claude's browser, nothing else
 
-### Screen sharing on sway
+Claude in Chrome only runs in Chromium-family browsers (Firefox and Safari are
+not supported), so Google Chrome stays installed on every machine (the same
+browser on macOS and Linux) as **Claude's** browser:
 
-Unrelated to the browser, but it bites the browser: only
-`xdg-desktop-portal-{gtk,hyprland,kde}` are installed. The hyprland portal
-only serves Hyprland, so a sway session has no screencast backend and share
-dialogs come up empty in *any* browser.
+- **Not the default and not on Hyper+b.** Links you click open in Firefox.
+  Start Chrome from Raycast (macOS) or wofi (Linux) when Claude needs it; the
+  extension only connects while Chrome is running.
+- **One profile, only the sign-ins Claude may use.** Claude acts as you here,
+  so what's signed in is what it can touch. Today: Gmail. Add services as
+  they come up; nothing else gets a login.
+- **No sync, no bookmarks, no other extensions.** Nothing to maintain.
 
-```sh
-paru -S xdg-desktop-portal-wlr
-```
+Install: macOS `brew install --cask google-chrome`; Linux
+`paru -S --needed google-chrome`. Then add the Claude extension from the
+Chrome Web Store and sign into Gmail.
 
-## macOS
+## Removing the old browsers
 
-```sh
-brew install --cask zen
-```
+After Firefox has your bookmarks and passwords (import from Zen/Chrome first:
+Firefox → *Import data*), remove the rest:
 
-Then the same profile link, against the macOS profile path:
-
-```sh
-for p in ~/Library/Application\ Support/zen/Profiles/*/prefs.js
-    ln -sf ~/.config/zen/user.js (dirname $p)/user.js
-end
-```
-
-Set it as default in Zen's own Settings, then uninstall Chrome.
-
-## Sidebar on hover
-
-Compact mode reveals the sidebar when the pointer grazes the screen edge. Off:
-
-```js
-user_pref("zen.view.compact.show-sidebar-and-toolbar-on-hover", false);
-```
-
-Already in `common/.config/zen/user.js`. The hotkey you'd want instead is
-built in and unaffected by that pref — Zen ships two separate compact-mode
-actions:
-
-| Action id | Command | Default |
-|---|---|---|
-| `zen-compact-mode-show-sidebar` | `cmd_zenCompactModeShowSidebar` | **Ctrl+Alt+S** |
-| `zen-compact-mode-toggle` | `cmd_toggleCompactModeIgnoreHover` | **Ctrl+S** |
-
-Rebind in Settings → Keyboard shortcuts. That writes to
-`zen-keyboard-shortcuts.json` **inside the profile**, not to `user.js` — so if
-you customise it, that file is the next candidate for the same symlink
-treatment as `user.js`.
-
-Related knobs, same prefix, if you want to tune what compact mode hides:
-`zen.view.compact.hide-tabbar` (default true), `.hide-toolbar` (false),
-`.toolbar-flash-popup` (false), `.sidebar-keep-hover.duration` (150ms).
-
-## Developer tools
-
-Tridactyl **cannot** open devtools — WebExtensions have no API for it, and
-there's no `:devtools` excmd. Devtools shortcuts live at the browser level, in
-Zen's own `devTools` shortcut group, stored in the profile at
-`zen-keyboard-shortcuts.json`.
-
-| Chord | Panel |
-|---|---|
-| `F12` / `Ctrl+Shift+I` | toggle toolbox |
-| `Ctrl+Shift+K` | web console |
-| `Ctrl+Shift+L` | inspector |
-| `Ctrl+Shift+E` | network |
-| `Ctrl+Alt+D` | debugger *(moved — see below)* |
-| `Ctrl+Shift+M` | responsive design mode |
-| `Ctrl+Shift+J` | browser console |
-| `Ctrl+Alt+Shift+I` | browser toolbox |
-| `Shift+F5` / `F7` / `F9` / `F12` | performance / style editor / storage / accessibility |
-| `Ctrl+Alt+Shift+W` | DOM panel *(moved — see below)* |
-
-Plain `F12` is not rebindable: Zen lists `key_toggleToolboxF12` in
-`IGNORED_DEVTOOLS_SHORTCUTS`, because DevToolsStartup handles it specially.
-It still works, it just won't appear in Settings → Keyboard shortcuts.
-
-### Three default conflicts, fixed
-
-An audit of all 128 shortcuts found three chords bound to two actions each.
-In every case the *standard* binding was kept and the rarer action moved:
-
-| Chord | Was also | Now |
-|---|---|---|
-| `Ctrl+Shift+K` | `zen-close-all-unpinned-tabs` | console keeps it; tab-nuke → `Ctrl+Alt+Shift+K` |
-| `Ctrl+Shift+W` | `key_dom` | close-window keeps it; DOM panel → `Ctrl+Alt+Shift+W` |
-| `Ctrl+Shift+Z` | `key_jsdebugger` | redo keeps it; debugger → `Ctrl+Alt+D` |
-
-The first was the dangerous one — the universal web-console chord also closed
-every unpinned tab. Redo keeps `Ctrl+Shift+Z` because there's no `Ctrl+Y`
-fallback bound; `Ctrl+Alt+D` for the debugger echoes nvim's `<leader>d` group.
-
-### Why this file is a copy, not a symlink
-
-`common/.config/zen/zen-keyboard-shortcuts.json` is a **copy**, unlike
-`user.js` which is symlinked. Zen *writes* this file whenever you change a
-shortcut in Settings, and it does so by atomic replace — which would delete a
-symlink and silently detach the profile from the repo. Re-sync by hand after
-changing shortcuts in the UI:
-
-```fish
-cp ~/.config/zen/*/zen-keyboard-shortcuts.json ~/dotfiles/common/.config/zen/
-```
-
-Going the other way (repo → a fresh machine) is the same copy in reverse, into
-the profile directory. Zen must not be running for either — it rewrites the
-file on exit. A `.pre-devtools.bak` of the original sits beside it in the
-profile.
-
-## Editing prefs afterwards
-
-`user.js` is re-applied over `prefs.js` at every startup, so anything listed in
-`common/.config/zen/user.js` is frozen — changing it in Settings reverts on the
-next launch. Keep that file to prefs you'd never reach for in the UI, and let
-taste (theme, compact mode, workspaces, extensions) live in the UI where Zen's
-own sync carries it between machines.
-
-## Launching Zen
-
-`hyper+b` runs `zen-browser` normally. Zen is not started at login or parked
-in the scratchpad. Window tab syncing is disabled in `user.js`, so each
-window keeps its own tabs. Automatic session restore is disabled so a cold
-launch does not reopen every window from the previous session.
-
-After switching from the old warm-start setup, quit Zen completely and reopen
-it to apply the preference and clear the old hidden windows.
+- macOS: Zen and Firefox Developer Edition (`brew uninstall --cask zen`,
+  drag the Developer Edition app to the Bin). Keep Google Chrome, but sign it
+  out of everything except what Claude needs.
+- Linux: `paru -Rns zen-browser-bin chromium` and `rm -rf ~/.config/zen`.
 
 ## Vim keybindings
 
@@ -211,7 +100,7 @@ can drive nvim.
 
 1. **Install the extension** — one click from
    `addons.mozilla.org/firefox/addon/tridactyl-vim/`. Everything else is config.
-2. **Install the native messenger** — in Zen, `:installnative`. This is what
+2. **Install the native messenger** — in Firefox, `:installnative`. This is what
    makes `:editor` (and auto-sourcing the rc file) work.
 3. **Load the config** — `:source`. After the native messenger is in, this
    happens automatically at startup.
@@ -262,34 +151,3 @@ Left on Tridactyl's defaults on purpose: `]]`/`[[` (`followpage next|prev`,
 a better browser analogue of next/prev-reference than tab cycling), and
 `<C-d>`/`<C-u>` (nvim recentres with `zz` after them; a web page has no cursor
 to centre on).
-
-### The Zen gotcha
-
-`:editor` needs Tridactyl's **native messenger**, a separate binary outside the
-extension sandbox. Zen didn't support native messaging at first — the Tridactyl
-maintainers still point at zen-browser/desktop#725 when asked — but **that
-issue is now closed as Done**, so it works; the discussion thread advising
-otherwise is stale.
-
-What's still fiddly is *where* the manifest goes. Zen moved its profile to XDG
-(`~/.config/zen`), and it isn't documented whether the native-manifest lookup
-followed it or stayed at `~/.mozilla`. I checked the shipped binary and it's
-genuinely ambiguous — both strings are present. Rather than guess, cover both:
-
-```fish
-# in Zen, run:  :native
-# then, if it still reports "not installed":
-mkdir -p ~/.config/zen/native-messaging-hosts ~/.mozilla/native-messaging-hosts
-for d in ~/.config/zen ~/.mozilla
-    ln -sfn ~/.mozilla/native-messaging-hosts/tridactyl.json \
-            $d/native-messaging-hosts/tridactyl.json
-end
-```
-
-Then set the editor — `.tridactylrc`, which belongs in this repo once it exists:
-
-```
-set editorcmd foot -e nvim
-```
-
-(`foot` because that's the sway terminal; use `kitty` on the i3/X11 side.)
