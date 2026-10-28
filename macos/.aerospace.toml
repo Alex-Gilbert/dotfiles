@@ -1,5 +1,5 @@
 # Start AeroSpace at login
-start-at-login = true
+start-at-login = false  # Paneru is the default now; Raycast "WM: Toggle" switches back
 
 default-root-container-layout = 'tiles'
 enable-normalization-flatten-containers = false
