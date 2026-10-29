@@ -76,8 +76,17 @@ local function fitted_key(ws)
 	return "fitted." .. ws:current()
 end
 
+-- `window center` always warps the mouse to the screen center, so skip it when the
+-- focus came from a click (as native auto_center does) or didn't change window
+-- (menus and the menu bar re-fire focus on the same window).
+local mouse_down, last_centered = false, nil
+paneru.on("mouse_down", function() mouse_down = true end)
+paneru.on("mouse_up", function() mouse_down = false end)
+
 paneru.on("window_focused", function(event, ws)
-	if not paneru.state.get(fitted_key(ws)) then
+	local same = event.window_id == last_centered
+	last_centered = event.window_id
+	if not (same or mouse_down or paneru.state.get(fitted_key(ws))) then
 		paneru.run("window center")
 	end
 end)
