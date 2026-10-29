@@ -22,7 +22,7 @@ it lands on under `$HOME`.
 |----------|-----------|-------|
 | `common` | every machine | fish, neovim, tmux, kitty, git, firefox, tridactyl |
 | `linux`  | Linux desktop | i3, polybar, X11, Linux-only ssh hosts, AUR packages |
-| `macos`  | macOS | Paneru (AeroSpace fallback), borders, wezterm, Raycast scripts |
+| `macos`  | macOS | Paneru, borders, wezterm, Raycast scripts |
 | `android`| Termux | Termux-specific env and widget scripts |
 | `scripts`| not stowed | setup + utility scripts (on `PATH` via `config.fish`) |
 
@@ -82,8 +82,8 @@ add a language, extend `ensure` in `base_plugins.lua` and re-run the build.
 
 ## Per-platform notes
 
-- [SETUP-MAC-INSTRUCTIONS.md](SETUP-MAC-INSTRUCTIONS.md) — AeroSpace/skhd i3-like
-  setup, and the Accessibility permissions it needs
+- [SETUP-MAC-INSTRUCTIONS.md](SETUP-MAC-INSTRUCTIONS.md) — Paneru setup, keys,
+  and the Accessibility permissions it needs
 - [SETUP-BROWSER.md](SETUP-BROWSER.md) — Firefox is the one browser (containers for
   work/personal), and Chrome is kept only as Claude's automation target
 - [ANDROID-SETUP.md](ANDROID-SETUP.md) — Termux as a thin client over

@@ -8,9 +8,7 @@
       "Bash(usermod:*)",
       "Bash(systemctl enable:*)",
       "WebSearch",
-      "WebFetch(domain:github.com)",
-      "Bash(aerospace list-windows *)",
-      "Bash(aerospace --help)"
+      "WebFetch(domain:github.com)"
     ]
   }
 }

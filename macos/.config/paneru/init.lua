@@ -1,6 +1,6 @@
--- Paneru (sliding/scrolling tiler). Ported from ~/.aerospace.toml.
+-- Paneru (sliding/scrolling tiler). Keys match niri on Linux.
 -- Hot-reloads on save. Hyper = cmd+alt+ctrl+shift (kmonad hold-A / hold-S).
--- Paneru has no modes, so the AeroSpace resize/move modes became direct chords.
+-- Paneru has no modes, so resize/move are direct chords.
 
 local H = "cmd + alt + ctrl + shift - "
 local AC = "alt + ctrl - "
@@ -40,7 +40,7 @@ local bindings = {
 	["window nextdisplay"] = H .. "tab",
 }
 
--- Workspaces 1..10 -> virtual workspaces. alt-ctrl-N sends without following, like AeroSpace.
+-- Workspaces 1..10 -> virtual workspaces. alt-ctrl-N sends without following.
 for n = 1, 10 do
 	local key = tostring(n % 10)
 	bindings["window virtualnum " .. n] = H .. key
@@ -58,7 +58,7 @@ paneru.setup({
 	},
 	padding = { top = 5, bottom = 5, left = 5, right = 5 },
 	windows = {
-		-- 5px per window + 5px screen padding = AeroSpace's 10px inner/outer gaps
+		-- 5px per window + 5px screen padding = 10px gaps between windows and at the edges
 		gaps = { title = ".*", horizontal_padding = 5, vertical_padding = 5 },
 		pip = { title = "Picture-in-Picture", floating = true },
 		settings = { title = ".*", bundle_id = "com.apple.systempreferences", floating = true },
@@ -128,4 +128,5 @@ paneru.on("window_spawned", function(event, ws)
 end)
 
 -- JankyBorders reads ~/.config/borders/bordersrc when started without args
-os.execute("pgrep -qx borders || (borders >/dev/null 2>&1 &)")
+-- (the launchd service's PATH lacks Homebrew)
+os.execute("pgrep -qx borders || (PATH=/opt/homebrew/bin:$PATH borders >/dev/null 2>&1 &)")

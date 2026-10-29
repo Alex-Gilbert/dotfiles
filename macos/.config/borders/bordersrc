@@ -1,12 +1,13 @@
 #!/bin/bash
 
+# Focus should be obvious at a glance: solid Kanagawa blue on the focused
+# window, inactive ones barely outlined.
 options=(
 	style=round
-	width=6.0
-	hidpi=off
-	active_color=0xc0e2e2e3
-	inactive_color=0xc02c2e34
-	background_color=0x302c2e34
+	width=8.0
+	hidpi=on
+	active_color=0xff7e9cd8
+	inactive_color=0x402c2e34
 )
 
 borders "${options[@]}"
