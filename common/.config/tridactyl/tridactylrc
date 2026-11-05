@@ -16,7 +16,10 @@
 " --class gives the window its own app_id (Wayland) / WM_CLASS (X11) so the WM
 " can float it instead of tiling it into whatever you were reading. The matching
 " for_window rules live in linux/.config/{sway,i3}/config. -e must come last.
-set editorcmd kitty --class tridactyl-editor -e nvim
+"
+" macOS: Firefox's PATH has neither kitty nor nvim, and --class means nothing
+" there, so Paneru floats the window by its --title instead (see its init.lua).
+set editorcmd PATH="/Applications/kitty.app/Contents/MacOS:/opt/homebrew/bin:$PATH" kitty --class tridactyl-editor --title tridactyl-editor -e nvim
 
 " ============================================================================
 " Find — nvim <leader>/ (fuzzy in buffer), n/N
@@ -52,6 +55,45 @@ bind <Space>xl tabmove +1
 bind <Space>psh fillcmdline help
 " <leader>psk: telescope keymaps
 bind <Space>psk fillcmdline_notrail bind
+
+" ============================================================================
+" Search shortcuts — :tabopen rt <query>
+" ============================================================================
+" Literal org: rather than org%3A, because Tridactyl reads %3 as a placeholder.
+set searchurls.rt https://github.com/search?q=org:RilianTech+%s&type=repositories
+
+" ============================================================================
+" Alt-N — jump to tab N, 9 is the last tab, like Firefox on Linux
+" ============================================================================
+" macOS turns Alt-1 into a symbol, so read the physical key instead.
+set keyboardlayoutforce true
+bind <A-1> tab 1
+bind <A-2> tab 2
+bind <A-3> tab 3
+bind <A-4> tab 4
+bind <A-5> tab 5
+bind <A-6> tab 6
+bind <A-7> tab 7
+bind <A-8> tab 8
+bind <A-9> tab 0
+bind --mode=insert <A-1> tab 1
+bind --mode=insert <A-2> tab 2
+bind --mode=insert <A-3> tab 3
+bind --mode=insert <A-4> tab 4
+bind --mode=insert <A-5> tab 5
+bind --mode=insert <A-6> tab 6
+bind --mode=insert <A-7> tab 7
+bind --mode=insert <A-8> tab 8
+bind --mode=insert <A-9> tab 0
+bind --mode=input <A-1> tab 1
+bind --mode=input <A-2> tab 2
+bind --mode=input <A-3> tab 3
+bind --mode=input <A-4> tab 4
+bind --mode=input <A-5> tab 5
+bind --mode=input <A-6> tab 6
+bind --mode=input <A-7> tab 7
+bind --mode=input <A-8> tab 8
+bind --mode=input <A-9> tab 0
 
 " ============================================================================
 " Reload this file — nvim's config-reload habit
