@@ -3,6 +3,8 @@ if test (uname -s) != Darwin
     exit
 end
 
+fish_add_path -g /nix/var/nix/profiles/default/bin
+
 # .NET via Homebrew. --move so the Homebrew libexec wins over any older
 # /usr/local/share/dotnet left behind by a standalone installer.
 if test -d /opt/homebrew/opt/dotnet/libexec

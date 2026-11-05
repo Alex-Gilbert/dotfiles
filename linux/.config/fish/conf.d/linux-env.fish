@@ -3,6 +3,12 @@ if set -q PREFIX; and test "$PREFIX" = /data/data/com.termux/files/usr
     exit
 end
 
+# Not universal: fish_variables is shared with macOS, where /home is an automount and
+# every PATH lookup through it costs ~70ms. fish_add_path skips missing directories.
+fish_add_path -g $HOME/.local/pvsneslib/devkitsnes/bin $HOME/.cook/bin $HOME/.opencode/bin \
+    $HOME/.nix-profile/bin /nix/var/nix/profiles/default/bin /opt/cuda/bin
+set -gx PVSNESLIB_HOME $HOME/.local/pvsneslib
+
 for dir in \
     $HOME/binaryen-version_123/bin \
     $HOME/.npm-global/bin \
