@@ -36,6 +36,13 @@ Paneru needs **Displays have separate Spaces** on:
 defaults write com.apple.spaces spans-displays -bool false   # then log out
 ```
 
+## 2b. File manager: Shuffle
+
+Install the DMG from [Shuffle's releases](https://github.com/WizenPainter/shuffle/releases)
+(not in Homebrew). Its Kanagawa theme is stowed to
+`~/Library/Application Support/Shuffle/theme.txt`; the other files there are
+per-machine history and stay out of git.
+
 ## 3. Permissions
 
 **System Settings → Privacy & Security → Accessibility**: enable Paneru,
@@ -46,7 +53,9 @@ without it.
 
 - **Keyboard → Keyboard Shortcuts**: turn off the Mission Control and
   Spotlight shortcuts that clash with Hyper chords and Raycast.
-- **Desktop & Dock**: auto-hide the Dock.
+- **Desktop & Dock**: auto-hide the Dock. Set "Click wallpaper to reveal
+  desktop" to Only in Stage Manager: Show Desktop throws every window to the
+  screen edges behind Paneru's back, and Paneru's gaps make the click easy to hit.
 
 ## Keys
 
@@ -64,11 +73,13 @@ Raycast sees them. The full list lives in `init.lua`.
 | Hyper-f | full width |
 | Hyper-r | cycle preset widths |
 | Hyper-c | center |
-| Hyper-m | fit this workspace's columns to the screen, auto-center off here; again to undo |
+| Hyper-m | fit this workspace's columns to the screen (one-shot) |
+| Hyper-n | line columns up from the left, auto-center off here; again to undo |
 | Hyper-v | next window opens below the focused one |
 | Hyper-g | float ↔ tile |
 | Hyper-q | close window |
 | Hyper-b | new Firefox window |
+| Hyper-e | Shuffle (file manager) |
 | Hyper-tab | move window to next display |
 
 Raycast's **Paneru** script command runs the rest (balance, equalize, tabbed

@@ -81,3 +81,8 @@ linux/custom-aur-packages/*/*.pkg.tar.*
 
 # Python bytecode from scripts/ and their tests.
 __pycache__/
+
+# Shuffle writes history/session state next to its stowed settings
+# (on a fresh Mac stow links the whole Shuffle dir into the repo).
+macos/Library/Application Support/Shuffle/*
+!macos/Library/Application Support/Shuffle/theme.txt

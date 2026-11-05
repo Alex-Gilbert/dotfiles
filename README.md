@@ -22,7 +22,7 @@ it lands on under `$HOME`.
 |----------|-----------|-------|
 | `common` | every machine | fish, neovim, tmux, kitty, git, firefox, tridactyl |
 | `linux`  | Linux desktop | i3, polybar, X11, Linux-only ssh hosts, AUR packages |
-| `macos`  | macOS | Paneru, borders, wezterm, Raycast scripts |
+| `macos`  | macOS | Paneru, borders, wezterm, Raycast scripts, Shuffle theme |
 | `android`| Termux | Termux-specific env and widget scripts |
 | `scripts`| not stowed | setup + utility scripts (on `PATH` via `config.fish`) |
 
