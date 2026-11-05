@@ -18,7 +18,7 @@ output "DP-5" { mode "3840x2160@240"; scale 1.5; }
 output "DP-6" { mode "3840x2160@240"; scale 1.5; }
 
 layout {
-    gaps 5
+    gaps 10 // = paneru: 5px screen padding + 5px per window
     center-focused-column "always" // = paneru auto_center
     default-column-width { proportion 0.5; }
     preset-column-widths {
@@ -31,14 +31,15 @@ layout {
     // Kanagawa, as in sway's client.* colours
     border {
         width 4
-        active-color "#C8C8C8"
-        inactive-color "#1F1F28"
+        // = macos borders/bordersrc: solid Kanagawa blue, inactive barely outlined
+        active-color "#7E9CD8"
+        inactive-color "#2C2E3440"
         urgent-color "#C34043"
     }
 }
 
 animations {
-    slowdown 0.5 // short slides, like paneru's animation_speed
+    off // = paneru with no animation_speed
 }
 
 prefer-no-csd
@@ -49,7 +50,7 @@ screenshot-path null // ~/dotfiles/scripts/screenshot owns screenshots
 // ignore the nvidia card so llama-swap keeps all the VRAM.
 include optional=true "~/.local/state/niri/gpu.kdl"
 
-// scripts/niri-fit writes this while a fitted workspace (Hyper+M) is focused,
+// scripts/niri-fit writes this while an aligned workspace (Hyper+N) is focused,
 // turning auto-center off there only. After layout{}, since includes override
 // what comes before them.
 include optional=true "~/.local/state/niri/center.kdl"
@@ -72,6 +73,7 @@ window-rule {
     match app-id="mpv"
     match title="Picture-in-Picture"
     match title="Preferences$"
+    match title="^Open$"
     open-floating true
 }
 window-rule {
@@ -95,8 +97,12 @@ binds {
     Ctrl+Alt+F { fullscreen-window; }
     Ctrl+Alt+Shift+Super+G { toggle-window-floating; }
     Ctrl+Alt+Shift+Super+C { center-column; }
-    // Fit this workspace's columns to the screen and stop centering here; again to undo
-    Ctrl+Alt+Shift+Super+M repeat=false { spawn-sh "~/dotfiles/scripts/niri-fit toggle"; }
+    // Fit: share the screen between this workspace's columns (one-shot)
+    Ctrl+Alt+Shift+Super+M repeat=false { spawn-sh "~/dotfiles/scripts/niri-fit fit"; }
+    // Align: columns flush left, no auto-center on this workspace; again to undo
+    Ctrl+Alt+Shift+Super+N repeat=false { spawn-sh "~/dotfiles/scripts/niri-fit align"; }
+    // Split: the next window opens below this one, in its column; again to cancel
+    Ctrl+Alt+Shift+Super+V repeat=false { spawn-sh "~/dotfiles/scripts/niri-fit split"; }
     Super+R { switch-preset-column-width; }
     Super+Shift+R { switch-preset-column-width-back; }
     Super+W { toggle-column-tabbed-display; }
@@ -132,7 +138,7 @@ binds {
     Ctrl+Alt+Shift+Super+A { spawn "wofi" "--show" "drun"; }
     Ctrl+Alt+Shift+Super+Tab { spawn "wofi" "--show" "window"; }
     Ctrl+Alt+Shift+Super+E { spawn "foot" "-e" "yazi"; }
-    Ctrl+Alt+Shift+Super+V repeat=false { spawn-sh "~/dotfiles/scripts/clipboard-type"; }
+    Ctrl+Alt+Shift+Super+Y repeat=false { spawn-sh "~/dotfiles/scripts/clipboard-type"; }
     Ctrl+Alt+Shift+Super+D { spawn-sh "~/dotfiles/scripts/tuios-dictate"; }
 
     // Screenshot / recording

@@ -25,8 +25,8 @@ if args[0] == "--json":
         return {"id": id, "workspace_id": ws, "is_floating": floating,
                 "layout": {"pos_in_scrolling_layout": None if floating else [col, 1]}}
     if what == "event-stream":
-        # Hyper+M on workspace 2 happens after watch has started (and reset state)
-        state = os.path.expanduser("~/.local/state/niri/fitted.json")
+        # Hyper+N on workspace 2 happens after watch has started (and reset state)
+        state = os.path.expanduser("~/.local/state/niri/aligned.json")
         open(state, "w").write("[2]")
     print(json.dumps({
         "workspaces": [{"id": 1, "is_focused": True}, {"id": 2, "is_focused": False}],
@@ -51,13 +51,12 @@ else:
     def run(command):
         subprocess.run([str(SCRIPT), command], env=env, check=True)
 
-    def fitted():
-        return json.loads((state / "fitted.json").read_text())
+    def aligned():
+        return json.loads((state / "aligned.json").read_text())
 
-    # Fit: each tiled column on workspace 1 gets 1/3, then focus goes back
-    run("toggle")
-    assert fitted() == [1]
-    assert center.read_text() == 'layout { center-focused-column "never"; }\n'
+    # Fit: each tiled column on workspace 1 gets 1/3, then focus goes back; centering untouched
+    run("fit")
+    assert not center.exists()
     assert calls.read_text().splitlines() == [
         "action focus-column 1", "action set-column-width 33.3333%",
         "action focus-column 2", "action set-column-width 33.3333%",
@@ -65,17 +64,81 @@ else:
         "action focus-window --id 11",
     ], calls.read_text()
 
-    # Toggling again unfits the workspace and brings centering back
-    run("toggle")
-    assert fitted() == []
-    assert not center.exists()
+    # Align: centering off here, scroll flush left, focus back
+    calls.unlink()
+    run("align")
+    assert aligned() == [1]
+    assert center.read_text() == 'layout { center-focused-column "never"; }\n'
+    assert calls.read_text().splitlines() == ["action focus-column-first", "action focus-window --id 11"]
 
-    # watch resets state, then follows focus: fitted workspace 2 gains focus ->
+    # Again: centering back on and the focused column re-centred
+    calls.unlink()
+    run("align")
+    assert aligned() == []
+    assert not center.exists()
+    assert calls.read_text().splitlines() == ["action center-column"]
+
+    # watch resets state, then follows focus: aligned workspace 2 gains focus ->
     # centering off; workspace 1 activating without focus is ignored
-    (state / "fitted.json").write_text("[1]")
+    (state / "aligned.json").write_text("[1]")
     center.write_text("stale")
     run("watch")
-    assert fitted() == [2]
+    assert aligned() == [2]
     assert center.read_text() == 'layout { center-focused-column "never"; }\n'
+
+    # Split: Hyper+V arms on the focused window (11, column 2), again cancels
+    split = state / "split"
+    run("split")
+    assert split.read_text() == "11"
+    run("split")
+    assert not split.exists()
+
+# Split placement and watch's new-window detection, with niri stubbed in-process
+import importlib.machinery, importlib.util, io
+loader = importlib.machinery.SourceFileLoader("niri_fit", str(SCRIPT))
+spec = importlib.util.spec_from_loader("niri_fit", loader)
+fit = importlib.util.module_from_spec(spec)
+loader.exec_module(fit)
+
+with tempfile.TemporaryDirectory(prefix="niri-split-test-") as temporary:
+    fit.STATE = Path(temporary)
+    fit.SPLIT = fit.STATE / "split"
+    fit.ALIGNED = fit.STATE / "aligned.json"
+    actions = []
+    fit.niri = lambda *args: actions.append(args) or ""
+    fit.notify = lambda message: None
+
+    def win(id, col, ws=1, floating=False):
+        return {"id": id, "workspace_id": ws, "is_floating": floating,
+                "layout": {"pos_in_scrolling_layout": None if floating else [col, 1]}}
+
+    windows = [win(11, 2), win(12, 5)]
+    fit.query = lambda what: {"windows": windows, "workspaces": [{"id": 1, "is_focused": True}]}[what]
+
+    def opened(window, armed="11"):
+        actions.clear()
+        fit.SPLIT.write_text(armed)
+        fit.place_split(window)
+        assert not fit.SPLIT.exists()  # one-shot either way
+        return actions
+
+    assert opened(win(30, 3)) == [("action", "consume-or-expel-window-left", "--id", "30")]
+    assert opened(win(30, 6)) == []                 # focus moved: not next to the armed window
+    assert opened(win(30, 3, ws=2)) == []           # other workspace
+    assert opened(win(30, 0, floating=True)) == []  # floating windows stay floating
+    assert opened(win(30, 3), armed="99") == []     # armed window has closed
+
+    # watch only treats unseen ids as new: a title change on 11 must not use up the split
+    events = [{"WindowsChanged": {"windows": [{"id": 11}]}},
+              {"WindowOpenedOrChanged": {"window": win(11, 2)}},
+              {"WindowOpenedOrChanged": {"window": win(30, 3)}}]
+    class Stream:
+        def __init__(self, *args, **kwargs):
+            fit.SPLIT.write_text("11")  # armed after watch's startup reset
+            self.stdout = io.StringIO("".join(json.dumps(e) + "\n" for e in events))
+    fit.subprocess.Popen = Stream
+    actions.clear()
+    fit.watch()
+    assert actions == [("action", "consume-or-expel-window-left", "--id", "30")], actions
 
 print("ok")

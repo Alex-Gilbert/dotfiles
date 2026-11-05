@@ -45,7 +45,7 @@ paru -S --needed sway swayidle swaync waybar autotiling foot wofi gtklock \
 paru -S --needed niri xwayland-satellite xdg-desktop-portal-gnome
 ```
 
-`clipboard-type` (hyper+v) reads keyboards via evdev: needs `input` group or a
+`clipboard-type` (hyper+v on sway, hyper+y on niri) reads keyboards via evdev: needs `input` group or a
 uaccess udev rule for the keyboard, or it refuses to run.
 
 ## 4. Host config
