@@ -8,7 +8,8 @@ session from a tty1 login in both modes. No tty rule, no monitor input button.
 | want | do |
 |---|---|
 | sway / wayland (llama-swap gets all VRAM) | DP cable → mobo DP port, log in on tty1 → sway |
-| i3 / X11 (video editing, gaming) | DP cable → nvidia card, log in on tty1 → startx/i3 |
+| niri on the nvidia card | DP cable → nvidia card, log in on tty1 → niri |
+| i3 / X11 (video editing, gaming) | DP cable → nvidia card, log in on tty2 → `startx` |
 
 (We tried both-cables-plugged with the monitor's input select as the switch —
 doesn't work: the monitor asserts hotplug on the inactive input too, so both

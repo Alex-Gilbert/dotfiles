@@ -12,10 +12,25 @@ input {
 
 // Per host: outputs that aren't connected are ignored, so both live here.
 output "eDP-1" { scale 1.25; } // archblade
-// cachy-two: mobo DP lands on DP-4/5/6 depending on port
-output "DP-4" { mode "3840x2160@240"; scale 1.5; }
-output "DP-5" { mode "3840x2160@240"; scale 1.5; }
-output "DP-6" { mode "3840x2160@240"; scale 1.5; }
+// No @rate: niri then takes the fastest, and real rates (239.991) miss an "@240".
+// cachy-two: nvidia DP is DP-1, mobo DP lands on DP-4/5/6 depending on port
+output "DP-1" { mode "3840x2160"; scale 1.5; }
+output "DP-4" { mode "3840x2160"; scale 1.5; }
+output "DP-5" { mode "3840x2160"; scale 1.5; }
+output "DP-6" { mode "3840x2160"; scale 1.5; }
+
+// Named workspaces so Hyper+N always lands on N; plain numbers are indexes,
+// which niri clamps to the last existing workspace.
+workspace "1"
+workspace "2"
+workspace "3"
+workspace "4"
+workspace "5"
+workspace "6"
+workspace "7"
+workspace "8"
+workspace "9"
+workspace "10"
 
 layout {
     gaps 10 // = paneru: 5px screen padding + 5px per window
@@ -58,7 +73,10 @@ include optional=true "~/.local/state/niri/center.kdl"
 spawn-sh-at-startup "wl-paste --type text --watch cliphist store"
 spawn-sh-at-startup "wl-paste --type image --watch cliphist store"
 spawn-at-startup "swaync"
-spawn-at-startup "waybar"
+// The packaged service restarts the bar if it crashes.
+spawn-at-startup "systemctl" "--user" "start" "waybar.service"
+spawn-sh-at-startup "hyprpaper --config ~/.config/niri/hyprpaper.conf"
+spawn-at-startup "udiskie" "--tray"
 spawn-sh-at-startup "~/dotfiles/scripts/niri-fit watch"
 spawn-sh-at-startup r#"
     case "$(uname -n)" in
@@ -149,34 +167,34 @@ binds {
     Ctrl+Alt+Shift+Super+Z repeat=false { spawn-sh "~/dotfiles/scripts/demo-record zoom"; }
 
     // Desktop recording: real 1080p pixels, then back (cachy-two)
-    Ctrl+Alt+Shift+Super+F9 { spawn-sh "for o in DP-4 DP-5 DP-6; do niri msg output $o mode 1920x1080@60; niri msg output $o scale 1; done"; }
-    Ctrl+Alt+Shift+Super+F10 { spawn-sh "for o in DP-4 DP-5 DP-6; do niri msg output $o mode 3840x2160@240; niri msg output $o scale 1.5; done"; }
+    Ctrl+Alt+Shift+Super+F9 { spawn-sh "for o in DP-1 DP-4 DP-5 DP-6; do niri msg output $o mode 1920x1080@60; niri msg output $o scale 1; done"; }
+    Ctrl+Alt+Shift+Super+F10 { spawn-sh "for o in DP-1 DP-4 DP-5 DP-6; do niri msg output $o mode 3840x2160; niri msg output $o scale 1.5; done"; }
 
     // System
     Alt+Q { quit; } // niri asks for confirmation
     Ctrl+Alt+X { spawn "gtklock" "-d"; }
 
     // Workspaces (alt-ctrl-N sends without following, like sway)
-    Ctrl+Alt+Shift+Super+1 { focus-workspace 1; }
-    Ctrl+Alt+Shift+Super+2 { focus-workspace 2; }
-    Ctrl+Alt+Shift+Super+3 { focus-workspace 3; }
-    Ctrl+Alt+Shift+Super+4 { focus-workspace 4; }
-    Ctrl+Alt+Shift+Super+5 { focus-workspace 5; }
-    Ctrl+Alt+Shift+Super+6 { focus-workspace 6; }
-    Ctrl+Alt+Shift+Super+7 { focus-workspace 7; }
-    Ctrl+Alt+Shift+Super+8 { focus-workspace 8; }
-    Ctrl+Alt+Shift+Super+9 { focus-workspace 9; }
-    Ctrl+Alt+Shift+Super+0 { focus-workspace 10; }
-    Ctrl+Alt+1 { move-column-to-workspace 1 focus=false; }
-    Ctrl+Alt+2 { move-column-to-workspace 2 focus=false; }
-    Ctrl+Alt+3 { move-column-to-workspace 3 focus=false; }
-    Ctrl+Alt+4 { move-column-to-workspace 4 focus=false; }
-    Ctrl+Alt+5 { move-column-to-workspace 5 focus=false; }
-    Ctrl+Alt+6 { move-column-to-workspace 6 focus=false; }
-    Ctrl+Alt+7 { move-column-to-workspace 7 focus=false; }
-    Ctrl+Alt+8 { move-column-to-workspace 8 focus=false; }
-    Ctrl+Alt+9 { move-column-to-workspace 9 focus=false; }
-    Ctrl+Alt+0 { move-column-to-workspace 10 focus=false; }
+    Ctrl+Alt+Shift+Super+1 { focus-workspace "1"; }
+    Ctrl+Alt+Shift+Super+2 { focus-workspace "2"; }
+    Ctrl+Alt+Shift+Super+3 { focus-workspace "3"; }
+    Ctrl+Alt+Shift+Super+4 { focus-workspace "4"; }
+    Ctrl+Alt+Shift+Super+5 { focus-workspace "5"; }
+    Ctrl+Alt+Shift+Super+6 { focus-workspace "6"; }
+    Ctrl+Alt+Shift+Super+7 { focus-workspace "7"; }
+    Ctrl+Alt+Shift+Super+8 { focus-workspace "8"; }
+    Ctrl+Alt+Shift+Super+9 { focus-workspace "9"; }
+    Ctrl+Alt+Shift+Super+0 { focus-workspace "10"; }
+    Ctrl+Alt+1 { move-column-to-workspace "1" focus=false; }
+    Ctrl+Alt+2 { move-column-to-workspace "2" focus=false; }
+    Ctrl+Alt+3 { move-column-to-workspace "3" focus=false; }
+    Ctrl+Alt+4 { move-column-to-workspace "4" focus=false; }
+    Ctrl+Alt+5 { move-column-to-workspace "5" focus=false; }
+    Ctrl+Alt+6 { move-column-to-workspace "6" focus=false; }
+    Ctrl+Alt+7 { move-column-to-workspace "7" focus=false; }
+    Ctrl+Alt+8 { move-column-to-workspace "8" focus=false; }
+    Ctrl+Alt+9 { move-column-to-workspace "9" focus=false; }
+    Ctrl+Alt+0 { move-column-to-workspace "10" focus=false; }
     Super+Grave { focus-workspace-previous; }
     Super+O repeat=false { toggle-overview; }
 

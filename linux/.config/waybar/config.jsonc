@@ -35,7 +35,7 @@
 
     // Only one of the two loads; waybar disables the other compositor's module.
     "niri/workspaces": {
-        "format": "{index}",
+        "format": "{value}",
         "all-outputs": true
     },
 

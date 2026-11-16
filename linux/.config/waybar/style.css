@@ -253,3 +253,22 @@ tooltip label {
     color: @fuji-white;
     padding: 6px;
 }
+
+/* niri keeps named workspaces 1-10 alive (so Hyper+N lands on N): show them
+   all, but empty ones small and dim, so the ones with windows stand out. */
+/* Waybar left-aligns the label inside min-width, so center with padding. */
+#workspaces button {
+    min-width: 0;
+    padding: 0 9px;
+}
+#workspaces button.empty {
+    padding: 0 6px;
+}
+#workspaces button.empty label {
+    font-size: 10px;
+    font-weight: 400;
+    color: alpha(@fuji-gray, 0.6);
+}
+#workspaces button:not(.empty) label {
+    font-size: 14px;
+}
