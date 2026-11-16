@@ -99,6 +99,7 @@ M.whichkey_spec = {
 	{ "<leader>G", group = "[G]leam", nowait = true, remap = false },
 	{ "<leader>D", group = "[D]ocker", nowait = true, remap = false },
 	{ "<leader>r", group = "[R]ust", nowait = true, remap = false },
+	{ "<leader>k", group = "[K]itchen (cook)", nowait = true, remap = false },
 	{ "<leader>x", group = "Swap", nowait = true, remap = false },
 	{ "<leader>m", group = "[M]essages (Noice)", nowait = true, remap = false },
 	{ "<leader><leader>", group = "[T]rouble", nowait = true, remap = false },
@@ -1229,6 +1230,17 @@ M.dockyard_keys = {
 	{ "<leader>De", function() require("alex-config.docker-cp").browse() end, desc = "[D]ocker [E]xplore container files" },
 	{ "<leader>Dp", function() require("alex-config.docker-cp").pull() end, desc = "[D]ocker [P]ull file to host (docker cp)" },
 	{ "<leader>Ds", function() require("alex-config.docker-cp").shell() end, desc = "[D]ocker [S]hell into container" },
+}
+
+M.cook_keys = {
+	{ "<leader>kk", "<cmd>Cook<cr>", desc = "[K]itchen: pick a recipe" },
+	{ "<leader>kb", "<cmd>Cook build<cr>", desc = "[K]itchen [B]uild" },
+	{ "<leader>kr", "<cmd>Cook rerun<cr>", desc = "[K]itchen [R]erun last" },
+	{ "<leader>kp", "<cmd>Cook panel<cr>", desc = "[K]itchen [P]anel toggle" },
+	{ "<leader>kd", "<cmd>Cook dashboard<cr>", desc = "[K]itchen [D]ashboard" },
+	{ "<leader>kw", "<cmd>Cook why<cr>", desc = "[K]itchen [W]hy (cache explorer)" },
+	{ "<leader>ks", "<cmd>Cook stop<cr>", desc = "[K]itchen [S]top" },
+	{ "<leader>kq", "<cmd>Cook quickfix<cr>", desc = "[K]itchen errors to [Q]uickfix" },
 }
 
 return M
