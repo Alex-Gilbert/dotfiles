@@ -10,7 +10,9 @@
 # can rewrite ends up executed as root.
 #
 # After the first run: System Settings > Privacy & Security > Input Monitoring,
-# add /usr/local/bin/kmonad. The daemon retries until that is granted.
+# add /usr/local/bin/kmonad, then `kmonad-toggle` twice. Without the grant
+# kmonad logs "IOHIDDeviceOpen error: not permitted" and idles without exiting,
+# so launchd never restarts it.
 # Stop/start afterwards with `kmonad-toggle`.
 set -eu
 
