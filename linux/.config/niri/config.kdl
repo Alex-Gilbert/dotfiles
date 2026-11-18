@@ -151,7 +151,7 @@ binds {
     Ctrl+Alt+Shift+K { set-window-height "-10%"; }
 
     // Apps
-    Ctrl+Alt+Shift+Super+T { spawn "foot" "tuios"; }
+    Ctrl+Alt+Shift+Super+T { spawn "foot" "fish" "-c" "ftu"; }
     Ctrl+Alt+Shift+Super+B { spawn "firefox"; }
     Ctrl+Alt+Shift+Super+A { spawn "wofi" "--show" "drun"; }
     Ctrl+Alt+Shift+Super+Tab { spawn "wofi" "--show" "window"; }

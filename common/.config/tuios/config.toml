@@ -23,7 +23,7 @@
 #   1-cell resizes (tuios steps by 5), TPM keys
 
 [appearance]
-theme = 'kanagawa'
+theme = 'none'  # keep the terminal's own Kanagawa palette; tuios's kanagawa differs (bright black is near-invisible)
 motion = 'none'  # no animations, anywhere
 preferred_shell = '/usr/bin/fish'  # the daemon may inherit SHELL=zsh from whatever started it
 scrollback_lines = 50000
@@ -158,6 +158,12 @@ command = 'tuios split-window up -s "$TUIOS_SESSION" -w "$TUIOS_ACTIVE_PANE_ID"'
 description = 'Split up'
 
 [[keybindings.command]]
+key = 'alt+o'
+type = 'popup'
+command = 'fish -c ftu'
+description = 'Open a session or project (zoxide)'
+
+[[keybindings.command]]
 key = 'alt+v'
 type = 'shell'
 command = 'tuios-dictate'
@@ -173,3 +179,9 @@ scroll = 'off'
 sidebar = 'off'
 workspace = 'none'
 zoom = 'off'
+
+[spotlight]
+enabled = false
+
+[hosts.workmac]
+addr = "workmac"
