@@ -29,7 +29,7 @@ bindsym $altc+k move up
 bindsym $altc+l move right
 
 # Apps
-bindsym $hyp+t exec foot
+bindsym $hyp+t exec foot tuios
 bindsym $hyp+b exec firefox
 bindsym $hyp+a exec wofi --show drun
 bindsym $hyp+Tab exec wofi --show window

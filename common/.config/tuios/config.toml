@@ -1,29 +1,40 @@
-# tuios trial config. Only overrides live here; every missing line gets
+# tuios config. Only overrides live here; every missing line gets
 # tuios's default back (`tuios config reset` into a scratch XDG dir to see them).
 # NOTE: `tuios set-config` and the in-app settings page (leader ,) rewrite this
 # whole file as a full dump. Tweak live, then trim back to overrides here.
 #
-# The tmux map, as close as tuios 0.8 allows:
+# Mirrors tmux.conf (tuios 0.13). A tmux window is a workspace here, a tmux pane a window.
 #   tmux                         tuios
 #   M-Space prefix               alt+space leader
+#   M-h/j/k/l split              alt+h/j/k/l (left/up via split-window actions)
+#   C-h/j/k/l nav (navigator)    ctrl+h/j/k/l; nvim splits first (nvim_navigation)
 #   M-1..9  window               alt+1..9 workspace (default)
-#   M-h/j/k/l split              leader l / j  (terminal mode can't split)
-#   C-h/j/k/l nav (navigator)    alt+h/j/k/l anywhere; C-hjkl in nvim crosses
-#                                into tuios at the edge (navigation_plugins.lua)
-#   M-a z   zoom                 leader z
-#   M-s     scroll to nvim       leader s (scrollback browser) / shift+up
-#   M-x     kill pane            leader x
-#   M-d     detach               leader d
-#   M-g g   choose-tree          leader S
-#   M-v     dictation            hyper+d in sway -> scripts/tuios-dictate
+#   M-t / M-a / M-m / M-g modes  alt+t / alt+a / alt+m / alt+g menus below
+#   M-s     scroll to nvim       alt+s scrollback in $EDITOR
+#   M-w     float                alt+w scratch terminal
+#   M-f     yazi picker          alt+f path picker (types the path at the cursor)
+#   M-v     dictation            alt+v -> scripts/tuios-dictate
+#   M-x     kill pane            alt+x (asks when a program is running)
+#   M-d/M-q detach               alt+d / alt+q
+#   M-C-l   clear history        ctrl+alt+l
+#   (new)   agents               alt+i agents view, alt+g a too
 #   resurrect/continuum          built in: the daemon saves and restores sessions
-#   tmux-thumbs / M-f yazi       rail file tree (leader b), no equivalent picker
+#   not ported: prefix L lock (tuios lock is config-only), prefix K/Q kill sessions,
+#   1-cell resizes (tuios steps by 5), TPM keys
 
 [appearance]
 theme = 'kanagawa'
+motion = 'none'  # no animations, anywhere
+preferred_shell = '/usr/bin/fish'  # the daemon may inherit SHELL=zsh from whatever started it
 scrollback_lines = 50000
 dockbar_position = 'bottom'
-# tmux look: one line between panes, no title bars, buttons or scrollbars
+# tmux look: one plain line between panes, green when focused, no title
+# bars, buttons or scrollbars; a one-row status bar at the bottom.
+border_style = 'normal'
+border_focused_color = '#98bb6c'
+border_unfocused_color = '#54546d'
+dock_compact = true
+dock_workspace_tab_format = '{index} {name}'
 shared_borders = true
 window_title_position = 'hidden'
 hide_window_buttons = true
@@ -31,18 +42,29 @@ hide_scrollbar = true
 # tmux has no modes: clicking or focusing a pane means typing in it
 click_to_type = 'single'
 auto_enter_terminal_on_focus = 'all'
+confirm_close = 'busy'  # tmux M-x confirmed only for nvim; this asks for any running program
+nvim_navigation = true  # C-hjkl walk nvim splits first (navigation_plugins.lua announces)
 
 [appearance.sidebar]
 enabled = false  # leader b toggles the rail
 
 [startup]
+daemon = true  # without it, a bare `tuios` runs standalone: no saved sessions, no hooks
+tiled = true
 start_in_terminal_mode = true
 open_default_window = true
+
+[daemon]
+respond_from_shell = true
 
 [hooks]
 # ponytail: startup.tiled is ignored on attach in 0.8 (new sessions float at
 # 80x24); force tiling every attach. Drop once upstream fixes it.
-after-attach = ['PATH=$HOME/go/bin:$PATH tuios set-layout --tiling true -s "$TUIOS_SESSION_ID" >/dev/null 2>&1']
+after-attach = ['tuios set-layout --tiling true -s "$TUIOS_SESSION_ID" >/dev/null 2>&1']
+
+[worktree]
+# Agent worktrees live under ~/dev/wt, inside the trusted ~/dev, so Claude never stops on the folder-trust prompt.
+path = '~/dev/wt/{{ repo }}/{{ branch | slug }}'
 
 [keybindings]
 leader_key = 'alt+space'
@@ -51,13 +73,103 @@ leader_key = 'alt+space'
 command_palette = []  # ctrl+p back to fish; leader P opens it
 launcher = []         # alt+space is the leader; leader a opens it
 
+# tmux root table (bind -n): no prefix needed
 [keybindings.terminal_mode]
-terminal_focus_left = ['alt+h']
-terminal_focus_down = ['alt+j']
-terminal_focus_up = ['alt+k']
-terminal_focus_right = ['alt+l']
+terminal_focus_left = ['ctrl+h']
+terminal_focus_down = ['ctrl+j']
+terminal_focus_up = ['ctrl+k']
+terminal_focus_right = ['ctrl+l']
+split_horizontal = ['alt+j']
+split_vertical = ['alt+l']
+"open_menu:tab-mode" = ['alt+t']
+"open_menu:pane-mode" = ['alt+a']
+"open_menu:move-mode" = ['alt+m']
+"open_menu:session-mode" = ['alt+g']
+edit_scrollback = ['alt+s']
+toggle_scratch = ['alt+w']
+pick_path = ['alt+f']
+close_window = ['alt+x']
+prefix_detach = ['alt+d', 'alt+q']
+clear_scrollback = ['ctrl+alt+l']
+prefix_inbox = ['alt+i']
 
 [keybindings.prefix_mode]
-prefix_split_vertical = ['|', '\', 'l']
-prefix_split_horizontal = ['-', 'j']
+prefix_split_vertical = ['|', '\', 'l', '%']
+prefix_split_horizontal = ['-', 'j', '"']
 prefix_jump_notif = ['J']
+prefix_rename_window = []  # r reloads, as in tmux; rename is alt+t r
+reload_config = ['r']
+command_palette = [':', 'P']
+close_workspace = ['&']
+
+[menus.tab-mode]
+title = 'Tab'
+items = [
+  { action = 'new_workspace', key = 'n' },
+  { action = 'close_workspace', key = 'x' },
+  { action = 'rename_workspace', key = 'r' },
+  { action = 'prev_workspace', key = 'h' },
+  { action = 'next_workspace', key = 'l' },
+  { action = 'last_workspace', key = 'tab' },
+  { action = 'toggle_multifocus_all', key = 's', label = 'Sync panes' },
+]
+
+[menus.pane-mode]
+title = 'Pane'
+items = [{ action = 'toggle_zoom', key = ['z', 'f'] }]
+
+# tmux move-mode, but it stays open: esc or any other key leaves
+[menus.move-mode]
+title = 'Move'
+sticky = true
+items = [
+  { action = 'resize_pane_left_5', key = 'H' },
+  { action = 'resize_pane_down_5', key = 'J' },
+  { action = 'resize_pane_up_5', key = 'K' },
+  { action = 'resize_pane_right_5', key = 'L' },
+  { action = 'swap_left', key = 'h' },
+  { action = 'swap_down', key = 'j' },
+  { action = 'swap_up', key = 'k' },
+  { action = 'swap_right', key = 'l' },
+]
+
+[menus.session-mode]
+title = 'Session'
+items = [
+  { action = 'prefix_detach', key = 'd' },
+  { action = 'prefix_session_switcher', key = 'g' },
+  { action = 'choose_tree', key = 'p', label = 'Find a pane' },
+  { action = 'last_session', key = 'l' },
+  { action = 'prefix_inbox', key = 'a', label = 'Agents' },
+  { action = 'goto_picker', key = 'G' },
+]
+
+# tmux M-h / M-k split left / up; tuios only has right/down actions, so ask the CLI
+[[keybindings.command]]
+key = 'alt+h'
+type = 'shell'
+command = 'tuios split-window left -s "$TUIOS_SESSION" -w "$TUIOS_ACTIVE_PANE_ID"'
+description = 'Split left'
+
+[[keybindings.command]]
+key = 'alt+k'
+type = 'shell'
+command = 'tuios split-window up -s "$TUIOS_SESSION" -w "$TUIOS_ACTIVE_PANE_ID"'
+description = 'Split up'
+
+[[keybindings.command]]
+key = 'alt+v'
+type = 'shell'
+command = 'tuios-dictate'
+description = 'Dictate'
+
+# appearance.motion = none should cover these; each is off too so nothing slips through
+[motion]
+confetti = 'off'
+copy = 'off'
+layout = 'off'
+overlays = 'off'
+scroll = 'off'
+sidebar = 'off'
+workspace = 'none'
+zoom = 'off'

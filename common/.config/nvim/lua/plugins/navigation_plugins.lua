@@ -195,10 +195,19 @@ return {
 		},
 		init = function()
 			vim.g.tmux_navigator_no_mappings = 1 -- its defaults would clobber the keys below on load
+			if vim.env.TUIOS_ENV == "1" then
+				-- tuios (nvim_navigation) forwards C-hjkl to this pane only while nvim says it is active
+				local function announce(state)
+					return function()
+						vim.api.nvim_ui_send("\27]7777;tuios-nvim-navigator;state;" .. state .. "\7")
+					end
+				end
+				vim.api.nvim_create_autocmd({ "VimEnter", "VimResume", "FocusGained" }, { callback = announce("active") })
+				vim.api.nvim_create_autocmd({ "VimLeavePre", "VimSuspend" }, { callback = announce("inactive") })
+			end
 		end,
 		keys = vim.env.TUIOS_ENV == "1"
-				-- tuios has no navigator hook: move nvim splits, and at the edge
-				-- hand focus to the neighbouring tuios pane.
+				-- move nvim splits, and at the edge hand focus to the neighbouring tuios pane.
 				and vim.tbl_map(function(k)
 					return {
 						"<c-" .. k[1] .. ">",
