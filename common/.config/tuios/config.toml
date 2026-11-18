@@ -185,3 +185,4 @@ enabled = false
 
 [hosts.workmac]
 addr = "workmac"
+repos_root = "~/rdev"
