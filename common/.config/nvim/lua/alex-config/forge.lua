@@ -29,6 +29,7 @@ local function forges()
 				remote = remote,
 				kind = "tea",
 				slug = slug,
+				login = "gilbert",
 				args = { "--login", "gilbert", "--repo", slug },
 				web = "https://git.gilbert.haus/" .. slug,
 			}
@@ -45,9 +46,10 @@ local function forges()
 	return found
 end
 
-local function cmd(f, ...)
-	local argv = { f.kind, f.kind == "tea" and "pulls" or "pr", ... }
-	return vim.list_extend(argv, f.args)
+-- argv for `gh pr VERB ...` / `tea pulls VERB ...`; repo flags go right after VERB, before positionals
+local function cmd(f, verb, ...)
+	local argv = { f.kind, f.kind == "tea" and "pulls" or "pr", verb }
+	return vim.list_extend(vim.list_extend(argv, f.args), { ... })
 end
 
 -- Actions with a single target: use the only forge, or ask which remote.
@@ -104,16 +106,118 @@ local function list(fs)
 	return prs
 end
 
+-- The PR last opened for review; the <leader>gp{v,a,x,m} keys act on it.
+local current
+
+-- Diff the PR without touching the working tree: fetch its head ref (GitHub and Gitea both
+-- publish refs/pull/N/head) into <remote>/pr/N.
 local function review(pr)
-	local f = pr.forge
-	if not run(cmd(f, "checkout", tostring(pr.number))) then
+	local f, n = pr.forge, tostring(pr.number)
+	local head = f.remote .. "/pr/" .. n
+	if not run({ "git", "fetch", f.remote, pr.base, "+refs/pull/" .. n .. "/head:refs/remotes/" .. head }) then
 		return
 	end
-	run({ "git", "fetch", f.remote, pr.base })
-	vim.cmd("DiffviewOpen " .. f.remote .. "/" .. pr.base .. "...HEAD")
+	current = pr
+	vim.cmd("DiffviewOpen " .. f.remote .. "/" .. pr.base .. "..." .. head)
 end
 
--- Telescope picker: open PRs -> <CR> checks out and reviews in diffview, <C-o> opens in browser
+-- Old behaviour, for when you want LSP and tests on the PR: check it out as a branch.
+local function checkout(pr)
+	if run(cmd(pr.forge, "checkout", tostring(pr.number))) then
+		current = pr
+		run({ "git", "fetch", pr.forge.remote, pr.base })
+		vim.cmd("DiffviewOpen " .. pr.forge.remote .. "/" .. pr.base .. "...HEAD")
+	end
+end
+
+-- A Gitea PR goes to the gitea plugin (PR buffer, inline review); GitHub stays on gh.
+local function gitea(pr, action)
+	local g = require("gitea")
+	g.open({ login = pr.forge.login, slug = pr.forge.slug, remote = pr.forge.remote, number = pr.number })
+	if action and g.current and g.current.pr then
+		action(g, g.current)
+	end
+end
+
+local function with_pr(pr, fn)
+	pr = pr or current
+	if not pr then
+		return vim.notify("No PR under review: open one with <leader>gpl", vim.log.levels.WARN)
+	end
+	fn(pr, pr.forge, tostring(pr.number))
+end
+
+-- Description, review state and comments, rendered by the forge CLI.
+local function view(pr)
+	with_pr(pr, function(p, f, n)
+		if f.kind == "tea" then
+			return gitea(p)
+		end
+		terminal(f.kind == "tea" and cmd(f, n) or cmd(f, "view", n, "--comments"))
+	end)
+end
+
+local function approve(pr)
+	with_pr(pr, function(p, f, n)
+		if f.kind == "tea" then
+			return gitea(p, function(g, ctx)
+				g.submit(ctx, "APPROVED")
+			end)
+		end
+		vim.ui.input({ prompt = "Approve #" .. n .. " (comment, optional): " }, function(msg)
+			if msg == nil then
+				return
+			end
+			local argv = f.kind == "tea" and cmd(f, "approve", n, msg ~= "" and msg or nil)
+				or cmd(f, "review", n, "--approve", "--body", msg)
+			if run(argv) then
+				vim.notify("Approved #" .. n .. " " .. p.title)
+			end
+		end)
+	end)
+end
+
+local function request_changes(pr)
+	with_pr(pr, function(p, f, n)
+		if f.kind == "tea" then
+			return gitea(p, function(g, ctx)
+				g.submit(ctx, "REQUEST_CHANGES")
+			end)
+		end
+		vim.ui.input({ prompt = "Request changes on #" .. n .. ": " }, function(msg)
+			if not msg or msg == "" then
+				return
+			end
+			local argv = f.kind == "tea" and cmd(f, "reject", n, msg)
+				or cmd(f, "review", n, "--request-changes", "--body", msg)
+			if run(argv) then
+				vim.notify("Requested changes on #" .. n)
+			end
+		end)
+	end)
+end
+
+local function merge(pr)
+	with_pr(pr, function(p, f, n)
+		if f.kind == "tea" then
+			return gitea(p, function(g, ctx)
+				g.merge(ctx)
+			end)
+		end
+		vim.ui.select({ "merge", "squash", "rebase" }, { prompt = "Merge #" .. n .. " " .. p.title }, function(style)
+			if not style then
+				return
+			end
+			local argv = f.kind == "tea" and cmd(f, "merge", "--style", style, n) or cmd(f, "merge", n, "--" .. style)
+			if run(argv) then
+				vim.notify("Merged #" .. n)
+			end
+		end)
+	end)
+end
+
+-- Telescope picker: open PRs. <CR> Gitea: the PR buffer (gitea plugin); GitHub: diff in diffview, <C-g> check out then diff, <C-v> view,
+-- <C-a> approve, <C-r> request changes, <C-o> browser.
 M.pick = function()
 	local fs = forges()
 	if not fs then
@@ -140,12 +244,28 @@ M.pick = function()
 			attach_mappings = function(prompt_bufnr, map)
 				actions.select_default:replace(function()
 					actions.close(prompt_bufnr)
-					review(action_state.get_selected_entry().value)
+					local pr = action_state.get_selected_entry().value
+					if pr.forge.kind == "tea" then
+						gitea(pr)
+					else
+						review(pr)
+					end
 				end)
-				map({ "i", "n" }, "<C-o>", function()
-					actions.close(prompt_bufnr)
-					vim.ui.open(action_state.get_selected_entry().value.url)
-				end)
+				for key, fn in pairs({
+					["<C-g>"] = checkout,
+					["<C-v>"] = view,
+					["<C-a>"] = approve,
+					["<C-r>"] = request_changes,
+					["<C-o>"] = function(pr)
+						vim.ui.open(pr.url)
+					end,
+				}) do
+					map({ "i", "n" }, key, function()
+						local pr = action_state.get_selected_entry().value
+						actions.close(prompt_bufnr)
+						fn(pr)
+					end)
+				end
 				return true
 			end,
 		})
@@ -195,6 +315,10 @@ M.keys = {
 	{ "<leader>gpc", M.create, desc = "Create PR" },
 	{ "<leader>gpb", M.browse, desc = "Open PRs in browser" },
 	{ "<leader>gps", M.checks, desc = "PR checks / Actions" },
+	{ "<leader>gpv", function() view() end, desc = "PR under review: description and comments" },
+	{ "<leader>gpa", function() approve() end, desc = "PR under review: approve" },
+	{ "<leader>gpx", function() request_changes() end, desc = "PR under review: request changes" },
+	{ "<leader>gpm", function() merge() end, desc = "PR under review: merge" },
 }
 
 return M

@@ -16,7 +16,10 @@ return {
 		dependencies = { "nvim-lua/plenary.nvim" },
 		cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewFileHistory", "DiffviewToggleFiles" },
 		-- forge keys (PR pickers) live here too: they all end in diffview
-		keys = vim.list_extend(vim.deepcopy(require("alex-config.keymaps").diffview_keys), require("alex-config.forge").keys),
+		keys = vim.list_extend(
+			vim.list_extend(vim.deepcopy(require("alex-config.keymaps").diffview_keys), require("alex-config.forge").keys),
+			require("gitea").keys
+		),
 		opts = {
 			enhanced_diff_hl = true,
 			view = {
