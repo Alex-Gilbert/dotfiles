@@ -1,0 +1,13 @@
+#!/bin/sh
+# tpanel: tuios command panel. Builds tools/tpanel on first run, and again
+# whenever its source changes, into ~/.cache/tpanel; then runs it.
+set -e
+src="$(cd "$(dirname "$(readlink -f "$0")")/../tools/tpanel" && pwd)"
+sum=$(cat "$src"/go.mod "$src"/go.sum "$src"/*.go | cksum | cut -d' ' -f1)
+bin="${XDG_CACHE_HOME:-$HOME/.cache}/tpanel/$sum/tpanel"
+if [ ! -x "$bin" ]; then
+	echo "tpanel: building…" >&2
+	(cd "$src" && go build -o "$bin" .)
+	find "${bin%/*/*}" -mindepth 1 -maxdepth 1 ! -name "$sum" -exec rm -rf {} +  # drop older builds
+fi
+exec "$bin" "$@"
