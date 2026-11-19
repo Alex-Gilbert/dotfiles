@@ -26,15 +26,14 @@ return {
 			},
 		},
 		config = function()
-			vim.cmd([[colorscheme kanagawa]])
-			vim.cmd([[
-                hi Normal guibg=NONE ctermbg=NONE
-                hi NormalNC guibg=NONE ctermbg=NONE
-                hi SignColumn guibg=NONE ctermbg=NONE
-                hi EndOfBuffer guibg=NONE ctermbg=NONE
-            ]])
+			-- This machine's theme (~/.config/theme); kanagawa unless its host file says otherwise.
+			require("alex-config.host_theme").apply()
 		end,
 	},
+
+	-- Rosé Pine: the theme of hosts whose ~/.config/theme/hosts file picks rose-pine-moon.
+	-- Higher priority so it is loaded before kanagawa's config applies the host theme.
+	{ "rose-pine/neovim", name = "rose-pine", lazy = false, priority = 1001 },
 
 	-- {
 	-- 	"sainnhe/gruvbox-material",

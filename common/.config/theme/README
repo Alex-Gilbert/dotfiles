@@ -1,0 +1,15 @@
+Per-machine look, so a session on another machine reads as that machine even
+inside this machine's terminal and tuios.
+
+  hosts/<short hostname>   this machine's choices, one "key value" per line:
+                             theme NAME   which theme below (default: kanagawa)
+                             badge TEXT   a label in the fish prompt (default: none)
+  NAME.fish                fish colours and prompt colours, sourced by fish/conf.d/theme.fish
+  NAME.lua                 neovim colourscheme, run by nvim/lua/alex-config/host_theme.lua
+
+A machine with no hosts/ file gets kanagawa and no badge. The short hostname is
+what `prompt_hostname` prints in fish. Try a theme for one shell or nvim with
+HOST_THEME=NAME.
+
+Use hex colours in themes for other machines: named colours (blue, cyan) follow
+the palette of whichever terminal draws them, so they cannot tell machines apart.
